@@ -1,15 +1,18 @@
-from gladier import GladierBaseClient
-from payload import * 
+from XPCS.triggers.crawl_clutch import search_dir, get_datasets ##TODO need to figure out where to move crawl_clutch
 
+##XPCS Client Definition
+from gladier import GladierBaseClient
+from flow_defs import corr_basic_flow_definition, qmap_flow_definition, flow_definition
 class XPCS_Client(GladierBaseClient):
     client_id = 'e6c75d97-532a-4c88-b031-8584a319fa3e'
     gladier_tools = [
         'gladier_tools.xpcs.EigenCorr',
         'gladier_tools.xpcs.ApplyQmap',
     ]
-    flow_definition = '.flow_defs.corr_full_flow.flow_definition'
+    flow_definition = corr_basic_flow_definition ##TODO change that to the original flow ryan was using
+##
 
-
+##Arg Parsing
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", help="Data to process.",
@@ -31,7 +34,7 @@ def parse_args():
     return parser.parse_args()
 
 def check_args():
-    from XPCS.triggers.crawl_clutch import search_dir, get_datasets
+    
     if args.expression:
         base, exp = os.path.dirname(args.expression), os.path.basename(args.expression)
         print(f'Searching "{base}" with pattern "{exp}"')
