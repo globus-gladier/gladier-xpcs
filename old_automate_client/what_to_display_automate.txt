@@ -1,0 +1,85 @@
+
+https://docs.google.com/document/d/1LHtg7F0Sdkk4CWLUEJa7bjno62wqzQdpwGKtWKv4LiE/edit?usp=sharing
+
+
+h5ls cluster_results/B390_Dynamic_SMB_F_BR2_Homo_Strain2.04mm_Ampl0.900mm_att0_Lq0_001_0001-5000.hdf/xpcs
+
+**********Category Acquisition:
+data_begin               Dataset {1, 1}
+data_begin_todo          Dataset {1, 1}
+
+data_end                 Dataset {1, 1}
+data_end_todo            Dataset {1, 1}
+
+qmap_hdf5_filename       Dataset {SCALAR}
+
+
+h5ls cluster_results/B390_Dynamic_SMB_F_BR2_Homo_Strain2.04mm_Ampl0.900mm_att0_Lq0_001_0001-5000.hdf/measurement/instrument/acquisition/
+stage_x                  Dataset {1, 1}
+stage_z                  Dataset {1, 1}
+datafilename             Dataset {SCALAR}
+data_folder              Dataset {SCALAR}
+attenuation              Dataset {1, 1}
+
+
+**********Category Detector:
+h5ls cluster_results/B390_Dynamic_SMB_F_BR2_Homo_Strain2.04mm_Ampl0.900mm_att0_Lq0_001_0001-5000.hdf/measurement/instrument/detector
+exposure_time            Dataset {1, 1}
+exposure_period          Dataset {1, 1}
+manufacturer             Dataset {SCALAR}
+
+
+
+**********Category Source Begin:
+h5ls cluster_results/B390_Dynamic_SMB_F_BR2_Homo_Strain2.04mm_Ampl0.900mm_att0_Lq0_001_0001-5000.hdf/measurement/instrument/source_begin
+beam_intensity_transmitted Dataset {1, 1}
+current                  Dataset {1, 1}
+datetime                 Dataset {SCALAR}
+energy                   Dataset {1, 1}
+
+**********Category Source End:
+h5ls cluster_results/B390_Dynamic_SMB_F_BR2_Homo_Strain2.04mm_Ampl0.900mm_att0_Lq0_001_0001-5000.hdf/measurement/instrument/source_end
+current                  Dataset {1, 1}
+datetime                 Dataset {SCALAR}
+
+
+**********Category Sample:
+h5ls cluster_results/B390_Dynamic_SMB_F_BR2_Homo_Strain2.04mm_Ampl0.900mm_att0_Lq0_001_0001-5000.hdf/measurement/sample/
+translation              Dataset {1, 3}
+translation_table        Dataset {1, 3}
+orientation              Dataset {1, 3}
+temperature_A            Dataset {1, 1}
+temperature_A_set        Dataset {1, 1}
+
+
+
+Plots:
+
+/exchange
+***Plot 1. Scattering Pattern
+2-D pixelSum        2-D image
+
+***plot 2: Total Intensity vs time
+frameSum                 Dataset {2, 4999}  totalIntensity
+
+***plot 3: Intensity vs q
+q: /xpcs/sqlist
+partition-mean-total     Dataset {1, 270}   Intensity vs q
+Intensity: /exchange/partition-mean-total
+
+***plot 4: Correlations g2
+delay dt: (/exchange/tau) * exposure_period
+
+dynamicQ = /xpcs/dqlist
+g2 = norm-0-g2
+g2err = norm-0-stderr
+these ones come in plots of 3x3 grid
+norm-0-g2                Dataset {44, 54} 
+norm-0-stderr            Dataset {44, 54}
+
+For simplicity,let us plot the first 9 g2s in a 3x3 grid:
+dynamicQ will be the subtitle on each subplot (q=0.005 A^-1) for example
+
+
+
+

@@ -1,16 +1,35 @@
-from gladier import GladierBaseClient
-from payload import * 
+#!/home/beams/8IDIUSER/.conda/envs/automate/bin/python
+# -*- coding: utf-8 -*-
 
-class XPCS_Client(GladierBaseClient):
-    client_id = 'e6c75d97-532a-4c88-b031-8584a319fa3e'
-    gladier_tools = [
-        'gladier_tools.xpcs.EigenCorr',
-        'gladier_tools.xpcs.ApplyQmap',
-    ]
-    flow_definition = '.flow_defs.corr_full_flow.flow_definition'
+"""
+Automate XPCS: Initiate processing of an XPCS file.
+"""
+
+import argparse
+import time
+import json
+import sys
+import os
+import sys
+import pprint
+
+if __name__ == '__main__':
+    # Allow running via command line
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
+from XPCS.tools.client import XPCSClient
+from XPCS.triggers.crawl_clutch import search_dir, get_datasets
 
 
-def parse_args():
+
+def main(arg):
+    """
+    Process an input file via an automate flow. To initiate the flow we need a flow_id and flow_scope.
+
+    Version 3 (06/9/19): This assumes we take data from an endpoint (clutch/petrel), move to alcf, process it,
+    then move it back to the origional endpoint in the path $inputDir/automate/$inputFileName.
+    """
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", help="Data to process.",
                         default='/data/xpcs8/2019-1/comm201901/cluster_results/'
@@ -27,11 +46,10 @@ def parse_args():
                         action='store_true')
     parser.add_argument("--rigaku", help="If set, the corr script use the --rigaku flag.",
                         action='store_true')
-    parser.add_argument('--verbose', action='store_true')
-    return parser.parse_args()
+    args = parser.parse_args()
 
-def check_args():
-    from XPCS.triggers.crawl_clutch import search_dir, get_datasets
+    xpcs = XPCSClient()
+
     if args.expression:
         base, exp = os.path.dirname(args.expression), os.path.basename(args.expression)
         print(f'Searching "{base}" with pattern "{exp}"')
@@ -50,31 +68,24 @@ def check_args():
         pathnames = datasets['valid_datasets']
     else:
         pathnames = [(args.input, args.imm)]
-    return pathnames
 
-if __name__ == '__main__':
-    args = parse_args()
-    logger = logging.getLogger()
-    if args.verbose:
-        logger.setLevel(logging.WARNING)
-    else:
-        logger.setLevel(logging.ERROR)
+    flow_options = None
+    if args.rigaku:
+        exec_kwargs = {'rigaku': True}
+        flow_options = {'exec': exec_kwargs}
 
-    corr_cli = XPCS_Client()
-    corr_cli.get_input()
+    flow_input = xpcs.create_flow_input(pathnames=pathnames, flow_options=flow_options)
 
-    # pathnames = check_args(args)
+    if args.dry_run:
+        print(json.dumps(flow_input, indent=2))
+        sys.exit()
 
-    # flow_options = None
-    # if args.rigaku:
-    #     exec_kwargs = {'rigaku': True}
-    #     flow_options = {'exec': exec_kwargs}
+    #if input(f'Start Automate flow with {len(pathnames)} datasets? Y/N>') in ['y', 'Y']:
+    flow_id = xpcs.start_flow(flow_input)
+    pprint.pprint(flow_id)
+    #else:
+    #    print('Aborting due to user input...')
 
-    # flow_input = corr_cli.create_flow_input(pathnames=pathnames, flow_options=flow_options)
 
-    # if args.dry_run:
-    #     print(json.dumps(flow_input, indent=2))
-    #     sys.exit()
-    # else:
-    #     corr_flow = corr_cli.run_flow(flow_input=flow_input)
-    #     corr_cli.check_flow(corr_flow['action_id'])
+if __name__ == "__main__":
+    main(sys.argv[1:])

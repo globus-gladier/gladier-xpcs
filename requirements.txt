@@ -1,0 +1,5 @@
+h5py
+numpy
+matplotlib
+-e git+https://github.com/globusonline/pilot1-tools@dev#egg=pilot1-tools
+globus-automate-client
