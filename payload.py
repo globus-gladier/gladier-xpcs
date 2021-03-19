@@ -8,7 +8,7 @@ data = {
         #Eigen specific variables
         "hdf": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf",
         "imm": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm",
-        "flags": ''
+        "flags": '',
         # QMap data
         "qmap": "sanat201903_qmap_S270_D54_lin.h5",
         "flatfield": "Flatfiel_AsKa_Th5p5keV.hdf",
