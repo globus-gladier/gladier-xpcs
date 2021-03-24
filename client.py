@@ -3,13 +3,21 @@ from XPCS.triggers.crawl_clutch import search_dir, get_datasets ##TODO need to f
 ##XPCS Client Definition
 from gladier import GladierBaseClient
 from flow_defs import corr_basic_flow_definition, qmap_flow_definition, flow_definition
-class XPCS_Client(GladierBaseClient):
+
+class XPCS_Corr_Client(GladierBaseClient):
     client_id = 'e6c75d97-532a-4c88-b031-8584a319fa3e'
     gladier_tools = [
         'gladier_tools.xpcs.EigenCorr',
-        'gladier_tools.xpcs.ApplyQmap',
     ]
     flow_definition = corr_basic_flow_definition ##TODO change that to the original flow ryan was using
+##
+
+class XPCS_Qmap_Client(GladierBaseClient):
+    client_id = 'e6c75d97-532a-4c88-b031-8584a319fa3e'
+    gladier_tools = [
+        'gladier_tools.xpcs.ApplyQmap',
+    ]
+    flow_definition = qmap_flow_definition ##TODO change that to the original flow ryan was using
 ##
 
 ##Arg Parsing
