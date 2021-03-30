@@ -11,6 +11,7 @@ class XPCSReprocessing(GladierClient):
         'gladier_tools.manifest.tools.ManifestToFuncXTasks',
         'manifest_reprocessing.XPCSManifestTool',
         'gladier_tools.xpcs.ApplyQmap',
+        'gladier_tools.xpcs.EigenCorr',
         'gladier_tools.xpcs.MakeCorrPlots',
         'gladier_tools.xpcs.CustomPilot',
     ]
@@ -39,13 +40,16 @@ if __name__ == '__main__':
 
             # Manifest giblets
             'manifest_to_funcx_tasks_manifest_id': '80cae0bb-fe9c-4f91-ac03-93e1ac550b7e',
-            'manifest_to_funcx_tasks_callback_funcx_id': 'c0c146d2-1ace-4710-b64a-470843de8a72',
+            # 'manifest_to_funcx_tasks_callback_funcx_id': '5d071573-2fc8-4e6c-8fa0-8b53a94d07f3',
+            # 'manifest_to_reprocessing_task_funcx_id': 'c5d5b3fa-3f9b-4cc4-bbf0-8b855f16de82',
+            # 'manifest_to_funcx_tasks_use_dirs': True,
             'funcx_endpoint_non_compute': nick_theta_login,
             'funcx_endpoint_compute': nick_theta_compute,
             'manifest_to_funcx_tasks_funcx_endpoint_compute': nick_theta_compute,
         }
     }
     re_cli = XPCSReprocessing()
+    # pprint(re_cli.get_input())
     corr_flow = re_cli.start_flow(flow_input=flow_input)
     re_cli.progress(corr_flow['action_id'])
     pprint(re_cli.get_status(corr_flow['action_id']))
