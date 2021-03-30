@@ -9,14 +9,14 @@ class XPCSReprocessing(GladierClient):
     gladier_tools = [
         # 'gladier_tools.manifest.tools.ManifestTransfer',
         # 'gladier_tools.manifest.tools.ManifestToFuncXTasks',
-        'manifest_reprocessing.XPCSManifestTool',
+        'xpcs_client.manifest_reprocessing.XPCSManifestTool',
         'gladier_tools.xpcs.ApplyQmap',
         'gladier_tools.xpcs.EigenCorr',
         'gladier_tools.xpcs.MakeCorrPlots',
         'gladier_tools.xpcs.CustomPilot',
     ]
 
-    flow_definition = 'manifest_reprocessing.XPCSManifestTool'
+    flow_definition = 'xpcs_client.manifest_reprocessing.XPCSManifestTool'
     # flow_definition = 'gladier_tools.xpcs.ApplyQmap'
     # flow_definition = 'gladier_tools.xpcs.EigenCorr'
     # flow_definition = 'gladier_tools.xpcs.MakeCorrPlots'
