@@ -7,8 +7,8 @@ from pprint import pprint
 class XPCSReprocessing(GladierClient):
     client_id = 'e6c75d97-532a-4c88-b031-8584a319fa3e'
     gladier_tools = [
-        'gladier_tools.manifest.tools.ManifestTransfer',
-        'gladier_tools.manifest.tools.ManifestToFuncXTasks',
+        # 'gladier_tools.manifest.tools.ManifestTransfer',
+        # 'gladier_tools.manifest.tools.ManifestToFuncXTasks',
         'manifest_reprocessing.XPCSManifestTool',
         'gladier_tools.xpcs.ApplyQmap',
         'gladier_tools.xpcs.EigenCorr',
@@ -25,27 +25,26 @@ class XPCSReprocessing(GladierClient):
 
 
 if __name__ == '__main__':
-    nick_theta_login = '0a162a09-8bd9-4dd9-b046-0bfd635d38a7'
-    nick_theta_compute = '37e6099f-e9e7-4817-ac68-4afcd78d8221'
     flow_input = {
         'input': {
-            'proc_dir': '/lus/theta-fs0/projects/APSDataAnalysis/nick/xpcs',
+            # Manifest input files, and destination for where to process (Anyone can use the manifest below)
+            'manifest_id': '8b5c50ff-838d-4072-ad6c-ce9d142d6b04',
+            'manifest_destination': 'globus://08925f04-569f-11e7-bef8-22000b9a448b/projects/APSDataAnalysis/Automate/reprocessing/',
+
+            # General info info
             'corr_loc': '/lus/theta-fs0/projects/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
-            'hdf_file': 'A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
-            'imm_file': 'A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm',
             'flags': '',
             'qmap_file': 'sanat201903_qmap_S270_D54_lin.h5',
             'flat_file': 'Flatfiel_AsKa_Th5p5keV.hdf',
-            # 'output_file': 'A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
 
-            # Manifest giblets
-            'manifest_to_funcx_tasks_manifest_id': '80cae0bb-fe9c-4f91-ac03-93e1ac550b7e',
-            # 'manifest_to_funcx_tasks_callback_funcx_id': '5d071573-2fc8-4e6c-8fa0-8b53a94d07f3',
-            # 'manifest_to_reprocessing_task_funcx_id': 'c5d5b3fa-3f9b-4cc4-bbf0-8b855f16de82',
-            # 'manifest_to_funcx_tasks_use_dirs': True,
-            'funcx_endpoint_non_compute': nick_theta_login,
-            'funcx_endpoint_compute': nick_theta_compute,
-            'manifest_to_funcx_tasks_funcx_endpoint_compute': nick_theta_compute,
+            # Execution Environment (For Nick only).
+            'funcx_endpoint_non_compute': '0a162a09-8bd9-4dd9-b046-0bfd635d38a7',
+            'funcx_endpoint_compute': '37e6099f-e9e7-4817-ac68-4afcd78d8221',
+
+            # Needed for running on gladier_tools directly, otherwise not used
+            'proc_dir': '/lus/theta-fs0/projects/APSDataAnalysis/nick/xpcs',
+            'hdf_file': 'A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
+            'imm_file': 'A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm',
         }
     }
     re_cli = XPCSReprocessing()

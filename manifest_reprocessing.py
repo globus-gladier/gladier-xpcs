@@ -1,23 +1,14 @@
 from gladier.defaults import GladierDefaults
 
 
-def manifest_to_reprocessing_task(data):
+def manifest_to_payload_list(data):
     """Create funcx execution tasks given a manifest"""
     import os
     import requests
     from urllib.parse import urlparse
 
-    required = [
-        'manifest_to_funcx_tasks_manifest_id',
-        'manifest_to_funcx_tasks_funcx_endpoint_compute',
-        'manifest_to_funcx_tasks_callback_funcx_id',
-    ]
-    missing = [r for r in required if r not in data.keys()]
-    if any(missing):
-        raise ValueError(f'{missing} inputs MUST be included')
-
     url = (f'https://develop.concierge.nick.globuscs.info/api/manifest/'
-           f'{data["manifest_to_funcx_tasks_manifest_id"]}/remote_file_manifest/')
+           f'{data["manifest_id"]}/remote_file_manifest/')
     response = requests.get(url).json()
     paths = [m['url'] for m in response['remote_file_manifest']]
 
@@ -39,72 +30,57 @@ def manifest_to_reprocessing_task(data):
         hdf = hdf[0] if hdf else 'No HDF File Present'
         imm = [p for p in pl_data if p.endswith('.imm') or p.endswith('.bin')]
         imm = imm[0] if imm else 'No IMM File Present'
+        proc_dir = os.path.join(urlparse(data['manifest_destination']).path, dp)
+
         payload = {
-            'proc_dir': urlparse(data['manifest_destination']).path,
+            'proc_dir': proc_dir,
             'corr_loc': data['corr_loc'],
-            'hdf_file': hdf,
-            'imm_file': imm,
-            'flat_file': data['flat_file'],
+            'hdf_file': os.path.join(proc_dir, os.path.basename(hdf)),
+            'imm_file': os.path.join(proc_dir, os.path.basename(imm)),
+            'qmap_file': os.path.join(proc_dir, data['qmap_file']),
+            'flat_file': os.path.join(proc_dir, data['flat_file']),
         }
         task_payloads.append(payload)
     return task_payloads
 
-    # # if data.get('manifest_to_funcx_tasks_use_dirs') is True:
-    # #     paths = list({os.path.dirname(p) for p in paths})
-    # tasks = []
-    # for path in paths:
-    #     task = dict(
-    #         endpoint=data['manifest_to_funcx_tasks_funcx_endpoint_compute'],
-    #         func=data['manifest_to_funcx_tasks_callback_funcx_id'],
-    #     )
-    #     # 'proc_dir': '/lus/theta-fs0/projects/APSDataAnalysis/nick/xpcs',
-    #     # 'corr_loc': '/lus/theta-fs0/projects/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
-    #     # 'hdf_file': 'A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
-    #     # 'imm_file': 'A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm',
-    #     # 'flags': '',
-    #     # 'qmap_file': 'sanat201903_qmap_S270_D54_lin.h5',
-    #     # 'flat_file': 'Flatfiel_AsKa_Th5p5keV.hdf',
-    #     purl = urlparse(path)
-    #     task['payload'] = data.get('manifest_to_funcx_tasks_payload', {})
-    #     task['payload']['protocol'] = purl.scheme
-    #     task['payload']['host'] = purl.netloc
-    #     task['payload']['path'] = purl.path
-    #
-    #     tasks.append(task)
-    # return {'tasks': tasks}
 
 def mock_task(data):
-    return 'it worked!'
+    return data
 
 
-def to_fx_payloads(data):
-    return {'tasks': [{
-                'endpoint': data['funcx_endpoint'],
-                'func': data['funcx_id'],
+def list_to_fx_tasks(data):
+    funcx_state_input = {}
+    for state in data['states']:
+        funcx_state_input[state['name']] = {
+            'tasks': [{
+                'endpoint': state['funcx_endpoint'],
+                'func': state['funcx_id'],
                 'payload': pl
-        }] for pl in data['payloads']}
+            }] for pl in data['payloads']
+        }
+    return funcx_state_input
 
 
 class XPCSManifestTool(GladierDefaults):
     flow_definition = {
         'Comment': 'XPCS Reprocessing Flow',
-        'StartAt': 'GetReprocessingPayloads',
+        'StartAt': 'ManifestTransfer',
         'States': {
-            # 'ManifestTransfer': {
-            #     'Comment': 'Transfer the contents of a manifest. Manifests MUST conform to '
-            #                'dir/filename spec and contain hdf/imm files.',
-            #     'Type': 'Action',
-            #     'ActionUrl': 'https://develop.concierge.nick.globuscs.info/api/automate/transfer',
-            #     'ActionScope': 'https://auth.globus.org/scopes/524361f2-e4a9-4bd0-a3a6-03e365cac8a9/concierge',
-            #     'Parameters': {
-            #         'manifest_id.$': '$.input.manifest_id',
-            #         'destination.$': '$.input.manifest_destination',
-            #     },
-            #     'ResultPath': '$.ManifestTransfer',
-            #     'WaitTime': 300,
-            #     'Next': 'CreateFuncXTasks',
-            # },
-            'GetReprocessingPayloads': {
+            'ManifestTransfer': {
+                'Comment': 'Transfer the contents of a manifest. Manifests MUST conform to '
+                           'dir/filename spec and contain hdf/imm files.',
+                'Type': 'Action',
+                'ActionUrl': 'https://develop.concierge.nick.globuscs.info/api/automate/transfer',
+                'ActionScope': 'https://auth.globus.org/scopes/524361f2-e4a9-4bd0-a3a6-03e365cac8a9/concierge',
+                'Parameters': {
+                    'manifest_id.$': '$.input.manifest_id',
+                    'destination.$': '$.input.manifest_destination',
+                },
+                'ResultPath': '$.ManifestTransfer',
+                'WaitTime': 300,
+                'Next': 'ManifestToList',
+            },
+            'ManifestToList': {
                 'Comment': 'Fetch a manifest, extract a list of files to process, and create a list of '
                            'fx payloads',
                 'Type': 'Action',
@@ -113,18 +89,17 @@ class XPCSManifestTool(GladierDefaults):
                 'Parameters': {
                     'tasks': [{
                         'endpoint.$': '$.input.funcx_endpoint_non_compute',
-                        # 'func.$': '$.input.manifest_to_reprocessing_task_funcx_id',
-                        'func.$': '$.input.manifest_to_reprocessing_task_funcx_id',
+                        'func.$': '$.input.manifest_to_payload_list_funcx_id',
                         'payload.$': '$.input'
                     }]
                 },
-                'ResultPath': '$.ReprocessingPayloads',
+                'ResultPath': '$.ManifestToListResult',
                 # "ResultPath": "$.result",
                 'WaitTime': 300,
                 # 'End': True,
-                'Next': 'ApplyQmapPayloads',
+                'Next': 'ListToFuncXStateTasks',
             },
-            'ApplyQmapPayloads': {
+            'ListToFuncXStateTasks': {
                 'Comment': 'Build Qmap Payloads',
                 'Type': 'Action',
                 'ActionUrl': 'https://api.funcx.org/automate',
@@ -132,108 +107,58 @@ class XPCSManifestTool(GladierDefaults):
                 'Parameters': {
                     'tasks': [{
                         'endpoint.$': '$.input.funcx_endpoint_non_compute',
-                        'func.$': '$.input.to_fx_payloads_funcx_id',
+                        'func.$': '$.input.list_to_fx_tasks_funcx_id',
                         'payload': {
-                            'funcx_endpoint.$': '$.input.funcx_endpoint_non_compute',
-                            'funcx_id.$': '$.input.mock_task_funcx_id',
-                            # 'funcx_id.$': '$.input.apply_qmap_funcx_id',
-                            'payloads.$': '$.ReprocessingPayloads.details.result'
+                            'states': [
+                                {
+                                    'name': 'ApplyQmaps',
+                                    'funcx_endpoint.$': '$.input.funcx_endpoint_compute',
+                                    'funcx_id.$': '$.input.apply_qmap_funcx_id',
+                                },
+                                {
+                                    'name': 'Corr',
+                                    'funcx_endpoint.$': '$.input.funcx_endpoint_compute',
+                                    'funcx_id.$': '$.input.eigen_corr_funcx_id',
+                                },
+                                {
+                                    'name': 'MakeCorrPlots',
+                                    'funcx_endpoint.$': '$.input.funcx_endpoint_compute',
+                                    'funcx_id.$': '$.input.make_corr_plots_funcx_id',
+                                }
+                            ],
+                            'payloads.$': '$.ManifestToListResult.details.result'
                         }
                     }]
                 },
-                'ResultPath': '$.ApplyQmapPayloads',
+                'ResultPath': '$.FuncXStateTasks',
                 'WaitTime': 300,
-                'Next': 'CorrPayloads',
-            },
-            'CorrPayloads': {
-                'Comment': 'Fetch a manifest, extract a list of files to process, and create a list of '
-                           'fx payloads',
-                'Type': 'Action',
-                'ActionUrl': 'https://api.funcx.org/automate',
-                'ActionScope': 'https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/automate2',
-                'Parameters': {
-                    'tasks': [{
-                        'endpoint.$': '$.input.funcx_endpoint_non_compute',
-                        'func.$': '$.input.to_fx_payloads_funcx_id',
-                        'payload': {
-                            'funcx_endpoint.$': '$.input.funcx_endpoint_non_compute',
-                            'funcx_id.$': '$.input.mock_task_funcx_id',
-                            # 'funcx_id.$': '$.input.eigen_corr_funcx_id',
-                            'payloads.$': '$.ReprocessingPayloads.details.result'
-                        }
-                    }]
-                },
-                'ResultPath': '$.CorrPayloads',
-                'WaitTime': 300,
-                'Next': 'MakeCorrPlotsPayload',
-            },
-            'MakeCorrPlotsPayload': {
-                'Comment': 'Fetch a manifest, extract a list of files to process, and create a list of '
-                           'fx payloads',
-                'Type': 'Action',
-                'ActionUrl': 'https://api.funcx.org/automate',
-                'ActionScope': 'https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/automate2',
-                'Parameters': {
-                    'tasks': [{
-                        'endpoint.$': '$.input.funcx_endpoint_non_compute',
-                        'func.$': '$.input.to_fx_payloads_funcx_id',
-                        'payload': {
-                            'funcx_endpoint.$': '$.input.funcx_endpoint_non_compute',
-                            'funcx_id.$': '$.input.mock_task_funcx_id',
-                            # 'funcx_id.$': '$.input.make_corr_plots_funcx_id',
-                            'payloads.$': '$.ReprocessingPayloads.details.result'
-                        }
-                    }]
-                },
-                'ResultPath': '$.MakeCorrPlotsPayload',
-                'WaitTime': 300,
-                'Next': 'CustomPilotPayloads',
-            },
-            'CustomPilotPayloads': {
-                'Comment': 'Fetch a manifest, extract a list of files to process, and create a list of '
-                           'fx payloads',
-                'Type': 'Action',
-                'ActionUrl': 'https://api.funcx.org/automate',
-                'ActionScope': 'https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/automate2',
-                'Parameters': {
-                    'tasks': [{
-                        'endpoint.$': '$.input.funcx_endpoint_non_compute',
-                        'func.$': '$.input.to_fx_payloads_funcx_id',
-                        'payload': {
-                            'funcx_endpoint.$': '$.input.funcx_endpoint_non_compute',
-                            'funcx_id.$': '$.input.mock_task_funcx_id',
-                            # 'funcx_id.$': '$.input.custom_pilot_funcx_id',
-                            'payloads.$': '$.ReprocessingPayloads.details.result'
-                        }
-                    }]
-                },
-                'ResultPath': '$.CustomPilotPayloads',
-                'WaitTime': 300,
-                # 'Next': 'Corr',
-                'End': True,
+                'Next': 'ApplyQmaps',
+                # 'End': True
             },
 
-            'Corr': {
-                'Comment': 'Run CORR on the previously defined payload',
-                'Type': 'Action',
-                'ActionUrl': 'https://api.funcx.org/automate',
-                'ActionScope': 'https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/automate2',
-                # Fetch the input generated by the previous task
-                'InputPath': '$.CorrPayloads.details.result',
-                'ResultPath': '$.CorrResultsOutput',
-                'WaitTime': 300,
-                'End': True,
-            },
             'ApplyQmaps': {
                 'Comment': 'Run CORR on the previously defined payload',
                 'Type': 'Action',
                 'ActionUrl': 'https://api.funcx.org/automate',
                 'ActionScope': 'https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/automate2',
                 # Fetch the input generated by the previous task
-                'InputPath': '$.ApplyQmapPayloads.details.result',
+                'InputPath': '$.FuncXStateTasks.details.result.ApplyQmaps',
                 'ResultPath': '$.ApplyQmapOutput',
                 'WaitTime': 300,
-                'End': True,
+                'Next': 'Corr',
+                # 'End': True,
+            },
+            'Corr': {
+                'Comment': 'Run CORR on the previously defined payload',
+                'Type': 'Action',
+                'ActionUrl': 'https://api.funcx.org/automate',
+                'ActionScope': 'https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/automate2',
+                # Fetch the input generated by the previous task
+                'InputPath': '$.FuncXStateTasks.details.result.Corr',
+                'ResultPath': '$.CorrResultsOutput',
+                # 'WaitTime': 600,
+                'Next': 'MakeCorrPlots',
+                # 'End': True,
             },
             'MakeCorrPlots': {
                 'Comment': 'Run CORR on the previously defined payload',
@@ -241,10 +166,11 @@ class XPCSManifestTool(GladierDefaults):
                 'ActionUrl': 'https://api.funcx.org/automate',
                 'ActionScope': 'https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/automate2',
                 # Fetch the input generated by the previous task
-                'InputPath': '$.MakeCorrPlotsPayload.details.result',
+                'InputPath': '$.FuncXStateTasks.details.result.MakeCorrPlots',
                 'ResultPath': '$.MakeCorrPlotsOutput',
-                'WaitTime': 300,
-                'End': True,
+                # 'WaitTime': 600,
+                # 'End': True,
+                'Next': 'CustomPilot'
             },
             'CustomPilot': {
                 'Comment': 'Run CORR on the previously defined payload',
@@ -262,27 +188,16 @@ class XPCSManifestTool(GladierDefaults):
     }
 
     required_input = [
+        'manifest_id',
+        'manifest_destination',
+        'funcx_endpoint_compute',
         'funcx_endpoint_non_compute',
-        'manifest_to_funcx_tasks_manifest_id',
-
-        'manifest_to_funcx_tasks_funcx_endpoint_compute',
-        'manifest_to_funcx_tasks_callback_funcx_id'
     ]
 
-    flow_input = {
-        # Contains tutorial files on /share/godata/ for Globus Tutorial Endpoint 1
-        'manifest_id': '80cae0bb-fe9c-4f91-ac03-93e1ac550b7e',
-        # By default, this will transfer an hdf and imm pair
-        'manifest_destination': 'globus://08925f04-569f-11e7-bef8-22000b9a448b/projects/APSDataAnalysis/Automate/reprocessing/',
-        # Contains tutorial files on /share/godata/ for Globus Tutorial Endpoint 1
-        'manifest_to_funcx_tasks_manifest_id': '80cae0bb-fe9c-4f91-ac03-93e1ac550b7e',
-        'manifest_to_funcx_tasks_funcx_endpoint_compute': '4b116d3c-1703-4f8f-9f6f-39921e5864df',
-        'manifest_to_funcx_tasks_callback_funcx_id': None,
-
-    }
+    flow_input = {}
 
     funcx_functions = [
-        manifest_to_reprocessing_task,
-        to_fx_payloads,
+        manifest_to_payload_list,
+        list_to_fx_tasks,
         mock_task,
     ]
