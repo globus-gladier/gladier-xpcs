@@ -36,6 +36,7 @@ if __name__ == '__main__':
             'flags': '',
             'qmap_file': 'sanat201903_qmap_S270_D54_lin.h5',
             'flat_file': 'Flatfiel_AsKa_Th5p5keV.hdf',
+            'reprocessing_suffix': '_nick_reprocessing_test',
 
             # Execution Environment (For Nick only).
             'funcx_endpoint_non_compute': '0a162a09-8bd9-4dd9-b046-0bfd635d38a7',
