@@ -52,12 +52,14 @@ def mock_task(data):
 def list_to_fx_tasks(data):
     funcx_state_input = {}
     for state in data['states']:
-        funcx_state_input[state['name']] = {
-            'tasks': [{
+        tasks = [{
                 'endpoint': state['funcx_endpoint'],
                 'func': state['funcx_id'],
                 'payload': pl
-            }] for pl in data['payloads']
+            } for pl in data['payloads']]
+
+        funcx_state_input[state['name']] = {
+            'tasks': tasks
         }
     return funcx_state_input
 
