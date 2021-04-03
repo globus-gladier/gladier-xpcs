@@ -25,13 +25,43 @@ def manifest_to_payload_list(data):
     dataset_paths = {os.path.dirname(p) for p in paths}
     task_payloads = []
     for dp in dataset_paths:
-        pl_data = [p for p in paths if p.startswith(dp)]
-        hdf = [p for p in pl_data if p.endswith('.hdf')]
-        # Purposely don't raise. This will cause corr to fail with data on which task was bad
-        hdf = hdf[0] if hdf else 'No HDF File Present'
-        imm = [p for p in pl_data if p.endswith('.imm') or p.endswith('.bin')]
-        imm = imm[0] if imm else 'No IMM File Present'
         proc_dir = os.path.join(urlparse(data['manifest_destination']).path, dp)
+
+        pl_data = [p for p in paths if p.startswith(dp)]
+        hdfs = [os.path.join(proc_dir, os.path.basename(p))
+                for p in pl_data if p.endswith('.hdf')]
+        hdfs = [h for h in hdfs if os.path.exists(h)]
+        if not hdfs:
+            continue
+        # Purposely don't raise. This will cause corr to fail with data on which task was bad
+        hdf = hdfs[0]
+        imms = [os.path.join(proc_dir, os.path.basename(p))
+               for p in pl_data if p.endswith('.imm') or p.endswith('.bin')]
+        if not imms:
+            continue
+        imm = imms[0]
+
+        # There's a nasty assumption we always make with datasets where the dirname will match
+        # the filename. This isn't always the case with reprocessing, so this ugly block will
+        # enforce that.
+        try:
+            hdf_fname, hdf_ext = os.path.splitext(os.path.basename(hdf))
+            proc_dir_fname = os.path.basename(proc_dir)
+            if hdf_fname != proc_dir_fname:
+                new_hdf_fname = os.path.join(proc_dir, f'{proc_dir_fname}{hdf_ext}')
+                if os.path.exists(new_hdf_fname):
+                    os.unlink(new_hdf_fname)
+                os.rename(hdf, new_hdf_fname)
+                hdf = new_hdf_fname
+
+            if not os.path.exists(hdf):
+                raise Exception(f'No hdf file: {hdf}')
+            if not os.path.exists(imm):
+                raise Exception(f'No imm file: {imm}')
+        except Exception as e:
+            with open(os.path.join(proc_dir, 'path_errors.log'), 'w+') as f:
+                f.write(str(e))
+            continue
 
         payload = {
             'proc_dir': proc_dir,
