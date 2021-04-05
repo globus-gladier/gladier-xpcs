@@ -1,6 +1,10 @@
 import os
 from setuptools import setup, find_packages
 
+# single source of truth for package version
+version_ns = {}
+with open(os.path.join('xpcs_client', 'version.py')) as f:
+    exec(f.read(), version_ns)
 
 install_requires = []
 with open('requirements.txt') as reqs:
@@ -16,7 +20,7 @@ setup(
     url='https://github.com/globus-gladier/xpcs_client',
     maintainer='The Gladier Team',
     maintainer_email='',
-    version='0.0.1',
+    version=version_ns,
     packages=find_packages(),
     install_requires=install_requires,
     dependency_links=[],

@@ -1,2 +1,2 @@
-gladier
-gladier-tools
+gladier==0.0.1
+gladier-tools==0.0.1
