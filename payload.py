@@ -6,12 +6,12 @@ data = {
         "proc_dir": '/lus/theta-fs0/projects/APSDataAnalysis/Braid/test_xpcs',
         "corr_loc": '/lus/theta-fs0/projects/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
         #Eigen specific variables
-        "hdf": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf",
-        "imm": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm",
+        "hdf_file": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf",
+        "imm_file": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm",
         "flags": '',
         # QMap data
-        "qmap": "sanat201903_qmap_S270_D54_lin.h5",
-        "flatfield": "Flatfiel_AsKa_Th5p5keV.hdf",
-        "output": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf".replace('.hdf', '_qmap.hdf')
+        "qmap_file": "sanat201903_qmap_S270_D54_lin.h5",
+        "flat_file": "Flatfiel_AsKa_Th5p5keV.hdf",
+        "output_file": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf".replace('.hdf', '_qmap.hdf')
         }
     }
