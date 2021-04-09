@@ -1,2 +1,2 @@
-gladier
-gladier-tools
+gladier>=0.0.1,<0.1.0
+gladier-tools>=0.0.1,<0.1.0
