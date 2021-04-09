@@ -11,9 +11,9 @@ with open('requirements.txt') as reqs:
         install_requires.append(req)
 
 setup(
-    name='xpcs-client',
-    description='The XPCS Gladier flow',
-    url='https://github.com/globus-gladier/xpcs_client',
+    name='gladier_xpcs',
+    description='The XPCS Gladier',
+    url='https://github.com/globus-gladier/gladier_xpcs',
     maintainer='The Gladier Team',
     maintainer_email='',
     version='0.0.1',
