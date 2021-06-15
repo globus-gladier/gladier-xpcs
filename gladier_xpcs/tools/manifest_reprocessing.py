@@ -1,4 +1,12 @@
-from gladier.defaults import GladierDefaults
+from gladier import GladierBaseTool, generate_flow_definition
+
+@generate_flow_definition
+class ManifestReprocess(GladierBaseTool):
+
+    funcx_functions = [
+        manifest_to_payload_list
+    ]
+
 
 
 def manifest_to_payload_list(data):
