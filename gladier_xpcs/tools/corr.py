@@ -1,7 +1,10 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
-@generate_flow_definition
+@generate_flow_definition(modifiers={
+    eigen_corr: {'WaitTime': 600}
+})
 class EigenCorr(GladierBaseTool):
+
     required_input = [
         'proc_dir',
         'imm_file',
@@ -9,6 +12,7 @@ class EigenCorr(GladierBaseTool):
         'flags',
         'flat_file',
         'corr_loc',
+        'funcx_endpoint_compute',
     ]
 
     funcx_functions = [

@@ -1,7 +1,13 @@
+#!/usr/bin/env python 
+
+# Import Gladier base
 from gladier import GladierBaseClient, generate_flow_definition
-# This is a HACK to enable glaider logging
+# Enable Gladier Logging
 import gladier.tests
+
 from pprint import pprint
+
+
 
 
 @generate_flow_definition(modifiers={
@@ -41,8 +47,8 @@ from pprint import pprint
 })
 class XPCSReprocessing(GladierBaseClient):
     gladier_tools = [
-        'gladier_xpcs.tools.reprocessing.manifest_transfer.ManifestTransfer',
-        'gladier_xpcs.tools.reprocessing.transfer_qmap.TransferQmap',
+        # 'gladier_xpcs.tools.reprocessing.manifest_transfer.ManifestTransfer',
+        # 'gladier_xpcs.tools.reprocessing.transfer_qmap.TransferQmap',
         'gladier_xpcs.tools.reprocessing.manifest_to_list.ManifestToList',
         'gladier_xpcs.tools.reprocessing.manifest_list_to_state_tasks.ManifestListToStateTasks',
         'gladier_xpcs.tools.reprocessing.apply_qmap.ApplyQmap',
@@ -50,6 +56,21 @@ class XPCSReprocessing(GladierBaseClient):
         'gladier_xpcs.tools.reprocessing.plot.MakeCorrPlots',
         'gladier_xpcs.tools.reprocessing.custom_pilot.CustomPilot',
     ]
+
+
+##This is a patch to continue using funcx 0.0.3 until the new AP comes online.
+def register_container():
+    ##hacking over container for XPCS
+    from funcx.sdk.client import FuncXClient
+    fxc = FuncXClient()
+    from gladier_xpcs.tools.corr import eigen_corr
+    ##Move this to an XPCS common Folder
+    cont_dir =  '/home/rvescovi/.funcx/containers/'
+    container_name = "eigen_v1.simg"
+    eigen_cont_id = fxc.register_container(location=cont_dir+'/'+container_name,container_type='singularity')
+    eigen_corr_cont_id = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
+    return eigen_corr_cont_id
+    ##
 
 
 if __name__ == '__main__':
@@ -97,3 +118,4 @@ if __name__ == '__main__':
 
     re_cli.progress(action_id)
     pprint(re_cli.get_status(action_id))
+

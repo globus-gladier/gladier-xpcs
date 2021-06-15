@@ -1,5 +1,19 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
+@generate_flow_definition(modifiers={
+    apply_qmap: {'endpoint': 'funcx_endpoint_non_compute'}
+})
+class ApplyQmap(GladierBaseTool):
+
+    required_input = [
+        # 'proc_dir',
+        # 'qmap_file',
+        # 'flat_file',
+    ]
+
+    funcx_functions = [
+        apply_qmap
+    ]
 
 def apply_qmap(data):
     import math
@@ -197,42 +211,3 @@ def apply_qmap(data):
     os.unlink(orig_filename)
 
     return output_filename
-
-
-@generate_flow_definition(modifiers={
-    apply_qmap: {'endpoint': 'funcx_endpoint_non_compute'}
-})
-class ApplyQmap(GladierBaseTool):
-
-    # flow_definition = {
-    #   'Comment': 'Update an HDF with a new qmap settings file',
-    #   'StartAt': 'ApplyQmap',
-    #   'States': {
-    #     'ApplyQmap': {
-    #       'Comment': 'Apply Qmap',
-    #       'Type': 'Action',
-    #       'ActionUrl': 'https://api.funcx.org/automate',
-    #       'ActionScope': 'https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all',
-    #       'Parameters': {
-    #           'tasks': [{
-    #                 'endpoint.$': '$.input.funcx_endpoint_compute',
-    #                 'func.$': '$.input.apply_qmap_funcx_id',
-    #                 'payload.$': '$.input',
-    #             }]
-    #       },
-    #       'ResultPath': '$.result',
-    #       'WaitTime': 600,
-    #       'End': True
-    #     }
-    #   }
-    # }
-
-    required_input = [
-        # 'proc_dir',
-        # 'qmap_file',
-        # 'flat_file',
-    ]
-
-    funcx_functions = [
-        apply_qmap
-    ]

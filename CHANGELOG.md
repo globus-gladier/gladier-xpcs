@@ -11,3 +11,13 @@ see the list of commits from the last version or use `git log`.
 - Initial Release!
 - This allows for very basic reprocessing using Manifests. This is the first live
 Reprocessing flow third party users can invoke from petreldata.net.
+
+### 0.0.2
+
+### 0.0.3
+
+### 0.0.4 - Jun 6, 2021
+
+- Added README.md on several folder
+- Fixed reprocessing PR
+- Added scripts as command-line scripts

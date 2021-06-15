@@ -1,6 +1,8 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
-@generate_flow_definition
+@generate_flow_definition(modifiers={
+    custom_pilot: {'endpoint': 'funcx_endpoint_non_compute'}
+})
 class CustomPilot(GladierBaseTool):
 
     flow_input = {

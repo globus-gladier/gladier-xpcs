@@ -1,5 +1,24 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
+@generate_flow_definition(modifiers={
+    eigen_corr: {'WaitTime': 600}
+})
+class EigenCorr(GladierBaseTool):
+    
+    required_input = [
+        'proc_dir',
+        'imm_file',
+        'hdf_file',
+        'flags',
+        'flat_file',
+        'corr_loc',
+        'funcx_endpoint_compute',
+    ]
+
+    funcx_functions = [
+        eigen_corr
+    ]
+
     
 def eigen_corr(event):
     import os
@@ -49,46 +68,3 @@ def eigen_corr(event):
                 f.write(res.stderr.decode('utf-8'))
     
     return str(res.stdout)
-
-
-@generate_flow_definition(modifiers={
-    eigen_corr: {'WaitTime': 600}
-})
-class EigenCorr(GladierBaseTool):
-
-    # flow_definition = {
-    #   'Comment': 'Run Corr on an HDF IMM Pair',
-    #   'StartAt': 'Eigen Corr',
-    #   'States': {
-    #     'Eigen Corr': {
-    #       'Comment': 'Eigen Corr',
-    #       'Type': 'Action',
-    #       'ActionUrl': 'https://api.funcx.org/automate',
-    #       'ActionScope': 'https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/all',
-    #       'Parameters': {
-    #           'tasks': [{
-    #             'endpoint.$': '$.input.funcx_endpoint_compute',
-    #             'func.$': '$.input.eigen_corr_funcx_id',
-    #             'payload.$': '$.input',
-    #         }]
-    #       },
-    #       'ResultPath': '$.result',
-    #       'WaitTime': 600,
-    #       'End': True
-    #     }
-    #   }
-    # }
-
-    required_input = [
-        'proc_dir',
-        'imm_file',
-        'hdf_file',
-        'flags',
-        'flat_file',
-        'corr_loc',
-        'funcx_endpoint_compute',
-    ]
-
-    funcx_functions = [
-        eigen_corr
-    ]

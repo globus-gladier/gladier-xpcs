@@ -4,9 +4,25 @@ XPCS Gladier for running the XPCS Reprocessing Flow.
 
 ## Installation
 
-    python setup.py install
-    
-## Running 
+### Main Package
+
+    git clone https://github.com/globus-gladier/gladier-xpcs.git
+    cd gladier-xpcs
+    python setup.py develop
+
+### FuncX Endpoints
+
+### Globus Endpoints
+
+## Running
+
+### Corr Script
+
+After that, simply run the following:
+
+    python xpcs_client/scripts/reprocessing.py
+
+### Reprocessing Script
 
 Check the reprocessing.py file and add the following to `flow_input`:
 
@@ -18,9 +34,7 @@ Check the reprocessing.py file and add the following to `flow_input`:
     # Your personal FuncX login/theta endpoints
     'funcx_endpoint_non_compute': '6c4323f4-a062-4551-a883-146a352a43f5',
     'funcx_endpoint_compute': '9f84f41e-dfb6-4633-97be-b46901e9384c',
-    
+
 After that, simply run the following:
 
-    python xpcs_client/reprocessing.py
-    
- 
+    python xpcs_client/scripts/reprocessing.py

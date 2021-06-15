@@ -1,78 +1,33 @@
-from gladier.client import GladierClient
-from payload import * 
+#!/usr/bin/env python 
 
+# Import Gladier base
+from gladier import GladierBaseClient, generate_flow_definition
+# Enable Gladier Logging
+import gladier.tests
 
+from pprint import pprint
 
-from gladier_xpcs.flows.eigen_flow import corr_basic_flow_definition
-
-class XPCS_Client(GladierClient):
+@generate_flow_definition
+class XPCS_Client(GladierBaseClient):
     gladier_tools = [
-        'gladier_tools.xpcs.EigenCorr',
-        'gladier_tools.xpcs.ApplyQmap',
+        'gladier_xpcs.tools.EigenCorr',
+        'gladier_xpcs.tools.ApplyQmap',
+        'gladier_xpcs.tools.reprocessing.plot.MakeCorrPlots',
+        'gladier_xpcs.tools.reprocessing.custom_pilot.CustomPilot',
     ]
-    flow_definition = corr_basic_flow_definition
 
-def XPCSLogic(event_file):
-
-    new_file = os.path.basename(event_file)
-
-    cbf_pattern = r'(\w+_\d+_)(\d+).cbf'
-    cbf_parse = re.match(cbf_pattern, new_file)
-
-    ##check if extra_args
-    extra_folder = event_file.replace(local_dir,'')
-    extra_folder = extra_folder.replace(new_file,'')
-    extra_folder = extra_folder.replace('/','')
-
-    ##processing dirs
-    data_dir = os.path.join(base_input["input"]["base_data_dir"], extra_folder)
-    base_input["input"]["local_dir"] = os.path.join(base_input["input"]["base_local_dir"], extra_folder)
-    base_input["input"]["data_dir"] = data_dir
-    base_input["input"]["proc_dir"] = data_dir + '_proc'
-    base_input["input"]["upload_dir"] = data_dir + '_images' 
-
-    if cbf_parse is not None:
-        cbf_base =cbf_parse.group(1)
-        cbf_num =int(cbf_parse.group(2))
-
-        n_batch_transfer = 64
-        n_batch_plot = 1024
-        
-        range_delta = n_batch_transfer
-
-        if cbf_num%n_batch_transfer==0:
-            subranges = create_ranges(cbf_num-n_batch_transfer, cbf_num, range_delta)
-            new_range = subranges[0]
-            print('Transfer+Stills Flow')
-            base_input["input"]["input_files"]=f"{cbf_base}{new_range}.cbf"
-            base_input["input"]["input_range"]=new_range[1:-1]
-            base_input["input"]["trigger_name"]= os.path.join(
-                base_input["input"]["data_dir"], new_file
-            )
-            flow_input = base_input
-            #print("  Range : " + base_input["input"]["input_range"])
-            #print(flow_input)
-            workshop_flow = kanzus_workshop_client.start_flow(flow_input=flow_input)
-            print("  Trigger : " + base_input["input"]["trigger_name"])
-            print("  Range : " + base_input["input"]["input_range"])
-            print("  UUID : " + workshop_flow['action_id'])
-            print('')
-
-        if cbf_num%n_batch_plot==0:
-            print('Plot Flow')
-            print("  UUID : " + workshop_flow['action_id'])
-            print('')
-
+##This is a patch to continue using funcx 0.0.3 until the new AP comes online.
 def register_container():
-    ##hacking over container
+    ##hacking over container for XPCS
     from funcx.sdk.client import FuncXClient
     fxc = FuncXClient()
-    from gladier_kanzus.tools.dials_stills import funcx_stills_process as stills_cont
+    from gladier_xpcs.tools.corr import eigen_corr
+    ##Move this to an XPCS common Folder
     cont_dir =  '/home/rvescovi/.funcx/containers/'
-    container_name = "dials_v1.simg"
-    dials_cont_id = fxc.register_container(location=cont_dir+'/'+container_name,container_type='singularity')
-    stills_cont_fxid = fxc.register_function(stills_cont, container_uuid=dials_cont_id)
-    return stills_cont_fxid
+    container_name = "eigen_v1.simg"
+    eigen_cont_id = fxc.register_container(location=cont_dir+'/'+container_name,container_type='singularity')
+    eigen_corr_cont_id = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
+    return eigen_corr_cont_id
     ##
 
 def arg_parse():
@@ -94,10 +49,9 @@ def arg_parse():
     #                 action='store_true')
     args = parser.parse_args()
 
-def create_funcx_payload(self, hdf_pathname, imm_pathname, options=None):
+def create_payload(self, hdf_pathname, imm_pathname, options=None):
 
-    options = options or self.FLOW_DEFAULTS
-    # Get source pathnames
+    options = options 
     hdf_name = os.path.basename(hdf_pathname)
     imm_name = os.path.basename(imm_pathname)
 
@@ -187,25 +141,10 @@ if __name__ == '__main__':
         }
     }
 
-    flow_input = xpcs.create_flow_input(pathnames=pathnames, flow_options=flow_options)
-
+    payload = create_payload(pathnames=pathnames, flow_options=flow_options)
 
 
     corr_cli = XPCS_Client()
-    corr_flow = corr_cli.run_flow(flow_input=data)
+    corr_flow = corr_cli.run_flow(flow_input=payload)
     corr_cli.check_flow(corr_flow['action_id'])
-
-
-
-
-    
-
-    
-
-
-
-    kanzus_workshop_client = KanzusSSXGladier()
-
-    exp = KanzusTriggers(local_dir)
-    exp.run()
 

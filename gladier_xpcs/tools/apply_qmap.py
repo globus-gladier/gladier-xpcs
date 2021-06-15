@@ -1,6 +1,8 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
-@generate_flow_definition
+@generate_flow_definition(modifiers={
+    apply_qmap: {'endpoint': 'funcx_endpoint_non_compute'}
+})
 class ApplyQmap(GladierBaseTool):
     required_input = [
         'proc_dir',
