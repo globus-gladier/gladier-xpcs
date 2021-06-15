@@ -18,7 +18,7 @@ with open('requirements.txt') as reqs:
 setup(
     name='gladier_xpcs',
     description='The XPCS Gladier',
-    url='https://github.com/globus-gladier/gladier_xpcs',
+    url='https://github.com/globus-gladier/gladier-xpcs',
     maintainer='The Gladier Team',
     maintainer_email='',
     version=version,

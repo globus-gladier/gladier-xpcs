@@ -1,27 +1,16 @@
 from gladier.client import GladierClient
-# This is a HACK to enable glaider logging
-import gladier.tests
-from pprint import pprint
 
+from gladier_xpcs.flows.reprocess import reprocess_flow
 
 class XPCSReprocessing(GladierClient):
-    client_id = 'e6c75d97-532a-4c88-b031-8584a319fa3e'
     gladier_tools = [
-        # 'gladier_tools.manifest.tools.ManifestTransfer',
-        # 'gladier_tools.manifest.tools.ManifestToFuncXTasks',
-        'xpcs_client.manifest_reprocessing.XPCSManifestTool',
-        'gladier_tools.xpcs.ApplyQmap',
-        'gladier_tools.xpcs.EigenCorr',
-        'gladier_tools.xpcs.MakeCorrPlots',
-        'gladier_tools.xpcs.CustomPilot',
+        'xpcs_client.tools.ManifestReprocess',
+        'xpcs_client.tools.ApplyQmap',
+        'xpcs_client.tools.EigenCorr',
+        'xpcs_client.tools.MakeCorrPlots',
+        'xpcs_client.tools.CustomPilot',
     ]
-
-    flow_definition = 'xpcs_client.manifest_reprocessing.XPCSManifestTool'
-    # flow_definition = 'gladier_tools.xpcs.ApplyQmap'
-    # flow_definition = 'gladier_tools.xpcs.EigenCorr'
-    # flow_definition = 'gladier_tools.xpcs.MakeCorrPlots'
-    # Warning: Renames dataset to "mydataset_qmap"!
-    # flow_definition = 'gladier_tools.xpcs.CustomPilot'
+    flow_definition = reprocess_flow
 
 
 if __name__ == '__main__':
@@ -51,8 +40,8 @@ if __name__ == '__main__':
             'imm_file': 'A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm',
         }
     }
+
     re_cli = XPCSReprocessing()
-    # pprint(re_cli.get_input())
     corr_flow = re_cli.start_flow(flow_input=flow_input)
     re_cli.progress(corr_flow['action_id'])
     pprint(re_cli.get_status(corr_flow['action_id']))
