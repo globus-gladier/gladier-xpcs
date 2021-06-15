@@ -41,14 +41,14 @@ from pprint import pprint
 })
 class XPCSReprocessing(GladierBaseClient):
     gladier_tools = [
-        # 'xpcs_client.tools.reprocessing.manifest_transfer.ManifestTransfer',
-        # 'xpcs_client.tools.reprocessing.transfer_qmap.TransferQmap',
-        'xpcs_client.tools.reprocessing.manifest_to_list.ManifestToList',
-        'xpcs_client.tools.reprocessing.manifest_list_to_state_tasks.ManifestListToStateTasks',
-        'xpcs_client.tools.reprocessing.apply_qmap.ApplyQmap',
-        'xpcs_client.tools.reprocessing.corr.EigenCorr',
-        'xpcs_client.tools.reprocessing.plot.MakeCorrPlots',
-        'xpcs_client.tools.reprocessing.custom_pilot.CustomPilot',
+        'gladier_xpcs.tools.reprocessing.manifest_transfer.ManifestTransfer',
+        'gladier_xpcs.tools.reprocessing.transfer_qmap.TransferQmap',
+        'gladier_xpcs.tools.reprocessing.manifest_to_list.ManifestToList',
+        'gladier_xpcs.tools.reprocessing.manifest_list_to_state_tasks.ManifestListToStateTasks',
+        'gladier_xpcs.tools.reprocessing.apply_qmap.ApplyQmap',
+        'gladier_xpcs.tools.reprocessing.corr.EigenCorr',
+        'gladier_xpcs.tools.reprocessing.plot.MakeCorrPlots',
+        'gladier_xpcs.tools.reprocessing.custom_pilot.CustomPilot',
     ]
 
 
@@ -97,4 +97,3 @@ if __name__ == '__main__':
 
     re_cli.progress(action_id)
     pprint(re_cli.get_status(action_id))
-
