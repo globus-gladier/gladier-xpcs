@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 from glob import glob 
 # single source of truth for package version
 version_ns = {}
-with open(os.path.join('xpcs_client', 'version.py')) as f:
+with open(os.path.join('gladier_xpcs', 'version.py')) as f:
     exec(f.read(), version_ns)
 version = version_ns['__version__']
 

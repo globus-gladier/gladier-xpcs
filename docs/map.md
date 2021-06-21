@@ -19,5 +19,10 @@ Raf endpoints:
 
 ALCF:
     dtn_eagle = 05d2c76a-e867-4f67-aa57-76edeb0beda0
+    eagle path = ``
+    dtn_petrel = 
+    petrel_path = ``
 
 ## DM Locations
+
+    
