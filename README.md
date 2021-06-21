@@ -4,7 +4,12 @@ XPCS Gladier for running the XPCS Reprocessing Flow.
 
 ## Installation
 
+We highly encourage using [miniconda](miniconda)
+
 ### Main Package
+    
+    conda create -n gladier python=3.8
+    conda activate gladier
 
     git clone https://github.com/globus-gladier/gladier-xpcs.git
     cd gladier-xpcs

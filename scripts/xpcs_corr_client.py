@@ -37,14 +37,6 @@ def arg_parse():
     parser.add_argument("--imm", help="Path to the imm", default='')
     parser.add_argument("--group", help="Globus group for pilo", default=None)
     parser.add_argument("--endpoint", help="Source endpoint", default=None)
-    # parser.add_argument('--expression', '-e', help='Use Regex to determine datasets to run. '
-    #                                             'EX: /data/xpcs8/2020-1/foster202003/A38[0-5]_PIB_')
-    # parser.add_argument("--dry_run", help="If set the flow is not started.",
-    #                 action='store_true')
-    # parser.add_argument("--block", help="If set, the script will wait until the flow completes.",
-    #                 action='store_true')
-    # parser.add_argument("--rigaku", help="If set, the corr script use the --rigaku flag.",
-    #                 action='store_true')
     args = parser.parse_args()
 
 def create_payload(base_input, args):
