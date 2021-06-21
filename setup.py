@@ -15,7 +15,7 @@ with open('requirements.txt') as reqs:
             continue
         install_requires.append(req)
 
-scripts = glob('scripts/*')
+script_list = glob('scripts/*')
 
 setup(
     name='gladier_xpcs',
@@ -24,7 +24,7 @@ setup(
     maintainer='The Gladier Team',
     maintainer_email='',
     version=version,
-    scripts=[scripts],
+    scripts=script_list,
     packages=find_packages(),
     install_requires=install_requires,
     dependency_links=[],
