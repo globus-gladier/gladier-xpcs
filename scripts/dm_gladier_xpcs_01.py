@@ -2,7 +2,7 @@
     'owner': '8idiuser', 
     'stages': {
             '01-Staging' : {
-                'command': '/home/beams/8IDIUSER/DM_Workflows/xpcs8/start-xpcs8-remote-automate-01.sh \
+                'command': '/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/dm_gladier_xpcs_pre_01.sh \
                     $filePath $fileDataDir $xpcsGroupName $sgeQueueName', 
                 'outputVariableRegexList' : [
                     'Cluster Data Directory: (?P<clusterDataDir>.*)', 
@@ -34,10 +34,11 @@
                     ],
                 },
             '03-Automate' : {
-                'command': 'ssh 8idiuser@talc "/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/automate_xpcs.py \
-                    --endpoint $SOURCE_ENDPOINT_UUID \
-                    --input $clusterResultsDir/$outputHdf5File \
-                    --imm $clusterDataDir/$immFile"', 
+                'command': 'ssh 8idiuser@talc "/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/xpcs_corr_client.py \
+                    --hdf $clusterResultsDir/$outputHdf5File \
+                    --imm $clusterDataDir/$immFile \
+                    --group None\
+                    --endpoint $SOURCE_ENDPOINT_UUID"' ,
                 'outputVariableRegexList' : [
                     '(?P<AutomateId>.*)'
                 ],
@@ -50,3 +51,10 @@
     'description': 'XPCS8-01 Gladier Workflow', 
     'name': 'xpcs8-01-gladier'
 }
+
+
+##
+    # parser.add_argument("--hdf", help="Path to the hdf file",default='')
+    # parser.add_argument("--imm", help="Path to the imm", default='')
+    # parser.add_argument("--group", help="Globus group for pilo", default=None)
+    # parser.add_argument("--endpoint", help="Source endpoint", default=None)
