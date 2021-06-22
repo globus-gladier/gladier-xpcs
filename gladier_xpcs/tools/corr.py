@@ -1,25 +1,6 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
-@generate_flow_definition(modifiers={
-    eigen_corr: {'WaitTime': 600}
-})
-class EigenCorr(GladierBaseTool):
 
-    required_input = [
-        'proc_dir',
-        'imm_file',
-        'hdf_file',
-        'flags',
-        'flat_file',
-        'corr_loc',
-        'funcx_endpoint_compute',
-    ]
-
-    funcx_functions = [
-        eigen_corr
-    ]
-
-    
 def eigen_corr(event):
     import os
     import h5py
@@ -64,3 +45,22 @@ def eigen_corr(event):
                 f.write(res.stderr.decode('utf-8'))
     
     return str(res.stdout)
+
+@generate_flow_definition(modifiers={
+    eigen_corr: {'WaitTime': 600}
+})
+class EigenCorr(GladierBaseTool):
+
+    required_input = [
+        'proc_dir',
+        'imm_file',
+        'hdf_file',
+        'flags',
+        'flat_file',
+        'corr_loc',
+        'funcx_endpoint_compute',
+    ]
+
+    funcx_functions = [
+        eigen_corr
+    ]

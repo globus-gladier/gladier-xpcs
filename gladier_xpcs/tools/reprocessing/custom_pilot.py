@@ -1,19 +1,6 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
-@generate_flow_definition(modifiers={
-    custom_pilot: {'endpoint': 'funcx_endpoint_non_compute'}
-})
-class CustomPilot(GladierBaseTool):
-    """Upload the processed dataset"""
 
-    required_input = [
-        'parameter_file',
-        'funcx_endpoint_non_compute',
-    ]
-
-    funcx_functions = [
-        custom_pilot
-    ]
 
 def custom_pilot(event):
     import os
@@ -109,3 +96,18 @@ def custom_pilot(event):
     #     #     'exception': str(e),
     #     # }
     #     return f'Upload Failed: {os.path.basename(upload_dir)}'
+
+@generate_flow_definition(modifiers={
+    custom_pilot: {'endpoint': 'funcx_endpoint_non_compute'}
+})
+class CustomPilot(GladierBaseTool):
+    """Upload the processed dataset"""
+
+    required_input = [
+        'parameter_file',
+        'funcx_endpoint_non_compute',
+    ]
+
+    funcx_functions = [
+        custom_pilot
+    ]

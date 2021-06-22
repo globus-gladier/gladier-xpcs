@@ -1,23 +1,5 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
-@generate_flow_definition(modifiers={
-    custom_pilot: {'endpoint': 'funcx_endpoint_non_compute'}
-})
-class CustomPilot(GladierBaseTool):
-
-    flow_input = {
-        'reprocessing_suffix': '_qmap',
-    }
-
-    required_input = [
-        'proc_dir',
-        'hdf_file',
-        'reprocessing_suffix',
-    ]
-
-    funcx_functions = [
-        custom_pilot
-    ]
 
 
 def custom_pilot(event):
@@ -110,3 +92,22 @@ def custom_pilot(event):
     #     #     'exception': str(e),
     #     # }
     #     return f'Upload Failed: {os.path.basename(upload_dir)}'
+
+@generate_flow_definition(modifiers={
+    custom_pilot: {'endpoint': 'funcx_endpoint_non_compute'}
+})
+class CustomPilot(GladierBaseTool):
+
+    flow_input = {
+        'reprocessing_suffix': '_qmap',
+    }
+
+    required_input = [
+        'proc_dir',
+        'hdf_file',
+        'reprocessing_suffix',
+    ]
+
+    funcx_functions = [
+        custom_pilot
+    ]

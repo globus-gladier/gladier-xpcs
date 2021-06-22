@@ -1,19 +1,5 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
-@generate_flow_definition(modifiers={
-    apply_qmap: {'endpoint': 'funcx_endpoint_non_compute'}
-})
-class ApplyQmap(GladierBaseTool):
-
-    required_input = [
-        # 'proc_dir',
-        # 'qmap_file',
-        # 'flat_file',
-    ]
-
-    funcx_functions = [
-        apply_qmap
-    ]
 
 def apply_qmap(data):
     import math
@@ -211,3 +197,18 @@ def apply_qmap(data):
     os.unlink(orig_filename)
 
     return output_filename
+
+@generate_flow_definition(modifiers={
+    apply_qmap: {'endpoint': 'funcx_endpoint_non_compute'}
+})
+class ApplyQmap(GladierBaseTool):
+
+    required_input = [
+        # 'proc_dir',
+        # 'qmap_file',
+        # 'flat_file',
+    ]
+
+    funcx_functions = [
+        apply_qmap
+    ]

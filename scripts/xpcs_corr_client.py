@@ -5,7 +5,8 @@
 
 ## raw_hdf = '/net/wolf/data/xpcs8/2021-1/leheny202101/A010_00001_Vol20_quenchT102p7ohms_att1_Rq0/A010_00001_Vol20_quenchT102p7ohms_att1_Rq0_0001-100000.hdf'
 
-# /home/beams/8IDIUSER/.conda/envs/gladier/bin/python --hdf /net/wolf/data/xpcs8/2021-1/leheny202101/cluster_results/A010_00001_Vol20_quenchT102p7ohms_att1_Rq0_0001-100000.hdf 
+# /home/beams/8IDIUSER/.conda/envs/gladier/bin/python /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py
+#--hdf /net/wolf/data/xpcs8/2021-1/leheny202101/cluster_results/A010_00001_Vol20_quenchT102p7ohms_att1_Rq0_0001-100000.hdf 
 # fileDataDir:A010_00001_Vol20_quenchT102p7ohms_att1_Rq0 
 
 
