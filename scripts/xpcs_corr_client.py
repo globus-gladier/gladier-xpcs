@@ -5,7 +5,9 @@ from gladier import GladierBaseClient, generate_flow_definition
 # Enable Gladier Logging
 import gladier.tests
 
-from pprint import pprint
+import argparse
+import os
+
 
 @generate_flow_definition()
 class XPCS_Client(GladierBaseClient):
@@ -35,7 +37,7 @@ def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--hdf", help="Path to the hdf file",default='')
     parser.add_argument("--imm", help="Path to the imm", default='')
-    parser.add_argument("--group", help="Globus group for pilo", default=None)
+    parser.add_argument("--group", help="Globus group for pilot", default=None)
     parser.add_argument("--endpoint", help="Source endpoint", default=None)
     args = parser.parse_args()
 
@@ -54,17 +56,18 @@ def create_payload(base_input, args):
     proc_hdf_file = os.path.join(base_proc, hdf_name)
     proc_imm_file = os.path.join(base_proc, imm_name)
     result_dirname = f"{input_parent_dir}/ALCF_results/{hdf_name}"
-    info = {
-        'hdf_filename': hdf_name,
-        'imm_filename': imm_name,
-        'source_hdf_abspath': hdf_pathname,
-        'source_imm_abspath': imm_pathname,
-        'proc_hdf_abspath': proc_hdf_file,
-        'proc_imm_abspath': proc_imm_file,
-        'proc_dir_abspath': os.path.dirname(proc_hdf_file),
-        'proc_dirname': input_parent_dir,
-        'result_abspath': result_dirname,
-    }
+
+    # info = {
+    #     'hdf_filename': hdf_name,
+    #     'imm_filename': imm_name,
+    #     'source_hdf_abspath': hdf_pathname,
+    #     'source_imm_abspath': imm_pathname,
+    #     'proc_hdf_abspath': proc_hdf_file,
+    #     'proc_imm_abspath': proc_imm_file,
+    #     'proc_dir_abspath': os.path.dirname(proc_hdf_file),
+    #     'proc_dirname': input_parent_dir,
+    #     'result_abspath': result_dirname,
+    # }
 
 
     base_input['input'] = {
@@ -74,14 +77,11 @@ def create_payload(base_input, args):
             'metadata_file': proc_hdf_file.replace(".hdf", ".json"),
         }
 
-    if args.get('rigaku'):
-        funcx_payload['data']['flags'] = "--rigaku"
-
-    return {'info': info, 'payload': funcx_payload}
+    return base_input
 
 if __name__ == '__main__':
 
-    args = parse_args()
+    args = arg_parse()
     
     ##Process endpoints
     theta_non_compute_ep = '8f2f2eab-90d2-45ba-a771-b96e6d530cad'
