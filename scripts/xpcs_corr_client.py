@@ -47,7 +47,7 @@ def arg_parse():
     parser.add_argument("--imm", help="Path to the imm", default='')
     parser.add_argument("--group", help="Globus group for pilot", default=None)
     parser.add_argument("--endpoint", help="Source endpoint", default=None)
-    args = parser.parse_args()
+    return  vars(parser.parse_args())
 
 def create_payload(base_input, args):
 
@@ -112,5 +112,5 @@ if __name__ == '__main__':
     # #corr_cli.check_flow(corr_flow['action_id'])
     # pprint.pprint(corr_flow)
 
-    pprint.ppring(payload)
-    pprint.ppring(corr_cli.flow_definition)
+    pprint.pprint(payload)
+    pprint.pprint(corr_cli.flow_definition)
