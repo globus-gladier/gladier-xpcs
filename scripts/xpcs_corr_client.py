@@ -5,7 +5,7 @@ from gladier import GladierBaseClient, generate_flow_definition
 # Enable Gladier Logging
 import gladier.tests
 
-from pprint import pprint
+import argparse
 
 @generate_flow_definition()
 class XPCS_Client(GladierBaseClient):
@@ -81,7 +81,7 @@ def create_payload(base_input, args):
 
 if __name__ == '__main__':
 
-    args = parse_args()
+    args = arg_parse()
     
     ##Process endpoints
     theta_non_compute_ep = '8f2f2eab-90d2-45ba-a771-b96e6d530cad'
