@@ -8,7 +8,6 @@ import gladier.tests
 import argparse
 import os
 
-
 @generate_flow_definition()
 class XPCS_Client(GladierBaseClient):
     gladier_tools = [
