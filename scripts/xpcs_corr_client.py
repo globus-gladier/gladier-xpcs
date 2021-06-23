@@ -22,11 +22,12 @@ import pprint
 @generate_flow_definition()
 class XPCS_Client(GladierBaseClient):
     gladier_tools = [
-        'gladier_xpcs.tools.transfer_qmap.TransferQmap',
+        # 'gladier_xpcs.tools.transfer_qmap.TransferQmap',
         # 'gladier_xpcs.tools.EigenCorr',
         # 'gladier_xpcs.tools.ApplyQmap',
-        # 'gladier_xpcs.tools.reprocessing.plot.MakeCorrPlots',
-        # 'gladier_xpcs.tools.reprocessing.custom_pilot.CustomPilot',
+        'gladier_xpcs.tools.plot.MakeCorrPlots',
+        'gladier_xpcs.tools.gather_xpcs_metadata.GatherXPCSMetadata',
+        'gladier_tools.publish.Publish',
     ]
 
 ##This is a patch to continue using funcx 0.0.3 until the new AP comes online.
@@ -63,13 +64,23 @@ def create_payload(base_input, args):
     proc_hdf_file = os.path.join(base_input['input']['proc_folder'], hdf_name)
     proc_imm_file = os.path.join(base_input['input']['proc_folder'], imm_name)
 
-    base_input['input'] = {
+    base_input['input'].update({
             'hdf': proc_hdf_file,
             'imm': proc_imm_file,
             'metadata_file': proc_hdf_file.replace(".hdf", ".json"),
-        }
+        })
+
+    # Don't specify unless there is a group to add.
+    group = args.get('group', None)
+    if group:
+        group = [group]
+    else:
+        group = []
+    base_input['input']['pilot']['groups'] = group
+    base_input['input']['pilot']['dataset'] = input_parent_dir
 
     return base_input
+
 
 if __name__ == '__main__':
 
@@ -88,6 +99,17 @@ if __name__ == '__main__':
 
     base_input = {
         "input": {
+            'pilot': {
+                # "dataset" needs to be filled in with the dataset to upload to petrel
+                # 'dataset': '',
+                'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
+                'project': 'xpcs-8id',
+                'source_globus_endpoint': eagle_transfer_ep,
+                # Extra groups can be specified here. The XPCS Admins group will always
+                # be provided automatically.
+                'groups': [],
+            },
+
             # funcX endpoints
             "funcx_endpoint_non_compute": theta_non_compute_ep,
             "funcx_endpoint_compute": theta_xpcs_ep,
