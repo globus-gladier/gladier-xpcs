@@ -1,1 +1,2 @@
 gladier
+-e git+https://github.com/globus-labs/globus-automation#egg=globus-automation
