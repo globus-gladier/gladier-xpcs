@@ -56,7 +56,6 @@ class EigenCorr(GladierBaseTool):
         'imm_file',
         'hdf_file',
         'flags',
-        'flat_file',
         'corr_loc',
         'funcx_endpoint_compute',
     ]
