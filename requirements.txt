@@ -1,1 +1,6 @@
 gladier
+gladier_tools>=0.2.0
+-e git+https://github.com/globus-labs/globus-automation#egg=globus-automation
+matplotlib
+numpy
+h5py
