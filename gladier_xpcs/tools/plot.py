@@ -13,7 +13,10 @@ def make_corr_plots(event):
         return str(e)
     return [img for img in os.listdir('.') if img.endswith('.png')]
 
-@generate_flow_definition
+
+@generate_flow_definition(modifiers={
+    'make_corr_plots': {'WaitTime': 1200}
+})
 class MakeCorrPlots(GladierBaseTool):
     required_input = [
         'proc_dir',
