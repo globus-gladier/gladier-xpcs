@@ -35,6 +35,7 @@ def gather_xpcs_metadata(event):
 
     pilot = event['pilot']
     pilot['metadata'] = metadata
+    pilot['groups'] = pilot.get('groups', [])
     return pilot
 
 
