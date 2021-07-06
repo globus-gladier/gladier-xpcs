@@ -20,7 +20,9 @@ import os
 import pprint
 
 
-@generate_flow_definition
+@generate_flow_definition(modifiers={
+    'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result'}
+})
 class XPCSClient(GladierBaseClient):
     gladier_tools = [
         'gladier_xpcs.tools.transfer_from_clutch_to_theta.TransferFromClutchToTheta',
