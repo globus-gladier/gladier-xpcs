@@ -1,6 +1,5 @@
 #!/usr/bin/env python 
 
-
 ##
 
 ## raw_hdf = '/net/wolf/data/xpcs8/2021-1/leheny202101/A010_00001_Vol20_quenchT102p7ohms_att1_Rq0/A010_00001_Vol20_quenchT102p7ohms_att1_Rq0_0001-100000.hdf'
@@ -41,7 +40,7 @@ def register_container():
     fxc = FuncXClient()
     from gladier_xpcs.tools.corr import eigen_corr
     # cont_dir = '/eagle/projects/APSDataAnalysis/XPCS/containers/'
-    cont_dir = '/eagle/projects/APSDataAnalysis/XPCS_test/containers/'
+    cont_dir = '/eagle/APSDataAnalysis/XPCS_test/containers/'
     container_name = 'eigen.simg'
     eigen_cont_id = fxc.register_container(location=cont_dir+'/'+container_name,container_type='singularity')
     corr_cont_fxid = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
@@ -57,12 +56,12 @@ def arg_parse():
                         default='/data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001'
                                 '/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
     parser.add_argument('--group', help='Visibility in Search', default=None)
-    parser.add_argument('--source-endpoint', help='Source endpoint (Default Clutch)',
+    parser.add_argument('--source-globus-ep', help='Source Globus Endpoint (Default Clutch)',
                         default='fdc7e74a-fa78-11e8-9342-0e3d676669f4')
-    parser.add_argument('--compute-endpoint', help='Compute endpoint (Default Eagle)',
-                        default='05d2c76a-e867-4f67-aa57-76edeb0beda0')
+    parser.add_argument('--compute-globus-ep', help='Compute Globus Endpoint (Default Theta)',
+                        default='08925f04-569f-11e7-bef8-22000b9a448b')
     parser.add_argument('--processing-dir', help='Location folder on compute endpoint to process data',
-                        default='/eagle/projects/APSDataAnalysis/XPCS_test/')
+                        default='/eagle/APSDataAnalysis/XPCS_test')
 
     return parser.parse_args()
 
@@ -87,7 +86,7 @@ if __name__ == '__main__':
                 'dataset': dataset_dir,
                 'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
                 'project': 'xpcs-8id',
-                'source_globus_endpoint': args.compute_endpoint,
+                'source_globus_endpoint': args.compute_globus_ep,
                 # Extra groups can be specified here. The XPCS Admins group will always
                 # be provided automatically.
                 'groups': [args.group] if args.group else [],
@@ -107,19 +106,19 @@ if __name__ == '__main__':
             'proc_dir': args.processing_dir,
             'hdf_file': hdf_file,
             'imm_file': imm_file,
-            'corr_loc': '/bin/echo',
+            'corr_loc': 'corr',
             'flags': '',
 
             # funcX endpoints
-            'funcx_endpoint_non_compute': '7b08f56f-7426-4c82-ae1a-c299ec1e673c',
-            'funcx_endpoint_compute': '7b08f56f-7426-4c82-ae1a-c299ec1e673c',
+            'funcx_endpoint_non_compute': '8f2f2eab-90d2-45ba-a771-b96e6d530cad',
+            'funcx_endpoint_compute':     '9337a3c3-0ee5-45b8-bcbd-8a277f461e23',
 
             # globus endpoints
-            'globus_endpoint_clutch': args.source_endpoint,
-            'globus_endpoint_theta': args.compute_endpoint,
+            'globus_endpoint_clutch': args.source_globus_ep,
+            'globus_endpoint_theta': args.compute_globus_ep,
 
             # container hack for corr 
-            # 'eigen_corr_fxid': register_container()
+            'eigen_corr_funcx_id': register_container()
         }
     }
 
