@@ -118,9 +118,10 @@ if __name__ == '__main__':
         }
     }
 
+
     corr_cli = XPCSClient()
     pprint.pprint(flow_input)
     pprint.pprint(corr_cli.flow_definition)
-    corr_flow = corr_cli.run_flow(flow_input=flow_input)
+    corr_flow = corr_cli.run_flow(flow_input=flow_input, flow_label='foo')
     corr_cli.progress(corr_flow['action_id'])
     pprint.pprint(corr_cli.get_status(corr_flow['action_id']))
