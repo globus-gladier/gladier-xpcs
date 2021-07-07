@@ -91,10 +91,10 @@ if __name__ == '__main__':
 
             # Pilot inputs (Renames the dataset)
             'reprocessing_suffix': '_nick_reprocessing_test',
-
-            # Funcx excecution (Note: You need to update this to your endpoints...)
-            # 'funcx_endpoint_non_compute': '0a162a09-8bd9-4dd9-b046-0bfd635d38a7',
-            # 'funcx_endpoint_compute': '37e6099f-e9e7-4817-ac68-4afcd78d8221',
+            
+            # funcX endpoints
+            'funcx_endpoint_non_compute': '8f2f2eab-90d2-45ba-a771-b96e6d530cad',
+            'funcx_endpoint_compute':     '9337a3c3-0ee5-45b8-bcbd-8a277f461e23',
 
             # Useful for turning off "manifest_to_list" and using a custom payload
             'parameter_file': '/projects/APSDataAnalysis/nick/gladier_testing/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_qmap/parameters.json',
