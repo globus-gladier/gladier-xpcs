@@ -42,8 +42,9 @@
                 ],
             },
             '03-MonitorAutomate' : {'command': '/bin/echo Automate ID: $AutomateId'},
-            # '05-Automate_Transfer1': {'command': 'ssh 8idiuser@talc "/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/automate_wait.py --task_id $AutomateId --step Transfer1 --walltime 120"'},
-            # '06-Automate_XPCS': {'command': 'ssh 8idiuser@talc "/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/automate_wait.py --task_id $AutomateId --step ExecCorr --walltime 900"'},
-            # '07-Automate_CopyBack': {'command': 'ssh 8idiuser@talc "/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/automate_wait.py --task_id $AutomateId --step Transfer2 --walltime 60"'},
+            '04-Automate_TransferOut': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --task_id $AutomateId --step TransferFromClutchToTheta --walltime 120"'},
+            '05-Automate_Corr': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --task_id $AutomateId --step EigenCorr --walltime 900"'},
+            '06-Automate_Plots': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --task_id $AutomateId --step MakeCorrPlots --walltime 60"'},
+            '07-Automate_TransferBack': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --task_id $AutomateId --step GatherXPCSMetadata --walltime 60"'},
      }
 }

@@ -4,7 +4,7 @@
 
 from gladier import GladierBaseClient, generate_flow_definition
 # Enable Gladier Logging
-import gladier.tests
+#import gladier.tests
 
 import argparse
 import os
@@ -35,7 +35,6 @@ def register_container():
     from funcx.sdk.client import FuncXClient
     fxc = FuncXClient()
     from gladier_xpcs.tools.corr import eigen_corr
-    # cont_dir = '/eagle/projects/APSDataAnalysis/XPCS/containers/'
     cont_dir = '/eagle/APSDataAnalysis/XPCS_test/containers/'
     container_name = 'eigen.simg'
     eigen_cont_id = fxc.register_container(location=cont_dir+'/'+container_name,container_type='singularity')
@@ -99,7 +98,7 @@ if __name__ == '__main__':
                 }
             ],
 
-            'proc_dir': args.processing_dir,
+            'proc_dir': dataset_dir,
             'hdf_file': hdf_file,
             'imm_file': imm_file,
             'corr_loc': 'corr',
@@ -120,8 +119,8 @@ if __name__ == '__main__':
 
 
     corr_cli = XPCSClient()
-    pprint.pprint(flow_input)
-    pprint.pprint(corr_cli.flow_definition)
+    # pprint.pprint(flow_input)
+    # pprint.pprint(corr_cli.flow_definition)
     corr_flow = corr_cli.run_flow(flow_input=flow_input, flow_label='foo')
-    corr_cli.progress(corr_flow['action_id'])
-    pprint.pprint(corr_cli.get_status(corr_flow['action_id']))
+    # corr_cli.progress(corr_flow['action_id'])
+    # pprint.pprint(corr_cli.get_status(corr_flow['action_id']))
