@@ -34,11 +34,10 @@
                     ],
                 },
             '03-Automate' : {
-                'command': 'ssh 8idiuser@talc "/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/xpcs_corr_client.py \
+                'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py \
                     --hdf $clusterResultsDir/$outputHdf5File \
-                    --imm $clusterDataDir/$immFile \
-                    --group None\
-                    --endpoint $SOURCE_ENDPOINT_UUID"' ,
+                    --imm $clusterDataDir/$immFile"',
+                 #   --group None"' , ##activate when group can be passed 
                 'outputVariableRegexList' : [
                     '(?P<AutomateId>.*)'
                 ],
