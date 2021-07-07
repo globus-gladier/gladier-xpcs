@@ -8,8 +8,6 @@ import gladier.tests
 from pprint import pprint
 
 
-
-
 @generate_flow_definition(modifiers={
     'list_to_fx_tasks': {
         'payload': {
@@ -46,6 +44,8 @@ from pprint import pprint
     'custom_pilot': {'InputPath': '$.ListToFxTasks.details.result.CustomPilot'},
 })
 class XPCSReprocessing(GladierBaseClient):
+    globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
+
     gladier_tools = [
         # 'gladier_xpcs.tools.reprocessing.manifest_transfer.ManifestTransfer',
         # 'gladier_xpcs.tools.reprocessing.transfer_qmap.TransferQmap',
@@ -60,17 +60,15 @@ class XPCSReprocessing(GladierBaseClient):
 
 ##This is a patch to continue using funcx 0.0.3 until the new AP comes online.
 def register_container():
-    ##hacking over container for XPCS
     from funcx.sdk.client import FuncXClient
     fxc = FuncXClient()
     from gladier_xpcs.tools.corr import eigen_corr
-    ##Move this to an XPCS common Folder
-    cont_dir =  '/home/rvescovi/.funcx/containers/'
-    container_name = "eigen_v1.simg"
+    # cont_dir = '/eagle/projects/APSDataAnalysis/XPCS/containers/'
+    cont_dir = '/eagle/APSDataAnalysis/XPCS_test/containers/'
+    container_name = 'eigen.simg'
     eigen_cont_id = fxc.register_container(location=cont_dir+'/'+container_name,container_type='singularity')
-    eigen_corr_cont_id = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
-    return eigen_corr_cont_id
-    ##
+    corr_cont_fxid = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
+    return corr_cont_fxid
 
 
 if __name__ == '__main__':

@@ -1,5 +1,7 @@
 {
     'owner': '8idiuser', 
+    'name': 'xpcs8-01-gladier',
+    'description': 'XPCS8-01 Gladier Workflow', 
     'stages': {
             '01-Staging' : {
                 'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/dm_gladier_xpcs_pre_01.sh $filePath $fileDataDir $xpcsGroupName $sgeQueueName', 
@@ -39,11 +41,9 @@
                     '(?P<AutomateId>.*)'
                 ],
             },
-            # '04-MonitorAutomate' : {'command': '/bin/echo Automate ID: $AutomateId'},
+            '03-MonitorAutomate' : {'command': '/bin/echo Automate ID: $AutomateId'},
             # '05-Automate_Transfer1': {'command': 'ssh 8idiuser@talc "/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/automate_wait.py --task_id $AutomateId --step Transfer1 --walltime 120"'},
             # '06-Automate_XPCS': {'command': 'ssh 8idiuser@talc "/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/automate_wait.py --task_id $AutomateId --step ExecCorr --walltime 900"'},
             # '07-Automate_CopyBack': {'command': 'ssh 8idiuser@talc "/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/automate_wait.py --task_id $AutomateId --step Transfer2 --walltime 60"'},
-     },
-    'description': 'XPCS8-01 Gladier Workflow', 
-    'name': 'xpcs8-01-gladier'
+     }
 }
