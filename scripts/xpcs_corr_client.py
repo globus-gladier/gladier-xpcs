@@ -1,15 +1,7 @@
-#!/usr/bin/env python 
+#!/home/beams/8IDIUSER/.conda/envs/gladier/bin/python
 
-##
+## /home/beams/8IDIUSER/.conda/envs/gladier/bin/python /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf '/data/xpcs8/2019-1/comm201901/cluster_results/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf' --imm /data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm --group 0bbe98ef-de8f-11eb-9e93-3db9c47b68ba
 
-## raw_hdf = '/net/wolf/data/xpcs8/2021-1/leheny202101/A010_00001_Vol20_quenchT102p7ohms_att1_Rq0/A010_00001_Vol20_quenchT102p7ohms_att1_Rq0_0001-100000.hdf'
-
-# /home/beams/8IDIUSER/.conda/envs/gladier/bin/python /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py
-#--hdf /net/wolf/data/xpcs8/2021-1/leheny202101/cluster_results/A010_00001_Vol20_quenchT102p7ohms_att1_Rq0_0001-100000.hdf 
-# fileDataDir:A010_00001_Vol20_quenchT102p7ohms_att1_Rq0 
-
-
-# Import Gladier base
 from gladier import GladierBaseClient, generate_flow_definition
 # Enable Gladier Logging
 import gladier.tests
