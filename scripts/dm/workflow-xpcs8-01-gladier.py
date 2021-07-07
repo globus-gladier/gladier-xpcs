@@ -2,8 +2,7 @@
     'owner': '8idiuser', 
     'stages': {
             '01-Staging' : {
-                'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/dm_gladier_xpcs_pre_01.sh \
-                    $filePath $fileDataDir $xpcsGroupName $sgeQueueName', 
+                'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/dm_gladier_xpcs_pre_01.sh $filePath $fileDataDir $xpcsGroupName $sgeQueueName', 
                 'outputVariableRegexList' : [
                     'Cluster Data Directory: (?P<clusterDataDir>.*)', 
                     'Cluster Results Directory: (?P<clusterResultsDir>.*)', 
@@ -33,10 +32,8 @@
                     'ALCF Cluster Results Directory: (?P<ALCFclusterResultsDir>.*)'
                     ],
                 },
-            '03-Automate' : {
-                'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py \
-                    --hdf $clusterResultsDir/$outputHdf5File \
-                    --imm $clusterDataDir/$immFile"',
+            '02-Automate' : {
+                'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf $clusterResultsDir/$outputHdf5File --imm $clusterDataDir/$immFile"',
                  #   --group None"' , ##activate when group can be passed 
                 'outputVariableRegexList' : [
                     '(?P<AutomateId>.*)'
