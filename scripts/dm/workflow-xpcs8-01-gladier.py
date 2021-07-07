@@ -2,7 +2,7 @@
     'owner': '8idiuser', 
     'stages': {
             '01-Staging' : {
-                'command': '/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/dm/dm_gladier_xpcs_pre_01.sh \
+                'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/dm_gladier_xpcs_pre_01.sh \
                     $filePath $fileDataDir $xpcsGroupName $sgeQueueName', 
                 'outputVariableRegexList' : [
                     'Cluster Data Directory: (?P<clusterDataDir>.*)', 
