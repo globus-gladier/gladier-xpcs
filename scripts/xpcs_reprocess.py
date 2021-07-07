@@ -63,7 +63,6 @@ def register_container():
     from funcx.sdk.client import FuncXClient
     fxc = FuncXClient()
     from gladier_xpcs.tools.corr import eigen_corr
-    # cont_dir = '/eagle/projects/APSDataAnalysis/XPCS/containers/'
     cont_dir = '/eagle/APSDataAnalysis/XPCS_test/containers/'
     container_name = 'eigen.simg'
     eigen_cont_id = fxc.register_container(location=cont_dir+'/'+container_name,container_type='singularity')
@@ -79,7 +78,8 @@ if __name__ == '__main__':
             'manifest_destination': 'globus://08925f04-569f-11e7-bef8-22000b9a448b/projects/APSDataAnalysis/nick/gladier_testing/',
 
             # Corr inputs
-            'corr_loc': '/lus/theta-fs0/projects/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
+            # 'corr_loc': '/lus/theta-fs0/projects/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
+            'corr_loc': 'corr',
             'flags': '',
 
             # Qmap inputs
@@ -103,6 +103,9 @@ if __name__ == '__main__':
             'proc_dir': '/lus/theta-fs0/projects/APSDataAnalysis/nick/gladier_testing',
             'hdf_file': 'A001_Aerogel_1mm_att6_Lq0_001_0001-1000_qmap/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_qmap.hdf',
             'imm_file': 'A001_Aerogel_1mm_att6_Lq0_001_0001-1000_qmap/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm',
+
+            'eigen_corr_funcx_id': register_container()
+
         }
     }
 
