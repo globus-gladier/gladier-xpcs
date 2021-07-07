@@ -20,9 +20,13 @@ import pprint
 
 
 @generate_flow_definition(modifiers={
+    'eigen_corr': {'WaitTime': 3600},
+    'make_corr_plots':{'WaitTime': 3600},
     'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result'}
 })
 class XPCSClient(GladierBaseClient):
+    globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
+
     gladier_tools = [
         'gladier_xpcs.tools.transfer_from_clutch_to_theta.TransferFromClutchToTheta',
         'gladier_xpcs.tools.pre_publish.PrePublish',
