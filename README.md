@@ -15,9 +15,11 @@ We highly encourage using [miniconda](miniconda)
     cd gladier-xpcs
     python setup.py develop
 
-### FuncX Endpoints
-
-### Globus Endpoints
+    ##install DM scripts
+    cp  scripts/dm/* /home/beams10/8IDIUSER/DM_Workflows/xpcs8/
+    
+    cd /home/beams10/8IDIUSER/DM_Workflows/xpcs8/
+    dm-add-workflow --py-spec workflow-xpcs8-01-gladier.py
 
 ## Running
 
