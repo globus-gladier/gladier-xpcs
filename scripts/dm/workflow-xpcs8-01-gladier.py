@@ -2,7 +2,7 @@
     'owner': '8idiuser', 
     'stages': {
             '01-Staging' : {
-                'command': '/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/dm_gladier_xpcs_pre_01.sh \
+                'command': '/home/beams/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/dm/dm_gladier_xpcs_pre_01.sh \
                     $filePath $fileDataDir $xpcsGroupName $sgeQueueName', 
                 'outputVariableRegexList' : [
                     'Cluster Data Directory: (?P<clusterDataDir>.*)', 
@@ -50,10 +50,3 @@
     'description': 'XPCS8-01 Gladier Workflow', 
     'name': 'xpcs8-01-gladier'
 }
-
-
-##
-    # parser.add_argument("--hdf", help="Path to the hdf file",default='')
-    # parser.add_argument("--imm", help="Path to the imm", default='')
-    # parser.add_argument("--group", help="Globus group for pilo", default=None)
-    # parser.add_argument("--endpoint", help="Source endpoint", default=None)
