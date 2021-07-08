@@ -38,13 +38,13 @@
                 'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf $clusterResultsDir/$outputHdf5File --imm $clusterDataDir/$immFile"',
                  #   --group None"' , ##activate when group can be passed 
                 'outputVariableRegexList' : [
-                    '(?P<AutomateId>.*)'
+                    '(?P<RunId>.*)'
                 ],
             },
             '03-MonitorAutomate' : {'command': '/bin/echo Automate ID: $AutomateId'},
-            '04-Automate_TransferOut': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --task_id $AutomateId --step TransferFromClutchToTheta --walltime 120"'},
-            '05-Automate_Corr': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --task_id $AutomateId --step EigenCorr --walltime 900"'},
-            '06-Automate_Plots': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --task_id $AutomateId --step MakeCorrPlots --walltime 60"'},
-            '07-Automate_TransferBack': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --task_id $AutomateId --step GatherXPCSMetadata --walltime 60"'},
+            '04-Automate_TransferOut': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --flow_id $FlowId --task_id $RunId --step TransferFromClutchToTheta --timeout 120"'},
+            '05-Automate_Corr': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --task_id $AutomateId --step EigenCorr --timeout 900"'},
+            '06-Automate_Plots': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --task_id $AutomateId --step MakeCorrPlots --timeout 60"'},
+            '07-Automate_TransferBack': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/automate_wait.py --task_id $AutomateId --step GatherXPCSMetadata --timeout 60"'},
      }
 }
