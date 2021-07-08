@@ -17,7 +17,7 @@ def gather_xpcs_metadata(event):
             'creators': [{'creatorName': '8-ID'}],
             'publisher': 'Automate',
             'title': exp_name,
-            'subjects': [{'subject': 'XPCS'}, {'subject': '8-ID'}],
+            'subjects': [{'subject': s} for s in exp_name.split('_')],
             'publicationYear': f'{datetime.datetime.now().year}',
             'resourceType': {
                 'resourceType': 'Dataset',
@@ -35,7 +35,6 @@ def gather_xpcs_metadata(event):
 
     pilot = event['pilot']
     pilot['metadata'] = metadata
-    pilot['dataset'] = event['proc_dir']
     return pilot
 
 
