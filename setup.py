@@ -15,7 +15,7 @@ with open('requirements.txt') as reqs:
             continue
         install_requires.append(req)
 
-script_list = glob('scripts/xpcs_*.sh')
+script_list = glob('scripts/xpcs_*')
 
 setup(
     name='gladier_xpcs',

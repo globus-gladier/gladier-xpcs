@@ -6,7 +6,7 @@ from time import sleep
 import argparse
 def arg_parse():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--f', default='xpcs_test.txt')
+    parser.add_argument('--f', default='samples_dm.txt')
     parser.add_argument('--n', default=10, type=int)
     parser.add_argument('--t', default=2, type=int)
     return parser.parse_args()
