@@ -2,33 +2,13 @@
 
 ## /home/beams/8IDIUSER/.conda/envs/gladier/bin/python /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf '/data/xpcs8/2019-1/comm201901/cluster_results/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf' --imm /data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm --group 0bbe98ef-de8f-11eb-9e93-3db9c47b68ba
 
-from gladier import GladierBaseClient, generate_flow_definition
 # Enable Gladier Logging
 #import gladier.tests
 
+from gladier_xpcs.online_processing import XPCSClient
 import argparse
 import os
 import pprint
-
-
-@generate_flow_definition(modifiers={
-    'eigen_corr': {'WaitTime': 3600},
-    'make_corr_plots':{'WaitTime': 3600},
-    'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result'}
-})
-class XPCSClient(GladierBaseClient):
-    globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
-
-    gladier_tools = [
-        'gladier_xpcs.tools.transfer_from_clutch_to_theta.TransferFromClutchToTheta',
-        'gladier_xpcs.tools.pre_publish.PrePublish',
-        'gladier_xpcs.tools.EigenCorr',
-        # 'gladier_xpcs.tools.transfer_from_clutch_to_theta.TransferToClutch',
-        'gladier_xpcs.tools.plot.MakeCorrPlots',
-        'gladier_xpcs.tools.gather_xpcs_metadata.GatherXPCSMetadata',
-        'gladier_tools.publish.Publish',
-    ]
-    globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
 
 
 # This is a patch to continue using funcx 0.0.3 until the new AP comes online.
