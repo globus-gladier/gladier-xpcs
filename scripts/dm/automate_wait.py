@@ -1,66 +1,32 @@
 #!/home/beams/8IDIUSER/.conda/envs/gladier/bin/python
 
 from gladier import GladierBaseClient
-
 import argparse
-from globus_automate_client import create_flows_client
 
-class XPCSClient(GladierBaseClient):
+class checkClient(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
 
-def main(arg):
-    """
-    Wait for the task id to complete
-    """
 
+def arg_parse():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task_id", help="The automate flow to process the data.",
+    parser.add_argument("--flow_id", help="The automate flow to check.",
                         default=None)
-    parser.add_argument("--flow_id", help="The automate flow to process the data.",
+    parser.add_argument("--run_id", help="The automate flow instance(run) to check.",
                         default=None)
-    parser.add_argument("--flow_scope", help="The automate flow scope to use to process the data.",
+    parser.add_argument("--step", help="The inside the flow execution to check",
                         default=None)
-    parser.add_argument("--step", help="The step to wait on. Options: Transfer1, ExecCorr, Transfer2, ExecPlots, ExecPilot",
-                        default=None)
-    parser.add_argument("--walltime", help="How long to wait before exiting.",
+    parser.add_argument("--timeout", help="How long to wait before exiting.",
                         default=None)
     args = parser.parse_args()
-
-    flows_client = XPCSClient()
-
-#    flow_response = automate_wait(flows_client, args.flow_id, args.flow_scope, args.task_id, args.step, args.walltime)
-    flow_response = 0
-    if flow_response == "SUCCEEDED":
-        sys.exit(0)
-    else:
-        sys.exit(1)
+    return args
 
 
+if __name__ == '__main__':
+    args = arg_parse()
 
-# def automate_wait(flows_client, flow_id, flow_scope, flow_action_id, wait_step, walltime):
-#     """
-#     Initiate the flow.
-#     """
+    client = checkClient()
+    client.get_status(args.task_id)
 
-
-#     #  corr_cli = XPCSClient()
-#     # pprint.pprint(corr_cli.flow_definition)
-#     # corr_flow = corr_cli.run_flow(flow_input=flow_input, flow_label='foo')
-#     # corr_cli.progress(corr_flow['action_id'])
-#     # pprint.pprint(corr_cli.get_status(corr_flow['action_id']))
-
-
-#     xpcs_client = XPCSClient()
-#     if not flow_id:
-#         flow_id = xpcs_client.auto_flowid
-#         flow_scope = xpcs_client.auto_scope
-#     start_time = time.time()
-#     flow_status = 'ACTIVE'
-#     # Define the stages so we can check if the --step field has finished
-#     flow_stages = ['Transfer1', 'ExecCorr', 'Transfer2', 'ExecPlots', 'ExecPilot', 'End']
-#     wait_stage = None
-#     if wait_step:
-#         wait_stage = flow_stages.index(wait_step)
 
 #     while flow_status == 'ACTIVE':
 #         # Break if the walltime has passed
@@ -93,6 +59,8 @@ def main(arg):
 
 #     return flow_status
 
-
-if __name__ == "__main__":
-    main(sys.argv[1:])
+    flow_response = 0
+    if flow_response == "SUCCEEDED":
+        sys.exit(0)
+    else:
+        sys.exit(1)

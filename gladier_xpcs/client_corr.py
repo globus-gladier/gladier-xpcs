@@ -28,7 +28,6 @@ class XPCSClient(GladierBaseClient):
         'gladier_xpcs.tools.gather_xpcs_metadata.GatherXPCSMetadata',
         'gladier_tools.publish.Publish',
     ]
-    globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
 
 
 # This is a patch to continue using funcx 0.0.3 until the new AP comes online.
