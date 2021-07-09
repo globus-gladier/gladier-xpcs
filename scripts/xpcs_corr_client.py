@@ -3,7 +3,7 @@
 ## /home/beams/8IDIUSER/.conda/envs/gladier/bin/python /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf '/data/xpcs8/2019-1/comm201901/cluster_results/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf' --imm /data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm --group 0bbe98ef-de8f-11eb-9e93-3db9c47b68ba
 
 # Enable Gladier Logging
-#import gladier.tests
+import gladier.tests
 
 from gladier_xpcs.online_processing import XPCSClient
 import argparse
@@ -86,8 +86,10 @@ if __name__ == '__main__':
             'flags': '',
 
             # funcX endpoints
-            'funcx_endpoint_non_compute': '8f2f2eab-90d2-45ba-a771-b96e6d530cad',
-            'funcx_endpoint_compute':     '9337a3c3-0ee5-45b8-bcbd-8a277f461e23',
+            'funcx_endpoint_non_compute':'e449e8b8-e114-4659-99af-a7de06feb847',
+            'funcx_endpoint_compute':    'e449e8b8-e114-4659-99af-a7de06feb847',
+            #'funcx_endpoint_non_compute': '8f2f2eab-90d2-45ba-a771-b96e6d530cad',
+            #'funcx_endpoint_compute':     '9337a3c3-0ee5-45b8-bcbd-8a277f461e23',
 
             # globus endpoints
             'globus_endpoint_clutch': args.source_globus_ep,
