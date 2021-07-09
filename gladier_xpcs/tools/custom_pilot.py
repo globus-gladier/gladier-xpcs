@@ -2,7 +2,7 @@ from gladier import GladierBaseTool, generate_flow_definition
 
 
 
-def custom_pilot(event):
+def custom_pilot(**event):
     import os
     import json
     import shutil

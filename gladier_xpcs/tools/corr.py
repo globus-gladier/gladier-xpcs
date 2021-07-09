@@ -1,7 +1,7 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
 
-def eigen_corr(event):
+def eigen_corr(**event):
     import os
     import h5py
     import subprocess
