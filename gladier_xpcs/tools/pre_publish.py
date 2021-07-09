@@ -20,7 +20,7 @@ show how to do it, you should probably delete this file!
 from gladier import GladierBaseTool, generate_flow_definition
 
 
-def pre_publish_gather_metadata(data):
+def pre_publish_gather_metadata(**data):
     from pilot.client import PilotClient
 
     dataset, destination = data['dataset'], data.get('destination', '/')
@@ -74,7 +74,7 @@ class PrePublish(GladierBaseTool):
                     }]
                 },
                 'ResultPath': '$.PrePublishGatherMetadata',
-                'WaitTime': 60,
+                'WaitTime': 600,
                 'Next': 'PrePublishTransfer',
             },
             'PrePublishTransfer': {
