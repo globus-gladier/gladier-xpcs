@@ -1,7 +1,7 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
 
-def apply_qmap(data):
+def apply_qmap(**data):
     import math
     import os
     import h5py

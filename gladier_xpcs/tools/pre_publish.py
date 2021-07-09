@@ -74,7 +74,7 @@ class PrePublish(GladierBaseTool):
                     }]
                 },
                 'ResultPath': '$.PrePublishGatherMetadata',
-                'WaitTime': 60,
+                'WaitTime': 600,
                 'Next': 'PrePublishTransfer',
             },
             'PrePublishTransfer': {
