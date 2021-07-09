@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
     corr_flow = corr_cli.run_flow(flow_input=flow_input)
 
-    print(corr_cli.get_flow_id)
+    #print(corr_cli.get_flow_id)
     print(corr_flow['action_id'])
 
     # pprint.pprint(flow_input)

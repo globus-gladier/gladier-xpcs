@@ -63,13 +63,13 @@ class PrePublish(GladierBaseTool):
             'PrePublishGatherMetadata': {
                 'Comment': 'Say something to start the conversation',
                 'Type': 'Action',
-                'ActionUrl': 'https://api.funcx.org/automate',
-                'ActionScope': 'https://auth.globus.org/scopes/facd7ccc-c5f4-42aa-916b-a0e270e2c2a9/automate2',
+                'ActionUrl': 'https://automate.funcx.org',
+                'ActionScope': 'https://auth.globus.org/scopes/b3db7e59-a6f1-4947-95c2-59d6b7a70f8c/action_all',
                 'ExceptionOnActionFailure': False,
                 'Parameters': {
                     'tasks': [{
                         'endpoint.$': '$.input.funcx_endpoint_non_compute',
-                        'func.$': '$.input.pre_publish_gather_metadata_funcx_id',
+                        'function.$': '$.input.pre_publish_gather_metadata_funcx_id',
                         'payload.$': '$.input.pilot',
                     }]
                 },
