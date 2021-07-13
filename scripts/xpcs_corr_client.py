@@ -17,8 +17,8 @@ def register_container():
     fxc = FuncXClient()
     from gladier_xpcs.tools.corr import eigen_corr
     cont_dir = '/eagle/APSDataAnalysis/XPCS_test/containers/'
-    container_name = 'eigen.simg'
-    eigen_cont_id = fxc.register_container(location=cont_dir+'/'+container_name,container_type='singularity')
+    container_name = 'eigen_v2.simg'
+    eigen_cont_id = fxc.register_container(location=cont_dir+container_name,container_type='singularity')
     corr_cont_fxid = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
     return corr_cont_fxid
 
@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
             # funcX endpoints
             'funcx_endpoint_non_compute':'e449e8b8-e114-4659-99af-a7de06feb847',
-            'funcx_endpoint_compute':    'e449e8b8-e114-4659-99af-a7de06feb847',
+            'funcx_endpoint_compute':    '4c676cea-8382-4d5d-bc63-d6342bdb00ca',
             #'funcx_endpoint_non_compute': '8f2f2eab-90d2-45ba-a771-b96e6d530cad',
             #'funcx_endpoint_compute':     '9337a3c3-0ee5-45b8-bcbd-8a277f461e23',
 
