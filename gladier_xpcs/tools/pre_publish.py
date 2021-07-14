@@ -81,7 +81,7 @@ class PrePublish(GladierBaseTool):
                 'Comment': 'Transfer files for publication',
                 'Type': 'Action',
                 'ActionUrl': 'https://actions.automate.globus.org/transfer/transfer',
-                'InputPath': '$.PrePublishGatherMetadata.details.result.transfer',
+                'InputPath': '$.PrePublishGatherMetadata.details.result[0].transfer',
                 'ResultPath': '$.PrePublishTransfer',
                 'WaitTime': 600,
                 'Next': 'PrePublishIngest',
@@ -91,7 +91,7 @@ class PrePublish(GladierBaseTool):
                 'Type': 'Action',
                 'ActionUrl': 'https://actions.globus.org/search/ingest',
                 'ExceptionOnActionFailure': False,
-                'InputPath': '$.PrePublishGatherMetadata.details.result.search',
+                'InputPath': '$.PrePublishGatherMetadata.details.result[0].search',
                 'ResultPath': '$.PrePublishIngest',
                 'WaitTime': 300,
                 'End': True
