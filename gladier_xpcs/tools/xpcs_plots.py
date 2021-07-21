@@ -26,6 +26,9 @@ def gen_image(dset, basename, cbar=True, log=False):
     if cbar:
         figsize[1] *= 1.1
         plt.title(basename)
+        ax = plt.gca()
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
     else:
         plt.axes([0, 0, 1, 1])  # Make the plot occupy the whole canvas
         plt.axis('off')
@@ -35,11 +38,10 @@ def gen_image(dset, basename, cbar=True, log=False):
     else:
         image_filename = basename + '.png'
         im = plt.imshow(dset)
+
     if cbar:
-        ax = plt.gca()
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
         plt.colorbar(im, cax=cax)
+    
     plt.savefig(image_filename, dpi=100)
 
 
@@ -271,26 +273,10 @@ def make_plots(h5filename):
                   plot_g2_all, plot_g2_all_fit, plot_pixelSum, plot_fits):
         try:
             xplot(x_h5_file)
-            plt.close('all')
+            plt.close('all') #why does it need this?
         except Exception as e:
             with open(error_log, 'w+') as f:
                 f.write(f'Error Plotting {xplot.__name__}: {str(e)}')
-
-    plot_intensity_vs_time(x_h5_file)
-    plt.close('all')
-    plot_intensity_vs_q(x_h5_file)
-    plt.close('all')
-    plot_intensity_t_vs_q(x_h5_file)
-    plt.close('all')
-    plot_g2_all(x_h5_file)
-    plt.close('all')
-    plot_g2_all_fit(x_h5_file)
-    plt.close('all')
-    plot_pixelSum(x_h5_file)
-    plt.close('all')
-    plot_fits(x_h5_file)
-
-
 
 if __name__ == '__main__':
     make_plots(sys.argv[1])
