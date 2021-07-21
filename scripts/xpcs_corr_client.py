@@ -88,8 +88,6 @@ if __name__ == '__main__':
             # funcX endpoints
             'funcx_endpoint_non_compute':'e449e8b8-e114-4659-99af-a7de06feb847',
             'funcx_endpoint_compute':    '4c676cea-8382-4d5d-bc63-d6342bdb00ca',
-            #'funcx_endpoint_non_compute': '8f2f2eab-90d2-45ba-a771-b96e6d530cad',
-            #'funcx_endpoint_compute':     '9337a3c3-0ee5-45b8-bcbd-8a277f461e23',
 
             # globus endpoints
             'globus_endpoint_clutch': args.source_globus_ep,
@@ -103,7 +101,9 @@ if __name__ == '__main__':
 
     corr_cli = XPCSClient()
 
-    corr_flow = corr_cli.run_flow(flow_input=flow_input)
+    corr_flow_label = 'online_' + hdf_name
+
+    corr_flow = corr_cli.run_flow(flow_input=flow_input, label=corr_flow_label)
 
     #print(corr_cli.get_flow_id)
     print(corr_flow['action_id'])
