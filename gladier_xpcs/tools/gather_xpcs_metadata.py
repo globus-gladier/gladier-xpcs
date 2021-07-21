@@ -3,10 +3,8 @@ from gladier import GladierBaseTool, generate_flow_definition
 
 def gather_xpcs_metadata(**event):
     import os
-    import json
-    import shutil
     import datetime
-    from XPCS.tools.xpcs_metadata import gather
+    from gladier_xpcs.tools.xpcs_metadata import gather
 
     # Generate metadata
     hdf_file = event['hdf_file']

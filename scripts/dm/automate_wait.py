@@ -1,9 +1,13 @@
 #!/home/beams/8IDIUSER/.conda/envs/gladier/bin/python
 
 import argparse
-from globus_automate_client import create_flows_client
 import time
+import sys
 
+from gladier.utils.flow_generation import get_ordered_flow_states
+
+##import the client
+from gladier_xpcs.online_processing import XPCSClient
 def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--flow_id", help="The automate flow to check.",
@@ -22,22 +26,28 @@ if __name__ == '__main__':
     args = arg_parse()
 
 
-    # class checkClient(GladierBaseClient):
-    #     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
-    flows_client = create_flows_client()
+    corr_cli = XPCSClient()
 
-    flows_client.get_status(args.task_id)
-
+    flow_steps = get_ordered_flow_states()
+    
     start_time = time.now()
+
+
+    #callback = callback or self._default_progress_callback
+    status = corr_cli.get_status(args.run_id)
+    while status['status'] not in ['SUCCEEDED', 'FAILED']:
+        status = corr_cli.get_status(args.run_id)
+        if status['status'] == 'ACTIVE':
+            print(f'[{status["status"]}]: {status["details"]["description"]}')
 
     flow_status = 'ACTIVE'
     while flow_status == 'ACTIVE':
-        if timeout:
+        if args.timeout:
             cur_time = time.time()
-            if int(cur_time - start_time) >= int(walltime):
-                return "FAILED"
+            if int(cur_time - start_time) >= int(args.timeout):
+                sys.exit(1)
 
-        flow_action = flows_client.flow_action_status(args.flow_id, args.run_id)
+        flow_action = corr_cli.flow_action_status(args.flow_id, args.run_id)
         flow_status = flow_action['status']
         flow_state = 'DONE'
 
@@ -46,23 +56,15 @@ if __name__ == '__main__':
         except Exception as e:
             pass
 
-        if wait_step:
-            flow_log = flows_client.flow_action_log(args.flow_id, args.run_id)
+        if args.step:
+            flow_log = corr_cli.flow_action_log(args.flow_id, args.run_id)
             for l in flow_log['entries']:
                 if 'details' in l and 'state_name' in l['details']:
                     # Check if the stage is later than the one we are waiting on
-                    if l['details']['state_name'] in flow_stages[wait_stage + 1:]:
-                        return "SUCCEEDED"
+                    if l['details']['state_name'] in flow_steps[args.step + 1:]:
+                        sys.exit(0)
 
-        # Using warning to silence flow logs
-        logging.warning(f'TaskID: {flow_id}, Status: {flow_status}, State: {flow_state}')
+
         time.sleep(10)
 
 
-    return flow_status
-
-    flow_response = 0
-    if flow_response == "SUCCEEDED":
-        sys.exit(0)
-    else:
-        sys.exit(1)

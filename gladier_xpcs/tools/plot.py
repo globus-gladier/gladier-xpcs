@@ -5,7 +5,7 @@ from gladier import GladierBaseTool, generate_flow_definition
 
 def make_corr_plots(**event):
     import os
-    from XPCS.tools import xpcs_plots
+    from gladier_xpcs.tools import xpcs_plots
     os.chdir(os.path.join(event['proc_dir'], os.path.dirname(event['hdf_file'])))
     try:
         xpcs_plots.make_plots(os.path.join(event['proc_dir'], event['hdf_file']))

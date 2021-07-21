@@ -8,7 +8,6 @@ import gladier.tests
 from gladier_xpcs.online_processing import XPCSClient
 import argparse
 import os
-import pprint
 
 
 # This is a patch to continue using funcx 0.0.3 until the new AP comes online.
@@ -17,8 +16,8 @@ def register_container():
     fxc = FuncXClient()
     from gladier_xpcs.tools.corr import eigen_corr
     cont_dir = '/eagle/APSDataAnalysis/XPCS_test/containers/'
-    container_name = 'eigen_v2.simg'
-    eigen_cont_id = fxc.register_container(location=cont_dir+container_name,container_type='singularity')
+    container_name = 'eigen.simg'
+    eigen_cont_id = fxc.register_container(location=cont_dir+'/'+container_name,container_type='singularity')
     corr_cont_fxid = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
     return corr_cont_fxid
 
@@ -86,8 +85,10 @@ if __name__ == '__main__':
             'flags': '',
 
             # funcX endpoints
+            # Should think of moving those to a cfg with better naming
             'funcx_endpoint_non_compute':'e449e8b8-e114-4659-99af-a7de06feb847',
             'funcx_endpoint_compute':    '4c676cea-8382-4d5d-bc63-d6342bdb00ca',
+
 
             # globus endpoints
             'globus_endpoint_clutch': args.source_globus_ep,

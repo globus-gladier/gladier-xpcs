@@ -1,5 +1,5 @@
-gladier_tools<0.4.0>=0.3.0a1
-#-e git+https://github.com/globus-labs/globus-automation#egg=globus-automation
+gladier_tools
 matplotlib
+globus-pilot
 numpy
 h5py
