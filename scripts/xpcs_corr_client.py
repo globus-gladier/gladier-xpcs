@@ -10,7 +10,6 @@ import argparse
 import os
 
 
-# This is a patch to continue using funcx 0.0.3 until the new AP comes online.
 def register_container():
     from funcx.sdk.client import FuncXClient
     fxc = FuncXClient()
