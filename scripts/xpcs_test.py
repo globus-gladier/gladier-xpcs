@@ -1,7 +1,7 @@
 #!/home/beams/8IDIUSER/.conda/envs/gladier/bin/python
 
 import os
-from time import sleep
+from time import sleep , strftime
 
 import argparse
 def arg_parse():
@@ -9,6 +9,7 @@ def arg_parse():
     parser.add_argument('--f', default='samples_dm.txt')
     parser.add_argument('--n', default=10, type=int)
     parser.add_argument('--t', default=2, type=int)
+    parser.add_argument('--l', default=None, type=str)
     return parser.parse_args()
 
 
@@ -27,6 +28,9 @@ if __name__ == '__main__':
     if n_files == -1:
         n_files = len(samples)
     
+    if not args.l:
+        logfile = strftime("%Y%m%d_%H%M") + 'log.txt'
+
     print(f'Found {len(samples)} files') 
     print(f'Executing {n_files} files')
     for k in range(0,n_files):
@@ -35,4 +39,4 @@ if __name__ == '__main__':
         print(cmd)
         sleep(beamline_wait)
         os.system(cmd)
-
+        # cmd get flow id? !!
