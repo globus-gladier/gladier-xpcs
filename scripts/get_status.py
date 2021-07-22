@@ -49,19 +49,17 @@ if __name__ == '__main__':
         if args.timeout:
             cur_time = time.time()
             if int(cur_time - start_time) >= int(args.timeout):
-                print('Out of Time!!')
                 sys.exit(1)
 
         status = corr_cli.get_status(args.run_id)
         curr_step = status['details']['action_statuses'][0]['state_name']
         curr_index = flow_steps.index(curr_step)
 
-        if curr_index<step_index:
-            print('I am in the past')
-        if curr_index==step_index:
-            print('I am in the present')
+        if status['status']=='FAILED': #this could be out of the loop to prevent overchecking
+            sys.exit(1)
+
         if curr_index>step_index:
-            print('I am in the future')
+            sys.exit(0)
 
         time.sleep(2)
 
