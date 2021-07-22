@@ -3,6 +3,7 @@
 import argparse
 import time
 import sys
+from pprint import pprint
 
 from gladier.utils.flow_generation import get_ordered_flow_states
 
@@ -26,40 +27,40 @@ if __name__ == '__main__':
 
     corr_cli = XPCSClient()
 
-    flow_steps = get_ordered_flow_states()
+    flow_dict = get_ordered_flow_states(corr_cli.flow_definition)
+    flow_steps = []
+    for key, value in flow_dict.items() :
+        flow_steps.append(key)
     
-    start_time = time.now()
+    start_time = time.time()
 
+    if args.step not in flow_steps:
+        print(args.step + ' not in valid steps')
+        print(flow_steps)
+        sys.exit(-1)
+
+
+    step_index = flow_steps.index(args.step)
 
     status = corr_cli.get_status(args.run_id)
+
     while status['status'] not in ['SUCCEEDED', 'FAILED']:
+
         if args.timeout:
             cur_time = time.time()
             if int(cur_time - start_time) >= int(args.timeout):
                 sys.exit(1)
 
         status = corr_cli.get_status(args.run_id)
-        if status['status'] == 'ACTIVE':
-            print(f'[{status["status"]}]: {status["details"]["description"]}')
+        curr_step = status['details']['action_statuses'][0]['state_name']
+        curr_index = flow_steps.index(curr_step)
+
+        if status['status']=='FAILED': #this could be out of the loop to prevent overchecking
+            sys.exit(1)
+
+        if curr_index>step_index:
+            sys.exit(0)
+
+        time.sleep(2)
 
 
-
-        # flow_action = corr_cli.flow_action_status(args.flow_id, args.run_id)
-        # flow_status = flow_action['status']
-        # flow_state = 'DONE'
-
-        # try:
-        #     flow_state = flow_action.data['details']['details']['state_name']
-        # except Exception as e:
-        #     pass
-
-        # if args.step:
-        #     flow_log = corr_cli.flow_action_log(args.flow_id, args.run_id)
-        #     for l in flow_log['entries']:
-        #         if 'details' in l and 'state_name' in l['details']:
-        #             # Check if the stage is later than the one we are waiting on
-        #             if l['details']['state_name'] in flow_steps[args.step + 1:]:
-        #                 sys.exit(0)
-
-
-        # time.sleep(10)

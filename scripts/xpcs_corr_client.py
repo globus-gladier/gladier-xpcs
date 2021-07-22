@@ -3,14 +3,13 @@
 ## /home/beams/8IDIUSER/.conda/envs/gladier/bin/python /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf '/data/xpcs8/2019-1/comm201901/cluster_results/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf' --imm /data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm --group 0bbe98ef-de8f-11eb-9e93-3db9c47b68ba
 
 # Enable Gladier Logging
-import gladier.tests
+# import gladier.tests
 
 from gladier_xpcs.client_online_corr import XPCSClient
 import argparse
 import os
 
 
-# This is a patch to continue using funcx 0.0.3 until the new AP comes online.
 def register_container():
     from funcx.sdk.client import FuncXClient
     fxc = FuncXClient()
@@ -102,12 +101,12 @@ if __name__ == '__main__':
 
     corr_cli = XPCSClient()
 
-    corr_flow_label = 'online_' + hdf_name
-
+    corr_flow_label = hdf_name
+    #print(corr_flow_label)
     corr_flow = corr_cli.run_flow(flow_input=flow_input, label=corr_flow_label)
 
-    #print(corr_cli.get_flow_id)
-    print(corr_flow['action_id'])
+    #print('flow_id : ' + corr_cli.get_flow_id)
+    print('run_id : ' + corr_flow['action_id'])
 
     # pprint.pprint(flow_input)
     # pprint.pprint(corr_cli.flow_definition)
