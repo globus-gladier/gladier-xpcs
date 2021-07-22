@@ -7,7 +7,7 @@ import sys
 from gladier.utils.flow_generation import get_ordered_flow_states
 
 ##import the client
-from gladier_xpcs.online_processing import XPCSClient
+from gladier_xpcs.client_online_corr import XPCSClient
 def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--run_id", help="The automate flow instance(run) to check.",

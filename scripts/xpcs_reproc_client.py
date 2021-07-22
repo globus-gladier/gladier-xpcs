@@ -1,13 +1,13 @@
-#!/home/beams/8IDIUSER/.conda/envs/gladier/bin/python
-
-## /home/beams/8IDIUSER/.conda/envs/gladier/bin/python /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf '/data/xpcs8/2019-1/comm201901/cluster_results/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf' --imm /data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm --group 0bbe98ef-de8f-11eb-9e93-3db9c47b68ba
+#!/usr/bin/env python 
 
 # Enable Gladier Logging
 import gladier.tests
 
-from gladier_xpcs.client_online_corr import XPCSClient
 import argparse
 import os
+from pprint import pprint
+
+from gladier_xpcs.client_reprocess import XPCSReprocessing
 
 
 # This is a patch to continue using funcx 0.0.3 until the new AP comes online.
@@ -21,7 +21,6 @@ def register_container():
     corr_cont_fxid = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
     return corr_cont_fxid
 
-
 def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument('--hdf', help='Path to the hdf file',
@@ -31,6 +30,10 @@ def arg_parse():
                         default='/data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001'
                                 '/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
     parser.add_argument('--group', help='Visibility in Search', default=None)
+    parser.add_argument('--manifest_id', help='Visibility in Search', 
+                        default='55dc53cf-593a-40d0-aab6-fcea1c1d05a4')
+    parser.add_argument('--manifest_path', help='Visibility in Search', 
+                        default='globus://08925f04-569f-11e7-bef8-22000b9a448b/projects/APSDataAnalysis/nick/gladier_testing/'),
     parser.add_argument('--source-globus-ep', help='Source Globus Endpoint (Default Clutch)',
                         default='fdc7e74a-fa78-11e8-9342-0e3d676669f4')
     parser.add_argument('--compute-globus-ep', help='Compute Globus Endpoint (Default Theta)',
@@ -39,7 +42,6 @@ def arg_parse():
                         default='/eagle/APSDataAnalysis/XPCS_test')
 
     return parser.parse_args()
-
 
 if __name__ == '__main__':
 
@@ -54,29 +56,29 @@ if __name__ == '__main__':
     hdf_file = os.path.join(dataset_dir, hdf_name)
     imm_file = os.path.join(dataset_dir, imm_name)
 
+    manifest_id = args.manifest_id
+    manifest_path = args.manifest_path
+
+
     flow_input = {
         'input': {
-            'pilot': {
-                # This is the directory which will be published to petrel
-                'dataset': dataset_dir,
-                'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
-                'project': 'xpcs-8id',
-                'source_globus_endpoint': args.compute_globus_ep,
-                # Extra groups can be specified here. The XPCS Admins group will always
-                # be provided automatically.
-                'groups': [args.group] if args.group else [],
-            },
+            # Manifest input files, and destination for where to process (Anyone can use the manifest below)
+            'manifest_id': manifest_id,
+            'manifest_destination': manifest_path,
 
-            'transfer_from_clutch_to_theta_items': [
-                {
-                    'source_path': args.hdf,
-                    'destination_path': hdf_file,
-                },
-                {
-                    'source_path': args.imm,
-                    'destination_path': imm_file,
-                }
-            ],
+            # Qmap inputs
+            'qmap_source_endpoint': 'e55b4eab-6d04-11e5-ba46-22000b92c6ec',
+            'qmap_source_path': '/XPCSDATA/Automate/qmap/sanat201903_qmap_S270_D54_lin.h5',
+            'qmap_destination_endpoint': '08925f04-569f-11e7-bef8-22000b9a448b',
+            'qmap_file': '/projects/APSDataAnalysis/nick/gladier_testing/sanat201903_qmap_S270_D54_lin.h5',
+            'flat_file': 'Flatfiel_AsKa_Th5p5keV.hdf',
+
+            # Pilot inputs (Renames the dataset)
+            'reprocessing_suffix': '_nick_reprocessing_test',
+            
+
+            # Useful for turning off "manifest_to_list" and using a custom payload
+            'parameter_file': '/projects/APSDataAnalysis/nick/gladier_testing/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_qmap/parameters.json',
 
             'proc_dir': dataset_dir,
             'hdf_file': hdf_file,
@@ -96,20 +98,17 @@ if __name__ == '__main__':
 
             # container hack for corr 
             'eigen_corr_funcx_id': register_container()
+
         }
     }
 
+    re_cli = XPCSReprocessing()
+    pprint(re_cli.flow_definition)
+    # re_cli.logout()
+    pprint(re_cli.get_input())
 
-    corr_cli = XPCSClient()
+    corr_flow = re_cli.run_flow(flow_input=flow_input)
+    action_id = corr_flow['action_id']
 
-    corr_flow_label = 'online_' + hdf_name
-
-    corr_flow = corr_cli.run_flow(flow_input=flow_input, label=corr_flow_label)
-
-    #print(corr_cli.get_flow_id)
-    print(corr_flow['action_id'])
-
-    # pprint.pprint(flow_input)
-    # pprint.pprint(corr_cli.flow_definition)
-    # corr_cli.progress(corr_flow['action_id'])
-    # pprint.pprint(corr_cli.get_status(corr_flow['action_id']))
+    re_cli.progress(action_id)
+    pprint(re_cli.get_status(action_id))

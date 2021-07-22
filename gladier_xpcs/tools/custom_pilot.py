@@ -7,7 +7,7 @@ def custom_pilot(**event):
     import json
     import shutil
     import datetime
-    from XPCS.tools.xpcs_metadata import gather
+    from gladier_xpcs.tools.xpcs_metadata import gather
     from pilot.client import PilotClient
 
     # Do the last minute renaming before uploading.
