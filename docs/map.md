@@ -13,15 +13,15 @@ Suresh can add your ssh key if necessary.
 
 Raf endpoints: 
 
-    theta_non_compute(raf) = 8f2f2eab-90d2-45ba-a771-b96e6d530cad
-    theta_compute(raf) = 23519765-ef2e-4df2-b125-e99de9154611
+    theta_non_compute(raf) = 
+    theta_compute(raf) = 
 
-    theta_xpcs_queue(xpcs) = 9337a3c3-0ee5-45b8-bcbd-8a277f461e23
+    theta_xpcs_queue(xpcs) = 
 
 ## Globus Endpoints
 
 ALCF:
-    dtn_eagle = 05d2c76a-e867-4f67-aa57-76edeb0beda0
+    dtn_eagle = 
     eagle path = ``
     dtn_petrel = 
     petrel_path = ``

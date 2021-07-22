@@ -1,7 +1,7 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
 
-def manifest_to_list(data):
+def manifest_to_list(**data):
     """Create funcx execution tasks given a manifest"""
     import os
     import json

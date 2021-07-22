@@ -1,7 +1,7 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
 
-def list_to_fx_tasks(data):
+def list_to_fx_tasks(**data):
     funcx_state_input = {}
     for state in data['states']:
         tasks = [{
