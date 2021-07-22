@@ -38,7 +38,7 @@
                 'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf $clusterResultsDir/$outputHdf5File --imm $clusterDataDir/$immFile"',
                  #   --group None"' , ##activate when group can be passed 
                 'outputVariableRegexList' : [
-                    '(?P<AutomateId>.*)'
+                    'flow_id : (?P<AutomateId>.*)'
                 ],
             },
             '03-MonitorAutomate' : {'command': '/bin/echo Automate ID: $AutomateId'},
