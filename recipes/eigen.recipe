@@ -1,0 +1,61 @@
+Bootstrap: docker
+From: ubuntu:20.04
+
+%environment
+    PATH="/container/miniconda/bin:$PATH"
+
+%post
+
+   export DEBIAN_FRONTEND=noninteractive
+   rm -rf Music/ Public/ Videos/ Templates/ Pictures/ Documents/ examples.desktop
+
+   # apt remove --purge -y snapd gnome-software-plugin-snap gnome-calculator 
+   # apt remove --purge -y gnome-characters  gnome-getting-started-docs 
+   # apt remove --purge -y gnome-mahjongg  gnome-mines gnome-screenshot gnome-sudoku
+   # apt remove --purge -y gnome-todo gnome-user-* 
+   # apt remove --purge -y thunderbird remmina firefox compton leafpad clipit rhythmbox
+   # apt remove --purge -y libreoffice-*
+   # apt remove --purge -y cups cups-browsed avahi-daemon
+   # apt remove --purge -y gnome-software ## What does this removes!!??
+   # apt remove --purge -y firefox cups cups-browsed avahi-daemon avahi-autoipd
+   # apt remove --purge -y aisleriot gnome-calendar 
+   # apt remove --purge -y cheese deja-dup seahorse shotwell gnome-video-effects 
+   # apt remove --purge -y imagemagick transmission onboard
+   # apt remove --purge -y printer-driver-* libavahi* 
+   # apt remove --purge -y xserver-xorg-input-wacom xserver-xorg-video-amdgpu xserver-xorg-video-ati xserver-xorg-video-radeon
+   # apt remove --purge -y chromium-browser chromium-browser-l10n
+
+    mkdir -p /container
+
+    apt-get update
+    apt-get install -y wget git build-essential cmake make
+    apt-get install -y libeigen3-dev libhdf5-dev libgflags-dev libspdlog-dev
+    rm -rf /var/lib/apt/lists/*
+        
+    cd container
+    git clone --recurse-submodules https://github.com/AdvancedPhotonSource/xpcs-eigen.git
+
+    cd xpcs-eigen
+    mkdir build && cd build
+    cmake ../
+    make -j
+
+    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /container/miniconda && rm Miniconda3-latest-Linux-x86_64.sh
+
+    # keep conda in user dir, so can do conda install
+    export PATH="/container:/container/miniconda/bin:$PATH"
+
+    conda config --set always_yes yes --set changeps1 no --set auto_update_conda yes
+    conda install conda-build anaconda-client \
+      && conda update conda 
+
+    conda install numpy
+    conda install h5py
+    conda install pip
+    pip install funcx
+    pip install funcx-endpoint
+
+    ln -s /container/xpcs-eigen/build/corr /corr
+    ln -s /container/xpcs-eigen/build/corr /usr/bin/corr
+    unset DEBIAN_FRONTEND
