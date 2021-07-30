@@ -200,6 +200,7 @@ def apply_qmap(**data):
 })
 class ApplyQmap(GladierBaseTool):
     required_input = [
+        'funcx_endpoint_non_compute',
         'proc_dir',
         'qmap_file',
         'flat_file',
