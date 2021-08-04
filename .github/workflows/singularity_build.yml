@@ -50,8 +50,8 @@
 
 #     - name: Build Container
 #       env:
-#         SINGULARITY_RECIPE: dials_v1.recipe
-#         OUTPUT_CONTAINER: dials_v1.sif
+#         SINGULARITY_RECIPE: recipes/eigen.recipe
+#         OUTPUT_CONTAINER: eigen.sif
 #       run: |
 #        ls 
 #        if [ -f "${SINGULARITY_RECIPE}" ]; then
