@@ -32,13 +32,17 @@ def gather_xpcs_metadata(**event):
             metadata.pop(evil_key)
 
     pilot = event['pilot']
+    # metadata passed through from the top level takes precedence. This allows for
+    # overriding fields through $.input
+    metadata.update(pilot.get('metadata', {}))
     pilot['metadata'] = metadata
     pilot['groups'] = pilot.get('groups', [])
     return pilot
 
 
 @generate_flow_definition(modifiers={
-    gather_xpcs_metadata: {'endpoint': 'funcx_endpoint_non_compute'}
+    gather_xpcs_metadata: {'endpoint': 'funcx_endpoint_non_compute',
+                           'ExceptionOnActionFailure': True}
 })
 class GatherXPCSMetadata(GladierBaseTool):
 

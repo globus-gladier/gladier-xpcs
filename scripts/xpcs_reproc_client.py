@@ -1,4 +1,8 @@
 #!/usr/bin/env python 
+"""
+Convenience script to test XPCS reprocessing.
+"""
+
 
 # Enable Gladier Logging
 
@@ -6,7 +10,7 @@ import argparse
 import os
 from pprint import pprint
 
-import gladier_xpcs.logging
+import gladier_xpcs.log
 from gladier_xpcs.client_reprocess import XPCSReprocessingClient
 
 
@@ -24,11 +28,11 @@ def register_container():
 def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument('--hdf', help='Path to the hdf file',
-                        default='/XPCSDATA/Automate/A010_00003_Vol20_quenchT102p7ohms_att1_Rq0_0001-100000/'
-                                'A010_00003_Vol20_quenchT102p7ohms_att1_Rq0_0001-100000.hdf')
+                        default='/XPCSDATA/Automate/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/'
+                                'A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf')
     parser.add_argument('--imm', help='Path to the imm',
-                        default='/XPCSDATA/Automate/A010_00003_Vol20_quenchT102p7ohms_att1_Rq0_0001-100000/'
-                                'A010_00003_Vol20_quenchT102p7ohms_att1_Rq0.bin')
+                        default='/XPCSDATA/Automate/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/'
+                                'A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
     parser.add_argument('--group', help='Visibility in Search', default=None)
     parser.add_argument('--source-globus-ep', help='Source Globus Endpoint (Default Petrel)',
                         default='e55b4eab-6d04-11e5-ba46-22000b92c6ec')
@@ -42,6 +46,7 @@ def arg_parse():
                         default='/projects/APSDataAnalysis/nick/gladier_testing/')
 
     return parser.parse_args()
+
 
 if __name__ == '__main__':
 
@@ -70,35 +75,28 @@ if __name__ == '__main__':
                 'groups': [args.group] if args.group else [],
             },
 
-            'transfer_from_petrel_to_theta_items': [
-                {
-                    'source_path': args.hdf,
-                    'destination_path': hdf_file,
-                },
-                {
-                    'source_path': args.imm,
-                    'destination_path': imm_file,
-                }
-            ],
-
             'qmap_source_endpoint': args.qmap_source_globus_ep,
             'qmap_source_path': args.qmap_source_globus_path,
             'qmap_destination_endpoint': args.compute_globus_ep,
             'qmap_file': qmap_file,
             'flat_file': 'not_used',
 
+            'hdf_file_source': args.hdf,
+            'imm_file_source': args.imm,
             'proc_dir': dataset_dir,
             'hdf_file': hdf_file,
             'imm_file': imm_file,
-            'corr_loc': 'corr',
+            # 'corr_loc': 'corr',
+            'corr_loc': '/bin/echo',
+            # 'corr_loc': '/lus/theta-fs0/projects/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
             'flags': '',
 
             # globus endpoints
-            'globus_endpoint_petrel': args.source_globus_ep,
-            'globus_endpoint_theta': args.compute_globus_ep,
+            'globus_endpoint_source': args.source_globus_ep,
+            'globus_endpoint_proc': args.compute_globus_ep,
 
             # container hack for corr
-            # 'eigen_corr_funcx_id': register_container()
+            'eigen_corr_funcx_id': register_container()
         }
     }
 

@@ -4,9 +4,7 @@ from .corr import EigenCorr
 from .plot import MakeCorrPlots
 from .gather_xpcs_metadata import GatherXPCSMetadata
 from .publish import Publish
-
-from .apply_qmap import ApplyQmap
-from .custom_pilot import CustomPilot
+from .warm_nodes import WarmNodes
 
 
 
@@ -15,8 +13,7 @@ __all__ = [
     'PrePublish',
     'EigenCorr', 
     'MakeCorrPlots',
-    'GatherXPCSMetadata'
+    'GatherXPCSMetadata',
     'Publish',
-    'ApplyQmap', 
-    'CustomPilot', 
+    'WarmNodes',
     ]
