@@ -23,36 +23,39 @@ from gladier import GladierBaseTool, generate_flow_definition
 def pre_publish_gather_metadata(**data):
     from pilot.client import PilotClient
 
-    dataset, destination = data['dataset'], data.get('destination', '/')
-    index, project, groups = data['index'], data['project'], data.get('groups', [])
 
-    # Bootstrap Pilot
-    pc = PilotClient(config_file=None, index_uuid=index)
-    pc.project.set_project(project)
-    # short_path is how pilot internally refers to datasets, implicitly accounting for
-    # the endpoint and base project path. After publication, you may refer to your
-    # dataset via the short path -- ``pilot describe short_path``
-    short_path = pc.build_short_path(dataset, destination)
-    return {
-        'search': {
-            'id': data.get('id', 'metadata'),
-            'content': pc.gather_metadata(dataset, destination,
-                                          custom_metadata=data.get('metadata')),
-            'subject': pc.get_subject_url(short_path),
-            'visible_to': [f'urn:globus:groups:id:{g}' for g in groups + [pc.get_group()]],
-            'search_index': index
-        },
-        'transfer': {
-            'source_endpoint_id': data['source_globus_endpoint'],
-            'destination_endpoint_id': pc.get_endpoint(),
-            'transfer_items': [{
-                'source_path': src,
-                'destination_path': dest,
-                # 'recursive': False,  # each file is explicit in pilot, no directories
-            } for src, dest in pc.get_globus_transfer_paths(dataset, destination)]
+    try:
+        dataset, destination = data['dataset'], data.get('destination', '/')
+        index, project, groups = data['index'], data['project'], data.get('groups', [])
+
+        # Bootstrap Pilot
+        pc = PilotClient(config_file=None, index_uuid=index)
+        pc.project.set_project(project)
+        # short_path is how pilot internally refers to datasets, implicitly accounting for
+        # the endpoint and base project path. After publication, you may refer to your
+        # dataset via the short path -- ``pilot describe short_path``
+        short_path = pc.build_short_path(dataset, destination)
+        return {
+            'search': {
+                'id': data.get('id', 'metadata'),
+                'content': pc.gather_metadata(dataset, destination,
+                                            custom_metadata=data.get('metadata')),
+                'subject': pc.get_subject_url(short_path),
+                'visible_to': [f'urn:globus:groups:id:{g}' for g in groups + [pc.get_group()]],
+                'search_index': index
+            },
+            'transfer': {
+                'source_endpoint_id': data['source_globus_endpoint'],
+                'destination_endpoint_id': pc.get_endpoint(),
+                'transfer_items': [{
+                    'source_path': src,
+                    'destination_path': dest,
+                    # 'recursive': False,  # each file is explicit in pilot, no directories
+                } for src, dest in pc.get_globus_transfer_paths(dataset, destination)]
+            }
         }
-    }
-
+    except (PilotClientException, FileOrFolderDoesNotExist):
+        return traceback.format_exc()
 
 class PrePublish(GladierBaseTool):
 

@@ -52,8 +52,20 @@ if __name__ == '__main__':
                 sys.exit(1)
 
         status = corr_cli.get_status(args.run_id)
-        curr_step = status['details']['action_statuses'][0]['state_name']
+
+        if status.get('state_name'):
+            curr_step = status.get('state_name')       
+        elif status.get('details'):
+            det = status.get('details')
+            if det.get('details'):
+                curr_step = status['details']['details']['state_name']
+            elif det.get('action_statuses'):
+                curr_step = status['details']['action_statuses'][0]['state_name']
+        
         curr_index = flow_steps.index(curr_step)
+
+        # print(curr_step)
+        # print(curr_index)
 
         if status['status']=='FAILED': #this could be out of the loop to prevent overchecking
             sys.exit(1)
