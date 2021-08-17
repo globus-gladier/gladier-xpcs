@@ -21,8 +21,9 @@ from gladier import GladierBaseTool, generate_flow_definition
 
 
 def pre_publish_gather_metadata(**data):
+    import traceback
     from pilot.client import PilotClient
-
+    from pilot.exc import PilotClientException, FileOrFolderDoesNotExist
 
     try:
         dataset, destination = data['dataset'], data.get('destination', '/')
@@ -57,6 +58,7 @@ def pre_publish_gather_metadata(**data):
     except (PilotClientException, FileOrFolderDoesNotExist):
         return traceback.format_exc()
 
+
 class PrePublish(GladierBaseTool):
 
     flow_definition = {
@@ -68,7 +70,7 @@ class PrePublish(GladierBaseTool):
                 'Type': 'Action',
                 'ActionUrl': 'https://automate.funcx.org',
                 'ActionScope': 'https://auth.globus.org/scopes/b3db7e59-a6f1-4947-95c2-59d6b7a70f8c/action_all',
-                'ExceptionOnActionFailure': False,
+                'ExceptionOnActionFailure': True,
                 'Parameters': {
                     'tasks': [{
                         'endpoint.$': '$.input.funcx_endpoint_non_compute',
