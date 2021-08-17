@@ -113,3 +113,46 @@ if __name__ == '__main__':
     # pprint.pprint(corr_cli.flow_definition)
     # corr_cli.progress(corr_flow['action_id'])
     # pprint.pprint(corr_cli.get_status(corr_flow['action_id']))
+
+
+    import argparse
+    import time
+    import sys
+    from pprint import pprint
+
+    from gladier.utils.flow_generation import get_ordered_flow_states
+    flow_dict = get_ordered_flow_states(corr_cli.flow_definition)
+    flow_steps = []
+    for key, value in flow_dict.items() :
+        flow_steps.append(key)
+    
+    if 'EigenCorr' not in flow_steps:
+        print('EigenCorr' + ' not in valid steps')
+
+    step_index = flow_steps.index('EigenCorr')
+    status = corr_cli.get_status(corr_flow['action_id'])
+    
+    while status['status'] not in ['SUCCEEDED', 'FAILED']:
+
+        status = corr_cli.get_status(corr_flow['action_id'])
+
+        if status.get('state_name'):
+            curr_step = status.get('state_name')       
+        elif status.get('details'):
+            det = status.get('details')
+            if det.get('details'):
+                curr_step = status['details']['details']['state_name']
+            elif det.get('action_statuses'):
+                curr_step = status['details']['action_statuses'][0]['state_name']
+       
+        print(curr_step)
+        curr_index = flow_steps.index(curr_step)
+        print(curr_index)
+        
+        if status['status']=='FAILED': #this could be out of the loop to prevent overchecking
+            print('I have Failed!!')
+
+        if curr_index>step_index:
+            print('I already Passed Here!!')
+
+        time.sleep(2)
