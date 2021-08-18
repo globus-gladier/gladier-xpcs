@@ -25,6 +25,7 @@ def register_container():
     corr_cont_fxid = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
     return corr_cont_fxid
 
+
 def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument('--hdf', help='Path to the hdf file',
@@ -83,7 +84,7 @@ if __name__ == '__main__':
 
             'hdf_file_source': args.hdf,
             'imm_file_source': args.imm,
-            'proc_dir': dataset_dir,
+            'proc_dir': args.processing_dir,
             'hdf_file': hdf_file,
             'imm_file': imm_file,
             # 'corr_loc': 'corr',

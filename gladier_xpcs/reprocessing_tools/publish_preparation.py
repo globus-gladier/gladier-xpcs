@@ -5,7 +5,6 @@ def publish_preparation(**event):
     """Rename proc_dir and hdf_file with the reprocessing_suffix,
     delete the qmap file, and add reprocessing metadata to pilot"""
     import pathlib
-    from pilot.client import PilotClient
 
     # Delete the qmap file (it's just clutter, we don't want to upload it)
     if event.get('delete_qmap') is True:
@@ -14,19 +13,30 @@ def publish_preparation(**event):
     # .../A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf
     hdf = pathlib.Path(event['hdf_file'])
     # A001_Aerogel_1mm_att6_Lq0_001_0001-1000<reprocessing_suffix>
-    new_name = f'{str(hdf.with_suffix("").name)}{event["reprocessing_suffix"]}'
-    # .../A001_Aerogel_1mm_att6_Lq0_001_0001-1000<reprocessing_suffix>.hdf
-    new_hdf = hdf.with_stem(new_name)
+    new_hdf_name = f'{str(hdf.with_suffix("").name)}{event["reprocessing_suffix"]}'
 
-    # # Rename the proc dir
     proc_dir = pathlib.Path(event['proc_dir'])
-    new_proc_dir = proc_dir.parent / new_hdf.with_suffix('').name
-    # # Do the renames
-    hdf = hdf.rename(new_hdf)
-    proc_dir = proc_dir.rename(new_proc_dir)
-    hdf = proc_dir / hdf.name
-    assert hdf.exists(), f'{hdf} does not exist!'
-    assert proc_dir.exists(), f'{proc_dir} does not exist!'
+    # The dataset dir is the same as the hdf filename (without the extension)
+    dataset_dir = proc_dir / hdf.with_suffix('').name
+    # Rename the HDF first before the dataset (parent) directory changes
+    # .../A001_Aerogel_1mm_att6_Lq0_001_0001-1000<reprocessing_suffix>.hdf
+    new_hdf = hdf.rename(hdf.with_stem(new_hdf_name))
+    # Rename the parent dataset directory
+    new_dataset_dir = dataset_dir.rename(proc_dir / new_hdf.with_suffix('').name)
+    # Prepend the new dataset (parent) directory to the HDF Filename
+    new_hdf_with_new_dataset_dir = new_dataset_dir / new_hdf.name
+
+    names = {
+        'proc_dir': str(proc_dir),
+        'dataset_dir': str(dataset_dir),
+        'new_dataset_dir': str(new_dataset_dir),
+        'new_hdf_with_new_dataset_dir': str(new_hdf_with_new_dataset_dir),
+        'hdf': str(hdf),
+        'new_hdf': str(new_hdf),
+        'new_hdf_name': str(new_hdf_name),
+    }
+    if not new_dataset_dir.exists() or not new_hdf_with_new_dataset_dir.exists():
+        raise FileNotFoundError(f'File does not exist after rename: {names}')
 
     # Update metadata
     pilot = event['pilot']
@@ -34,9 +44,9 @@ def publish_preparation(**event):
     pilot_metadata.update({
         'reprocessing': {
             'qmap': {
-                'qmap_source_endpoint': event['qmap_source_endpoint'],
-                'qmap_source_path': event['qmap_source_path'],
-                'qmap_name': pathlib.Path(event['qmap_source_path']).name,
+                'source_endpoint': event['qmap_source_endpoint'],
+                'source_path': event['qmap_source_path'],
+                'name': pathlib.Path(event['qmap_source_path']).name,
             },
             'original': {
                 'dataset': pathlib.Path(event['hdf_file']).parent.name,
@@ -48,10 +58,10 @@ def publish_preparation(**event):
         }
     })
     pilot['metadata'] = pilot_metadata
-    # pilot['dataset'] = str(proc_dir)
+    pilot['dataset'] = str(dataset_dir)
     event.update({
         'proc_dir': str(proc_dir),
-        'hdf_file': str(hdf),
+        'hdf_file': str(new_hdf_with_new_dataset_dir),
         'pilot': pilot
     })
     return event
@@ -59,7 +69,9 @@ def publish_preparation(**event):
 
 @generate_flow_definition(modifiers={
     publish_preparation: {'endpoint': 'funcx_endpoint_non_compute',
-                          'ExceptionOnActionFailure': True}
+                          # Not yet supported
+                          # 'ExceptionOnActionFailure': True
+                          }
 })
 class PublishPreparation(GladierBaseTool):
 

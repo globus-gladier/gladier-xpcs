@@ -14,8 +14,6 @@ from gladier import GladierBaseClient, generate_flow_definition
 
 
 @generate_flow_definition(modifiers={
-    'eigen_corr': {'WaitTime': 7200},
-    'make_corr_plots':{'WaitTime': 7200},
     'gather_xpcs_metadata': {'payload': '$.PublishPreparation.details.result[0]'},
     'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result[0]'}
 })

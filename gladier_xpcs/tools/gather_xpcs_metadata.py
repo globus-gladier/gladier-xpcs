@@ -42,7 +42,9 @@ def gather_xpcs_metadata(**event):
 
 @generate_flow_definition(modifiers={
     gather_xpcs_metadata: {'endpoint': 'funcx_endpoint_non_compute',
-                           'ExceptionOnActionFailure': True}
+                           # Not supported yet
+                           # 'ExceptionOnActionFailure': True
+                           }
 })
 class GatherXPCSMetadata(GladierBaseTool):
 
