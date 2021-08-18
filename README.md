@@ -21,27 +21,35 @@ We highly encourage using [miniconda](miniconda)
     cd /home/beams10/8IDIUSER/DM_Workflows/xpcs8/
     dm-add-workflow --py-spec workflow-xpcs8-01-gladier.py
 
-## Running
+## Reprocessing
 
-### Corr Script
+XPCS Reprocessing takes data already published in the portal and re-runs it on corr with
+a customized (with a qmap file) hdf file. Reprocessing also has an extra step to rename
+the dataset to publish it under a different title in the portal. 
 
-After that, simply run the following:
+Although scripts exist here to test the reprocessing flow, the actual production flow is
+deployed separately on the portal. The portal installs the `gladier_xpcs` package and
+imports the Gladier Client.
 
-    python xpcs_client/scripts/reprocessing.py
+The main reprocessing client is at `gladier_xpcs/client_reprocess.py`. A script for 
+testing reprocessing is located at `scripts/xpcs_reproc_client.py`. Reprocessing
+shares some tools with the online processing flow, but contains a handful of custom
+tools under `gladier_xpcs/reprocessing_tools`.
 
-### Reprocessing Script
+### Running The Reprocessing Flow
 
-Check the reprocessing.py file and add the following to `flow_input`:
+You need to setup your deployment on Theta before you can run reprocessing. This includes
+setting up
 
-    # Manifest destination, where files will be transferred for execution (theta)
-    'manifest_destination': 'globus://08925f04-569f-11e7-bef8-22000b9a448b/projects/APSDataAnalysis/Automate_ryan/reprocessing/',
-    # Destination MUST be within the directory defined in 'manifest_destination'
-    'qmap_file': '/projects/APSDataAnalysis/Automate_ryan/reprocessing/sanat201903_qmap_S270_D54_lin.h5',
-    
-    # Your personal FuncX login/theta endpoints
-    'funcx_endpoint_non_compute': '6c4323f4-a062-4551-a883-146a352a43f5',
-    'funcx_endpoint_compute': '9f84f41e-dfb6-4633-97be-b46901e9384c',
+* a 'login' and 'compute' funcx-endpoint on theta
+* a 'processing' directory on theta you have read/write access to
 
-After that, simply run the following:
+Make sure you are also in the XPCS Developers Globus group to access XPCS datasets which
+have already been published.
 
-    python xpcs_client/scripts/reprocessing.py
+To test a reprocessing flow, ensure Test run a reprocessing flow with the following:
+
+```
+cd scripts/
+python xpcs_reproc_client.py
+```
