@@ -1,0 +1,41 @@
+<form action="{% url 'xpcs-index:reprocessing-task-create' globus_portal_framework.index %}"
+      method="POST">{% csrf_token %}
+
+  <div class="alert alert-info" role="alert">
+    <h5>Manifest Reprocessing</h5>
+
+    <p>
+      Reprocessing will apply the qmap file below, rerun datasets through corr,
+      and regenerate plots. Records will be re-ingested into search with the
+      suffix given below.
+    </p>
+
+  </div>
+  <input name="manifest" value="{{concierge_manifest.id}}" hidden>
+
+  <div class="form-group">
+    <h5>QMap File</h5>
+    <label for="qmap_ep">QMap Endpoint</label>
+    <input class="form-control" type="text" id="qmap_ep" name="qmap_ep" value="e55b4eab-6d04-11e5-ba46-22000b92c6ec">
+    <small id="qmapPathHelp" class="form-text text-muted">By default, the endpoint is set to petrel (e55b4eab-6d04-11e5-ba46-22000b92c6ec)</small>
+
+    <label for="qmap_path">Qmap Path</label>
+    <input class="form-control" type="text" id="qmap_path" name="qmap_path" value="/XPCSDATA/partitionMapLibrary/2021-1/jaeger202102_Lq0_S360_D36_Lin.h5">
+
+  </div>
+
+  <div class="form-group">
+    <h5>Results Processing</h5>
+      <label for="reprocessing_suffix">Suffix</label>
+      <input class="form-control" type="text" id="reprocessing_suffix" name="reprocessing_suffix" value="-reproc_{{concierge_manifest.search_collection.name}}">
+      <small id="reprocessingSuffixHelp" class="form-text text-muted">Adds a new suffix to each reprocessed search result.</small>
+  </div>
+
+  <hr>
+  <button id="transfer-submit-block-{{concierge_manifest.id}}"
+          type="submit"
+          class="btn mb-2 btn-primary"
+          aria-describedby="transfer-submit-help-block-{{concierge_manifest.id}}"
+          >Reprocess All Files
+  </button>
+</form>

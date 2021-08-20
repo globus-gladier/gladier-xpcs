@@ -1,0 +1,6 @@
+{% extends 'automate_app/components/action/list.html' %}
+
+
+{% block action_list_url %}
+  <a href="{% url 'xpcs-index:automate-action-detail' globus_portal_framework.index action.id %}">{{action.flow.title}}</a>
+{% endblock %}

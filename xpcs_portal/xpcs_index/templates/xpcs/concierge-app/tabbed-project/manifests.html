@@ -1,0 +1,109 @@
+{%extends "global/tabbed-project/base.html"%}
+{% load static index_template %}
+
+{%block headextras%}
+<link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+{% csrf_token %}
+<script>
+  let MANIFEST_API = "{% url 'concierge-app:manifest-detail' globus_portal_framework.index %}"
+  let MANIFEST_TRANSFER_API = "{% url 'concierge-app:manifest-transfer-detail' globus_portal_framework.index %}"
+  let csrf_token = jQuery("[name=csrfmiddlewaretoken]").val()
+
+  function deleteManifest(manifest_id) {
+    $( ".manifest-" + manifest_id ).hide('slow', function(){ $( ".manifest-" + manifest_id ).remove(); });
+    $.ajax({
+        url: MANIFEST_API + manifest_id + '/',
+        type: 'DELETE',
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("X-CSRFToken", csrf_token);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+        },
+        success: function(result) {
+            console.log('Successfully Deleted Bag');
+        }
+    });
+  }
+
+  function deleteManifestTransfer(manifest_id) {
+    $( "#manifest-transfer-" + manifest_id ).hide('slow', function(){ $( "#manifest-transfer-" + manifest_id ).remove(); });
+    $.ajax({
+        url: MANIFEST_TRANSFER_API + manifest_id + '/',
+        type: 'DELETE',
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader('X-CSRFToken', csrf_token);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+        },
+        success: function(result) {
+          console.log('Successfully deleted staged manifest')
+        }
+    });
+  }
+
+  function cancelStageBag(manifest_id) {
+    console.log('Cancel called!')
+    $( "#manifest-transfer-button-" + manifest_id ).text('Canceling Task...')
+
+    $.ajax({
+        url: MANIFEST_TRANSFER_API + manifest_id + '/cancel/',
+        type: 'POST',
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader('X-CSRFToken', csrf_token);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+        },
+        success: function(result) {
+          $( "#manifest-transfer-button-" + manifest_id ).removeClass('btn-danger')
+          $( "#manifest-transfer-button-" + manifest_id ).addClass('btn-info')
+          $( "#manifest-transfer-button-" + manifest_id ).text('Remove')
+          $( "#manifest-transfer-status-" + manifest_id ).text('Canceled')
+          $( "#manifest-transfer-button-" + manifest_id ).removeAttr('onclick')
+          $( "#manifest-transfer-button-" + manifest_id ).click(function() {deleteStageBag(manifest_id);})
+        }
+    });
+  }
+</script>
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a class="h5" href="{% url 'index-selection' %}">{{globus_portal_framework.project_title}}</a></li>
+<li class="breadcrumb-item"><a class="h5" href="{% url 'tp-landing-page' index=globus_portal_framework.index %}">{{globus_portal_framework.index_data.name}}</a></li>
+<li class="breadcrumb-item active"><a class="h5">My Bags</a></li>
+{% endblock %}
+
+
+{% block body %}
+
+{% load index_template %}
+{% if messages %}
+{% for message in messages %}
+<div class="row justify-content-md-center">
+  <div class="col">
+    {% index_template "components/message.html" as it_message %}
+    {% include it_message %}
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<div class="row">
+  <div class="col">
+    <h2 class="text-center">{{project_title}}</h2>
+  </div>
+</div>
+
+
+<h1 class="text-center my-3">My Bags</h1>
+
+<div class="container">
+  <div class="row mb-5">
+    <div class="col-3">
+      {% index_template 'concierge-app/components/manifests-transfer-detail.html' as manifests_transfer_detail %}
+      {% include manifests_transfer_detail %}
+    </div>
+    <div class="col-9">
+      {% index_template 'concierge-app/components/manifests-detail.html' as manifests_detail %}
+      {% include manifests_detail %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

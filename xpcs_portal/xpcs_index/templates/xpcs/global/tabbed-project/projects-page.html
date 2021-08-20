@@ -1,0 +1,67 @@
+{% extends 'global/tabbed-project/landing-page.html' %}
+{% load index_template %}
+
+{% block body %}
+
+<div class="row">
+  <div class="col">
+    <h2 class="text-center mt-3 mb-5">{{project_title}}</h2>
+  </div>
+</div>
+
+
+<div class="row">
+
+  <div class="col-1"></div>
+  <div class="col-10">
+  {% index_template 'components/messages.html' as it_mess %}
+  {% include it_mess %}
+  </div>
+  <div class="col-1"></div>
+
+  <div class="col-1"></div>
+  <div class="col-10">
+    <div class="alert border border-dark" role="alert">
+      <p>
+        Projects can be created using the
+        <a href="https://github.com/globusonline/pilot1-tools">Pilot1 CLI Tools</a>.
+        You can find more documentation below:
+      </p>
+      <ul>
+        <li><a href="https://github.com/globusonline/pilot1-tools/blob/master/docs/project-admin.rst">Admin Guide</a></li>
+        <li><a href="https://github.com/globusonline/pilot1-tools/blob/master/docs/user-guide.rst">User Guide</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-1"></div>
+
+  <div class="col"></div>
+  <div class="col-10">
+
+    <h3>{{projects|length}} Projects Available</h3>
+
+    {% for project in projects|dictsort:'count' reversed %}
+    <div class="card mb-3">
+      <div class="card-header">
+          <h3>{{project.title}}</h3>
+      </div>
+      <div class="card-body">
+        <p class="lead"> {{project.description|default:"No description found"}}</p>
+        <p>This project has {{project.count}} results associated with it.</p>
+        {% if project.group == 'public' %}
+        <p>The records in this project are public.</p>
+        {% else %}
+        <p>This project is secured with the <a href="https://app.globus.org/groups/{{project.group}}/about">{{project.group_name}} Group</a>.</p>
+        {% endif %}
+        <a class="btn btn-primary" href="{% url 'tp-project-search' globus_portal_framework.index project.project%}">Search This Project</a>
+
+      </div>
+    </div>
+    {% endfor %}
+
+
+  </div>
+  <div class="col"></div>
+</div>
+
+{% endblock %}
