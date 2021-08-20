@@ -1,0 +1,24 @@
+{%extends "global/tabbed-project/landing-page.html"%}
+
+{% block landing_page_about %}
+  <p class="lead font-weight-bolder">
+    X-ray Photon Correlation Spectroscopy (XPCS) is an experimental technique used
+    at Argonne's Advanced Photon Source to study dynamics in materials at nanoscale
+    by identifying correlations in time series of area detector images. This
+    process involves analyzing the pixel-by-pixel correlations for different
+    time intervals.
+  </p>
+{% endblock %}
+
+{% block landing_page_data_access %}
+  <p class="lead font-weight-bolder">Search results are limited to members of the XPCS Analysis Developers Group.</p>
+  {% if '368beb47-c9c5-11e9-b455-0efb3ba9a670' in user_groups %}
+  <a class="btn btn-success" target="_blank" href="https://app.globus.org/groups/368beb47-c9c5-11e9-b455-0efb3ba9a670/about">
+    You are a member of the XPCS Analysis Developers Group
+  </a>
+  {% else %}
+  <a class="btn btn-primary" target="_blank" href="https://app.globus.org/groups/368beb47-c9c5-11e9-b455-0efb3ba9a670/about">
+    Request Access to XPCS Analysis Developers Group
+  </a>
+  {% endif %}
+{% endblock %}

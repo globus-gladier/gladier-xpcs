@@ -1,0 +1,13 @@
+<div class="col-md-12 text-center">
+  <h2>Preview Images</h2><br>
+</div>
+{% for image_data in general_preview %}
+<div class="col-md-6">
+  <div class="card mt-3" style="">
+    <div id="preview-content-{{image_data.id}}"></div>
+    <div class="card-body">
+      <p class="card-text">{{image_data.caption}}</p>
+    </div>
+  </div>
+</div>
+{% endfor %}

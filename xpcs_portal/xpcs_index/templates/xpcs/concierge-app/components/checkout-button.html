@@ -1,0 +1,18 @@
+<a class="btn btn-outline-primary btn-block
+   {% if not request.user.is_authenticated %}
+   disabled
+   {% endif %}
+  " style="border-color: #708FCA; color: #708FCA; background-color: transparent"
+  href="{% url 'xpcs-index:xpcs-manifest-project-checkout' globus_portal_framework.index project %}?{{request.session.search.full_query}}">
+  <i class="fas fa-shopping-bag" style="font-size: 24px;"></i>
+  <span style="font-size: 22px" class="pl-2">Create Manifest</span>
+</a>
+<a class="btn btn-outline-primary btn-block
+   {% if not request.user.is_authenticated %}
+   disabled
+   {% endif %}
+  " style="border-color: #708FCA; color: #708FCA; background-color: transparent"
+  href="{% url 'xpcs-index:xpcs-reprocess-datasets-checkout' globus_portal_framework.index project %}?{{request.session.search.full_query}}">
+  <i class="fas fa-microchip" style="font-size: 24px;"></i>
+  <span style="font-size: 22px" class="pl-2">Reprocess Datasets</span>
+</a>

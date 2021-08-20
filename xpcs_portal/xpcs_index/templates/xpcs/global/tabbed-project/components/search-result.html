@@ -1,0 +1,25 @@
+{% load humanize xpcs_filters %}
+<table class="table table-sm borderless">
+  <tbody>
+  <tr>
+    {% for search_result in result.search_results %}
+    <th>{{search_result.name}}</th>
+    {% endfor %}
+  </tr>
+  <tr>
+    {% for search_result in result.search_results %}
+    {% if search_result.type == 'int' %}
+    <td>{{search_result.value|intcomma}}</td>
+    {% elif search_result.field == 'aps_cycle_v2' %}
+    <td>{{search_result.value|format_aps_cycle_v2}}</td>
+    {% elif search_result.type == 'filesize' %}
+    <td>{{search_result.value|filesizeformat}}</td>
+    {% else %}
+    <td>{{search_result.value}}</td>
+    {% endif %}
+    {% endfor %}
+  </tr>
+  </tbody>
+</table>
+
+<p class="card-text">{{result.truncated_description}}</p>
