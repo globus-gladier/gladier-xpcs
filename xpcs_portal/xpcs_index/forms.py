@@ -1,10 +1,10 @@
 from django import forms
 import json
 import logging
-from xpcs_index import models
+from xpcs_portal.xpcs_index import models
 from concierge_app.forms import SubjectSelectManifestCheckoutForm
 
-from xpcs_index.search_collector import (
+from xpcs_portal.xpcs_index.search_collector import (
     XPCSSearchCollector, XPCSReprocessingSearchCollector
 )
 

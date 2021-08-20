@@ -6,7 +6,7 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
 from automate_app.models import Action, Flow
-from xpcs_index import filter_regexes
+from xpcs_portal.xpcs_index import filter_regexes
 try:
     from gladier_xpcs.client_reprocess import XPCSReprocessingClient
 except ImportError:

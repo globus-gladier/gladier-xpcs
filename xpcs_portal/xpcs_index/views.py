@@ -14,14 +14,14 @@ from automate_app.models import Action, Flow
 
 from alcf_data_portal.views import ProjectDetail
 
-from xpcs_index.forms import (
+from xpcs_portal.xpcs_index.forms import (
     ReprocessingTaskForm, XPCSManifestCheckoutForm,
     ReprocessDatasetsCheckoutForm,
 )
 from concierge_app.views.generic import ManifestListView
 from concierge_app.views.generic import ManifestCheckoutView
 
-from xpcs_index.models import ReprocessingTask, FilenameFilter
+from xpcs_portal.xpcs_index.models import ReprocessingTask, FilenameFilter
 
 
 log = logging.getLogger(__name__)

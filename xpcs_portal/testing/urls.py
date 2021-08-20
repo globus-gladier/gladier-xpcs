@@ -1,4 +1,3 @@
-from django.contrib.sitemaps.views import sitemap
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -12,7 +11,7 @@ api = [
 
 urlpatterns = [
     path('api/v1/', include(api)),
-    path('', include('xpcs_index.urls')),
+    path('', include('xpcs_portal.xpcs_index.urls')),
     path('', include('alcf_data_portal.urls_tabbed_project')),
     path('', index_selection, name='index-selection'),
     path('favicon.ico', lambda r: redirect('/static/favicon.ico')),

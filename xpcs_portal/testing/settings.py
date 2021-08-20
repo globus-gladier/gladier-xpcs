@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-import xpcs_index.apps
+# Set SEARCH_INDEXES by importing it from the app instead
+from xpcs_portal.xpcs_index.apps import SEARCH_INDEXES  # noqa
 
 try:
     from concierge_app import CONCIERGE_SCOPE
@@ -52,7 +53,7 @@ INSTALLED_APPS = [
     'social_django',
     'automate_app',
     'concierge_app',
-    'xpcs_index',
+    'xpcs_portal.xpcs_index',
     'alcf_data_portal',
 ]
 
@@ -74,7 +75,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-ROOT_URLCONF = 'testing.urls'
+ROOT_URLCONF = 'xpcs_portal.testing.urls'
 
 TEMPLATES = [
     {
@@ -98,7 +99,6 @@ TEMPLATES = [
     },
 ]
 
-SEARCH_INDEXES = xpcs_index.apps.SEARCH_INDEXES
 TABBED_PROJECT_INDEXES = ['xpcs']
 
 SOCIAL_AUTH_GLOBUS_SCOPE = [

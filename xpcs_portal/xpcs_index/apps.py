@@ -1,13 +1,13 @@
 import os
 # from django.conf import settings
 from django.apps import AppConfig
-from xpcs_index import fields
+from xpcs_portal.xpcs_index import fields
 
 APP_DIR = os.path.join(os.path.dirname(__file__))
 
 
 class XPCSIndexConfig(AppConfig):
-    name = 'xpcs_index'
+    name = 'xpcs_portal.xpcs_index'
 
 
 GLADIER_CFG = os.path.abspath(os.path.join(APP_DIR, 'gladier.cfg'))
