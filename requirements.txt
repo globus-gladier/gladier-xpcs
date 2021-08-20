@@ -1,5 +1,1 @@
-gladier_tools
-matplotlib
-globus-pilot
-numpy
-h5py
+gladier_tools>=0.3.0
