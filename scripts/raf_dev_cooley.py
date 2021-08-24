@@ -85,8 +85,8 @@ if __name__ == '__main__':
 
             # funcX endpoints
             # Should think of moving those to a cfg with better naming
-            'funcx_endpoint_non_compute':'508e717a-b725-411c-b1db-a8ca207745bd',
-            'funcx_endpoint_compute':    '53cf9704-8ef4-4823-8566-15888a8a4297',
+            'funcx_endpoint_non_compute':'1d5c6081-d716-4b94-b00b-661409876688',
+            'funcx_endpoint_compute':    'f8f611a1-0c45-4bf6-87c5-e85b9fb4d7c0',
 
             # globus endpoints
             'globus_endpoint_clutch': args.source_globus_ep,
