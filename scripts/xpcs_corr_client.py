@@ -3,7 +3,7 @@
 ## /home/beams/8IDIUSER/.conda/envs/gladier/bin/python /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf '/data/xpcs8/2019-1/comm201901/cluster_results/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf' --imm /data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm --group 0bbe98ef-de8f-11eb-9e93-3db9c47b68ba
 
 # Enable Gladier Logging
-import gladier.tests
+#import gladier.tests
 
 from gladier_xpcs.client_online_corr import XPCSClient
 import argparse
@@ -14,7 +14,7 @@ def register_container():
     from funcx.sdk.client import FuncXClient
     fxc = FuncXClient()
     from gladier_xpcs.tools.corr import eigen_corr
-    cont_dir = '/eagle/APSDataAnalysis/XPCS_test/containers/'
+    cont_dir = '/eagle/APSDataAnalysis/XPCS/containers/'
     container_name = 'eigen_v2.simg'
     eigen_cont_id = fxc.register_container(location=cont_dir+container_name,container_type='singularity')
     corr_cont_fxid = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
@@ -35,7 +35,7 @@ def arg_parse():
     parser.add_argument('--compute-globus-ep', help='Compute Globus Endpoint (Default Theta)',
                         default='08925f04-569f-11e7-bef8-22000b9a448b')
     parser.add_argument('--processing-dir', help='Location folder on compute endpoint to process data',
-                        default='/eagle/APSDataAnalysis/XPCS_test')
+                        default='/eagle/APSDataAnalysis/XPCS/data_online')
 
     return parser.parse_args()
 
