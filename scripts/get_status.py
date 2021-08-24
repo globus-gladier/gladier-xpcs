@@ -64,9 +64,6 @@ if __name__ == '__main__':
         
         curr_index = flow_steps.index(curr_step)
 
-        # print(curr_step)
-        # print(curr_index)
-
         if status['status']=='FAILED': #this could be out of the loop to prevent overchecking
             sys.exit(1)
 
@@ -75,4 +72,4 @@ if __name__ == '__main__':
 
         time.sleep(2)
 
-
+        
