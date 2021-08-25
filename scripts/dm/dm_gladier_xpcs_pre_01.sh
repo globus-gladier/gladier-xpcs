@@ -39,6 +39,7 @@ CLUTCH_DATA_ROOT=/data/xpcs8
 CLUTCHDMZ_DATA_ROOT=/data/xpcs8
 PETRELXPCS_DATA_ROOT=/XPCSDATA
 SOURCE_ENDPOINT_DATA_ROOT=$CLUTCHDMZ_DATA_ROOT
+DM_SETUP_FILE=/home/dm/etc/dm.setup.sh
 
 ###############################################
 ###############################################
@@ -77,6 +78,15 @@ sgeQueueName=$4
 if [ -z "$sgeQueueName" ]; then
     sgeQueueName=$DEFAULT_SGE_QUEUE
 fi
+
+#get globus group id
+experimentName=$5
+source $DM_SETUP_FILE
+#make sure a group exists
+createGroup=`dm-create-globus-group --experiment=$experimentName`
+getGroup=`dm-get-globus-group --experiment=$experimentName --display-keys id`
+#remove 'id=' 
+globusID=`cut -c 4- <<< $getGroup`
 
 inputHdf5File=`basename $inputFile`
 # Having output file name identical to input is a bad idea. (Suresh is going to keep it this way, not listen to Sinisa)
@@ -129,3 +139,4 @@ echo "SOURCE ENDPOINT UUID: $SOURCE_ENDPOINT_UUID"
 echo "SOURCE ENDPOINT DATA ROOT: $SOURCE_ENDPOINT_DATA_ROOT"
 echo "ALCF Cluster Results Directory: $ALCF_RESULTS_DIR"
 echo "ALCF Cluster Data Directory: $ALCFclusterDataDir"
+echo "Globus Group ID: $globusID"
