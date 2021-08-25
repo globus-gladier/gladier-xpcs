@@ -46,6 +46,7 @@ def arg_parse():
 
 if __name__ == '__main__':
 
+    # Parse arguments
     args = arg_parse()
     depl = deployment_map.get(args.deployment)
     if not depl:
@@ -57,12 +58,13 @@ if __name__ == '__main__':
         'qmap_source_endpoint': args.qmap_source_globus_ep,
         'qmap_source_path': args.qmap_source_globus_path,
     })
-    pprint(re_cli.flow_definition)
-    # re_cli.logout()
-    pprint(re_cli.get_input())
 
+    # print for context
+    pprint(re_cli.flow_definition)
+    pprint(flow_input)
+
+    # Run flow, follow progress, print result
     corr_flow = re_cli.run_flow(flow_input=flow_input)
     action_id = corr_flow['action_id']
-
     re_cli.progress(action_id)
     pprint(re_cli.get_status(action_id))

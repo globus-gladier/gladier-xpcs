@@ -54,7 +54,6 @@ class NickDeployment(BaseDeployment):
     globus_endpoints = {
         'globus_endpoint_source': 'e55b4eab-6d04-11e5-ba46-22000b92c6ec',
         'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
-        'qmap_destination_endpoint': '08925f04-569f-11e7-bef8-22000b9a448b',
     }
 
     funcx_endpoints = {

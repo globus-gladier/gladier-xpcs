@@ -1,7 +1,7 @@
 import pytest
 import pathlib
 from unittest.mock import Mock
-from gladier_xpcs.client_reprocess import XPCSReprocessingClient
+from gladier_xpcs.flow_reprocess import XPCSReprocessingFlow
 from gladier_xpcs.deployments import BaseDeployment
 
 
@@ -10,8 +10,11 @@ def mock_pathlib(monkeypatch):
     # Mock any pathlib methods that would actually change files
     monkeypatch.setattr(pathlib.Path, 'unlink', Mock())
     monkeypatch.setattr(pathlib.Path, 'exists', Mock(return_value=True))
-    # Rename should return the new name of the file its renaming
-    monkeypatch.setattr(pathlib.Path, 'rename', lambda self, pth: pth)
+
+    def rename(self, path):
+        """Rename should return the new name of the file its renaming"""
+        return path if isinstance(path, pathlib.Path) else pathlib.Path(path)
+    monkeypatch.setattr(pathlib.Path, 'rename', rename)
     return pathlib.Path
 
 
@@ -28,7 +31,7 @@ def reprocessing_deployment():
         }
         flow_input = {
             'input': {
-                'proc_dir': '/projects/APSDataAnalysis/xpcs/mock_processing_dir',
+                'staging_dir': '/projects/APSDataAnalysis/xpcs/mock_staging_dir',
                 'funcx_endpoint_non_compute': 'funcx_endpoint_non_compute_mock',
                 'funcx_endpoint_compute': 'funcx_endpoint_compute_mock',
             }
@@ -56,7 +59,7 @@ def reprocessing_input():
 
 @pytest.fixture
 def reprocessing_runtime_input(reprocessing_deployment, reprocessing_input):
-    cli = XPCSReprocessingClient()
+    cli = XPCSReprocessingFlow()
     xpcs_input = cli.get_xpcs_input(
         reprocessing_deployment,
         reprocessing_input['hdf_source'],

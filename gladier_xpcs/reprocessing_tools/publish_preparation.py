@@ -16,26 +16,23 @@ def publish_preparation(**event):
     new_hdf_name = f'{str(hdf.with_suffix("").name)}{event["reprocessing_suffix"]}'
 
     proc_dir = pathlib.Path(event['proc_dir'])
-    # The dataset dir is the same as the hdf filename (without the extension)
-    dataset_dir = proc_dir / hdf.with_suffix('').name
     # Rename the HDF first before the dataset (parent) directory changes
     # .../A001_Aerogel_1mm_att6_Lq0_001_0001-1000<reprocessing_suffix>.hdf
-    new_hdf = hdf.rename(hdf.with_stem(new_hdf_name))
+    new_hdf = hdf.rename(proc_dir / hdf.with_stem(new_hdf_name))
     # Rename the parent dataset directory
-    new_dataset_dir = dataset_dir.rename(proc_dir / new_hdf.with_suffix('').name)
+    new_proc_dir = proc_dir.rename(proc_dir.parent / new_hdf.with_suffix('').name)
     # Prepend the new dataset (parent) directory to the HDF Filename
-    new_hdf_with_new_dataset_dir = new_dataset_dir / new_hdf.name
+    new_hdf_with_new_proc_dir = new_proc_dir / new_hdf.name
 
     names = {
         'proc_dir': str(proc_dir),
-        'dataset_dir': str(dataset_dir),
-        'new_dataset_dir': str(new_dataset_dir),
-        'new_hdf_with_new_dataset_dir': str(new_hdf_with_new_dataset_dir),
+        'new_proc_dir': str(new_proc_dir),
+        'new_hdf_with_new_dataset_dir': str(new_hdf_with_new_proc_dir),
         'hdf': str(hdf),
         'new_hdf': str(new_hdf),
         'new_hdf_name': str(new_hdf_name),
     }
-    if not new_dataset_dir.exists() or not new_hdf_with_new_dataset_dir.exists():
+    if not new_proc_dir.exists() or not new_hdf_with_new_proc_dir.exists():
         raise FileNotFoundError(f'File does not exist after rename: {names}')
 
     # Update metadata
@@ -58,10 +55,10 @@ def publish_preparation(**event):
         }
     })
     pilot['metadata'] = pilot_metadata
-    pilot['dataset'] = str(new_dataset_dir)
+    pilot['dataset'] = str(new_proc_dir)
     event.update({
-        'proc_dir': str(proc_dir),
-        'hdf_file': str(new_hdf_with_new_dataset_dir),
+        'proc_dir': str(new_proc_dir),
+        'hdf_file': str(new_hdf_with_new_proc_dir),
         'pilot': pilot
     })
     return event
