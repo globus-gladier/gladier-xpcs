@@ -19,7 +19,7 @@ on these results and reprocessing them as needed.
 Install the requirements with the following: 
 
 ```
-pip install -r portal-requirements.txt
+pip install -r requirements-portal.txt
 ```
 
 Install dependent components from the alcf portal with the following:
@@ -30,10 +30,13 @@ cd django-alcf-data-portal.git
 python setup.py develop
 ```
 
+Create the file below with Globus App credentials. Create credentials at
+https://developers.globus.org. Use the following settings:
 
-Create the file below with Globus App credentials. These are required for
-login to work: 
+ * Leave *Native App* **unchecked**
+ * For redirect URI, use: `http://localhost:8000/complete/globus/`
 
+Add the Client ID and Client Secret to your local_settings.py file:
 ```
 # Place this file in xpcs_portal/testing/local_settings.py
 SECRET_KEY = 'you can do `openssl rand -hex 32` or just leave this as-is'
@@ -45,9 +48,14 @@ With your `local_settings.py` file setup above, run the following to start
 your local portal:
 
 ```
-cd xpcs_portal/
 python manage.py migrate
-python manage.py runserver
+python manage.py runserver localhost:8000
 ```
 
 Your portal should now be running at http://localhost:8000
+
+Some notes about the above:
+* `python manage.py migrate` only needs to be run once, then only if models change
+* `python manage.py runserver localhost:8000` might not need the `localhost:8000` 
+depending on your system, but some systems default to 127.0.0.1 which isn't compatible
+with a Globus Redirect URI.
