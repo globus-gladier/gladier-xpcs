@@ -18,7 +18,7 @@ from gladier import GladierBaseClient, generate_flow_definition
     'gather_xpcs_metadata': {'payload': '$.PublishPreparation.details.result[0]'},
     'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result[0]'}
 })
-class XPCSReprocessingClient(GladierBaseClient):
+class XPCSReprocessingFlow(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
 
     gladier_tools = [
@@ -55,11 +55,11 @@ class XPCSReprocessingClient(GladierBaseClient):
         hdf_source = pathlib.Path(hdf_source)
         imm_source = pathlib.Path(imm_source)
         qmap_source = pathlib.Path(qmap_source)
-        proc_dir = pathlib.Path(dep_input['proc_dir'])
+        staging_dir = pathlib.Path(dep_input['staging_dir'])
 
-        hdf_file = proc_dir / hdf_source.parent.name / hdf_source.name
-        imm_file = proc_dir / hdf_source.parent.name / imm_source.name
-        qmap_file = proc_dir / hdf_source.parent.name / qmap_source.name
+        hdf_file = staging_dir / hdf_source.parent.name / hdf_source.name
+        imm_file = staging_dir / hdf_source.parent.name / imm_source.name
+        qmap_file = staging_dir / hdf_source.parent.name / qmap_source.name
 
         flow_input['input'].update({
             'pilot': {
@@ -74,7 +74,7 @@ class XPCSReprocessingClient(GladierBaseClient):
             },
             'hdf_file_source': str(hdf_source),
             'imm_file_source': str(imm_source),
-            'proc_dir': str(proc_dir),
+            'proc_dir': str(hdf_file.parent),
             'hdf_file': str(hdf_file),
             'imm_file': str(imm_file),
             'qmap_file': str(qmap_file),

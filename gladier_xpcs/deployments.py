@@ -11,6 +11,25 @@ class BaseDeployment:
         fi['input'].update(self.globus_endpoints)
         return fi
 
+class TalcDeployment(BaseDeployment):
+
+    globus_endpoints = {
+        'globus_endpoint_source': 'fdc7e74a-fa78-11e8-9342-0e3d676669f4',
+        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+    }
+
+    funcx_endpoints = {
+        'funcx_endpoint_non_compute': '553e7b64-0480-473c-beef-be762ba979a9',
+        'funcx_endpoint_compute': '2272d362-c13b-46c6-aa2d-bfb22255f1ba',
+    }
+
+    flow_input = {
+        'input': {
+            'staging_dir': '/eagle/APSDataAnalysis/XPCS/data_online',
+        }
+    }
+
+
 
 class NickDeployment(BaseDeployment):
 
@@ -27,11 +46,12 @@ class NickDeployment(BaseDeployment):
 
     flow_input = {
         'input': {
-            'proc_dir': '/projects/APSDataAnalysis/nick/gladier_testing/',
+            'staging_dir': '/projects/APSDataAnalysis/nick/gladier_testing/',
         }
     }
 
 
 deployment_map = {
+    'talc-prod': TalcDeployment(),
     'nick-testing': NickDeployment(),
 }
