@@ -32,12 +32,12 @@
                     'XPCS JOB FOLDER: (?P<XPCS_JOB_FOLDER>.*)', 'SOURCE ENDPOINT UUID: (?P<SOURCE_ENDPOINT_UUID>.*)', 
                     'SOURCE ENDPOINT DATA ROOT: (?P<SOURCE_ENDPOINT_DATA_ROOT>.*)', 
                     'ALCF Cluster Data Directory: (?P<ALCFclusterDataDir>.*)', 
-                    'ALCF Cluster Results Directory: (?P<ALCFclusterResultsDir>.*)'
+                    'ALCF Cluster Results Directory: (?P<ALCFclusterResultsDir>.*)',
+                    'Globus Group ID: (?P<globusID>.*)'
                     ],
                 },
             '02-Automate' : {
-                'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf $clusterResultsDir/$outputHdf5File --imm $clusterDataDir/$immFile"',
-                 #   --group None"' , ##activate when group can be passed 
+                'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf $clusterResultsDir/$outputHdf5File --imm $clusterDataDir/$immFile --group $globusID"' ,  
                 'outputVariableRegexList' : [
                     'run_id : (?P<AutomateId>.*)'
                 ],
