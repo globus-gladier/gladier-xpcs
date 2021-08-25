@@ -32,8 +32,7 @@ def arg_parse():
                         default='/data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001'
                                 '/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
     parser.add_argument('--group', help='Visibility in Search', default=None)
-    parser.add_argument('--deployment','-d', default='talc-prod', help=f'Deployment configs. Available: {list(deployment_map.keys())}',
-                        required=True)
+    parser.add_argument('--deployment','-d', default='talc-prod', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
     return parser.parse_args()
 
 
@@ -64,7 +63,7 @@ if __name__ == '__main__':
                 'dataset': dataset_dir,
                 'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
                 'project': 'xpcs-8id',
-                'source_globus_endpoint': depl_input['globus_endpoint_proc'],
+                'source_globus_endpoint': depl_input['input']['globus_endpoint_proc'],
                 # Extra groups can be specified here. The XPCS Admins group will always
                 # be provided automatically.
                 'groups': [args.group] if args.group else [],
@@ -89,13 +88,13 @@ if __name__ == '__main__':
 
             # funcX endpoints
             # Should think of moving those to a cfg with better naming
-            'funcx_endpoint_non_compute': depl_input['funcx_endpoint_non_compute'],
-            'funcx_endpoint_compute': depl_input['funcx_endpoint_compute'],
+            'funcx_endpoint_non_compute': depl_input['input']['funcx_endpoint_non_compute'],
+            'funcx_endpoint_compute': depl_input['input']['funcx_endpoint_compute'],
 
 
             # globus endpoints
-            'globus_endpoint_clutch': depl_input['globus_endpoint_source'],
-            'globus_endpoint_theta': depl_input['globus_endpoint_proc'],
+            'globus_endpoint_clutch': depl_input['input']['globus_endpoint_source'],
+            'globus_endpoint_theta': depl_input['input']['globus_endpoint_proc'],
 
             # container hack for corr 
             'eigen_corr_funcx_id': register_container()
