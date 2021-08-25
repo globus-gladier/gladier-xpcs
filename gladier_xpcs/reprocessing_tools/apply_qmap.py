@@ -213,18 +213,8 @@ class ApplyQmap(GladierBaseTool):
         'funcx_endpoint_non_compute',
         'proc_dir',
         'qmap_file',
-        'flat_file',
     ]
 
     funcx_functions = [
         apply_qmap
     ]
-
-
-if __name__ == '__main__':
-    r = apply_qmap(
-        proc_dir='/Users/nick/globus/aps/xpcs_client/A001_Aerogel_1mm_att6_Lq0_001_0001-1000',
-        hdf_file='/Users/nick/globus/aps/xpcs_client/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
-        qmap_file='/Users/nick/globus/aps/xpcs_client/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/sanat201903_qmap_S270_D54_lin.h5'
-    )
-    print(r)

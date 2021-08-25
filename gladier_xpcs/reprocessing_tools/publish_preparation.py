@@ -58,7 +58,7 @@ def publish_preparation(**event):
         }
     })
     pilot['metadata'] = pilot_metadata
-    pilot['dataset'] = str(dataset_dir)
+    pilot['dataset'] = str(new_dataset_dir)
     event.update({
         'proc_dir': str(proc_dir),
         'hdf_file': str(new_hdf_with_new_dataset_dir),
@@ -101,21 +101,3 @@ class PublishPreparation(GladierBaseTool):
     funcx_functions = [
         publish_preparation
     ]
-
-
-if __name__ == '__main__':
-    input = {
-        'hdf_file': '/projects/APSDataAnalysis/nick/gladier_testing/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
-        'imm_file': '/projects/APSDataAnalysis/nick/gladier_testing/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm',
-        'hdf_source': '',
-        'imm_source': '',
-
-        'proc_dir': '/projects/APSDataAnalysis/nick/gladier_testing/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/',
-        'reprocessing_suffix': 'test',
-        'pilot': {},
-        'qmap_source_endpoint': '',
-        'qmap_source_path': '',
-    }
-    output = publish_preparation(**input)
-    from pprint import pprint
-    pprint(output)

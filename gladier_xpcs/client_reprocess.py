@@ -10,6 +10,7 @@ metadata is added along with standard XPCS metadata. Publish then ingests data i
 Search and places data on petrel (probably eagle now), which makes it viewable through
 the portal at https://petreldata.alcf.anl.gov
 """
+import pathlib
 from gladier import GladierBaseClient, generate_flow_definition
 
 
@@ -38,3 +39,44 @@ class XPCSReprocessingClient(GladierBaseClient):
         # Publish using pilot to the Globus Search index
         'gladier_xpcs.tools.Publish',
     ]
+
+    def get_xpcs_input(self, deployment, hdf_source, imm_source, qmap_source):
+        """
+        This is a special method which builds runtime input for files that should
+        be computed on theta from the source files and the deployment locations.
+        The deployment locations (primarily proc_dir), dictates the path on the
+        compute endpoint which most funcx functions will use when opening the actual
+        files.
+        """
+        dep_input = deployment.get_input()['input']
+        flow_input = super().get_input()
+        flow_input['input'].update(dep_input)
+
+        hdf_source = pathlib.Path(hdf_source)
+        imm_source = pathlib.Path(imm_source)
+        qmap_source = pathlib.Path(qmap_source)
+        proc_dir = pathlib.Path(dep_input['proc_dir'])
+
+        hdf_file = proc_dir / hdf_source.parent.name / hdf_source.name
+        imm_file = proc_dir / hdf_source.parent.name / imm_source.name
+        qmap_file = proc_dir / hdf_source.parent.name / qmap_source.name
+
+        flow_input['input'].update({
+            'pilot': {
+                # This is the directory which will be published to petrel
+                'dataset': str(hdf_file.parent),
+                'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
+                'project': 'xpcs-8id',
+                'source_globus_endpoint': dep_input['globus_endpoint_source'],
+                # Extra groups can be specified here. The XPCS Admins group will always
+                # be provided automatically.
+                'groups': dep_input.get('groups', []),
+            },
+            'hdf_file_source': str(hdf_source),
+            'imm_file_source': str(imm_source),
+            'proc_dir': str(proc_dir),
+            'hdf_file': str(hdf_file),
+            'imm_file': str(imm_file),
+            'qmap_file': str(qmap_file),
+        })
+        return flow_input
