@@ -111,6 +111,9 @@ class XPCSReprocessDatasetsCheckoutView(ManifestCheckoutView):
         # the one that was used last. This will fail for multiple deployed
         # flows.
         flow = Flow.objects.all().order_by('date_created').last()
+        if not flow:
+            raise Exception('No flow found, you probably need to run '
+                            '"python manage.py authorize_gladier"')
         flow.batch(user, run_inputs)
         messages.success(self.request, f'Processing data in {len(run_inputs)} flow runs')
 
