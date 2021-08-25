@@ -10,7 +10,7 @@ import argparse
 from pprint import pprint
 
 import gladier_xpcs.log
-from gladier_xpcs.client_reprocess import XPCSReprocessingClient
+from gladier_xpcs.flow_reprocess import XPCSReprocessingFlow
 from gladier_xpcs.deployments import deployment_map
 
 
@@ -39,7 +39,7 @@ def arg_parse():
                         default='e55b4eab-6d04-11e5-ba46-22000b92c6ec')
     parser.add_argument('--qmap-source-globus-path', help='Source Qmap Globus Path',
                         default='/GlobusPortal_XPCS/sanat201903_qmap_S270_D54_lin.h5')
-    parser.add_argument('--deployment', help=f'Deployment configs. Available: {list(deployment_map.keys())}',
+    parser.add_argument('--deployment','-d', help=f'Deployment configs. Available: {list(deployment_map.keys())}',
                         required=True)
     return parser.parse_args()
 
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     if not depl:
         raise ValueError(f'Invalid Deployment, deployments available: {list(deployment_map.keys())}')
 
-    re_cli = XPCSReprocessingClient()
+    re_cli = XPCSReprocessingFlow()
     flow_input = re_cli.get_xpcs_input(depl, args.hdf, args.imm, args.qmap_source_globus_path)
     flow_input['input'].update({
         'qmap_source_endpoint': args.qmap_source_globus_ep,

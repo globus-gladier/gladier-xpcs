@@ -8,8 +8,9 @@ def eigen_corr(**event):
     from subprocess import PIPE
 
     ##minimal data inputs payload
-    imm_file = event.get('imm_file') # raw data
     proc_dir = event.get('proc_dir') # location of the HDF/QMAP process file / result
+
+    imm_file = event.get('imm_file') # raw data
     hdf_file = event.get('hdf_file') # name of the file to run EIGEN CORR
 
     ##optional
