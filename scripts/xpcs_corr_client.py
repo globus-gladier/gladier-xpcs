@@ -102,12 +102,12 @@ if __name__ == '__main__':
     }
 
 
-    corr_cli = XPCSOnlineFlow()
+    corr_flow = XPCSOnlineFlow()
 
-    corr_flow_label = hdf_name
+    corr_run_label = hdf_name
 
-    corr_flow = corr_cli.run_flow(flow_input=flow_input, label=corr_flow_label)
+    flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label)
 
-    print('run_id : ' + corr_flow['action_id'])
+    print('run_id : ' + flow_run['action_id'])
 
 

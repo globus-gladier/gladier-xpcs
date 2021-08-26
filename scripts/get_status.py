@@ -8,7 +8,7 @@ from pprint import pprint
 from gladier.utils.flow_generation import get_ordered_flow_states
 
 ##import the client
-from gladier_xpcs.client_online_corr import XPCSClient
+from gladier_xpcs.flow_online import XPCSOnlineFlow
 def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--run_id", help="The automate flow instance(run) to check.",
@@ -25,9 +25,9 @@ if __name__ == '__main__':
     args = arg_parse()
 
 
-    corr_cli = XPCSClient()
+    mainFlow = XPCSOnlineFlow()
 
-    flow_dict = get_ordered_flow_states(corr_cli.flow_definition)
+    flow_dict = get_ordered_flow_states(mainFlow.flow_definition)
     flow_steps = []
     for key, value in flow_dict.items() :
         flow_steps.append(key)
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     step_index = flow_steps.index(args.step)
 
-    status = corr_cli.get_status(args.run_id)
+    status = mainFlow.get_status(args.run_id)
 
     while status['status'] not in ['SUCCEEDED', 'FAILED']:
 
@@ -51,7 +51,7 @@ if __name__ == '__main__':
             if int(cur_time - start_time) >= int(args.timeout):
                 sys.exit(1)
 
-        status = corr_cli.get_status(args.run_id)
+        status = mainFlow.get_status(args.run_id)
 
         if status.get('state_name'):
             curr_step = status.get('state_name')       
