@@ -2,6 +2,7 @@ import os
 # from django.conf import settings
 from django.apps import AppConfig
 from xpcs_portal.xpcs_index import fields
+from gladier_xpcs.deployments import NickPortalDeployment
 
 APP_DIR = os.path.join(os.path.dirname(__file__))
 
@@ -13,6 +14,7 @@ class XPCSIndexConfig(AppConfig):
 GLADIER_CFG = os.path.abspath(os.path.join(APP_DIR, 'gladier.cfg'))
 RESOURCE_SERVER = 'petrel_https_server'
 # RESOURCE_SERVER = 'c7683485-3c3f-454a-94c0-74310c80b32a'
+REPROCESSING_FLOW_DEPLOYMENT = NickPortalDeployment()
 
 SEARCH_INDEXES = {
     'xpcs': {

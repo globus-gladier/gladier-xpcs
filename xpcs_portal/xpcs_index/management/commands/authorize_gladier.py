@@ -1,14 +1,12 @@
 from pprint import pprint
 import os
 import sys
-from gladier_xpcs.client_reprocess import XPCSReprocessingClient
+from gladier_xpcs.flow_reprocess import XPCSReprocessingFlow
 from django.core.management.base import BaseCommand
 from automate_app.models import FlowInstanceAuthorizer, Flow
 import globus_sdk
 from django.contrib.auth.models import User
 from django.utils.timezone import now
-
-
 
 
 class Command(BaseCommand):
@@ -18,12 +16,12 @@ class Command(BaseCommand):
         parser.add_argument('--user', required=False)
 
     def handle(self, *args, **options):
-        gcli = XPCSReprocessingClient()
+        gcli = XPCSReprocessingFlow()
         gcli.login()
         # Check register a new flow
         gcli.register_flow()
         # Check register new funcx function ids
-        gcli.get_funcx_function_ids()
+        funcx_functions = gcli.get_funcx_function_ids()
         # Login with the new flow id, if one was deployed
         scopes = gcli.scopes + ['openid', 'profile', 'email']
         nc = gcli.get_native_client()
@@ -73,14 +71,9 @@ class Command(BaseCommand):
                                      refresh_token=flow_info['refresh_token'],
                                      expires_at_seconds=float(flow_info['expires_at_seconds']))
         fia.save()
-        print(f'Saved {flow.title}')
-        return
-
-        print(f'Check/Registered {XPCSReprocessing.__name__} flow/functions. '
-              f'Saved to the following locations:\n'
-              f'Main Config: {os.path.abspath(gcli.config_filename)}\n'
-              f'Secrets Config {os.path.abspath(gcli.secret_config_filename)}\n\n'
-              f'Flow Scope: {gconfig["flow_scope"]}')
+        print(f'You should save these funcx ids to a deployment')
+        from pprint import pprint
+        pprint(funcx_functions)
 
     def get_user(self, username):
         try:

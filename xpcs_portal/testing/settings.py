@@ -120,6 +120,23 @@ DATABASES = {
     }
 }
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'stream': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {'handlers': ['stream'], 'level': 'INFO'},
+        'django.db.backends': {'handlers': ['stream'], 'level': 'WARNING'},
+        'globus_portal_framework': {'handlers': ['stream'], 'level': 'INFO'},
+        'xpcs_index': {'handlers': ['stream'], 'level': 'DEBUG'},
+    },
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
