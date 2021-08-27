@@ -132,8 +132,9 @@ LOGGING = {
     'loggers': {
         'django': {'handlers': ['stream'], 'level': 'INFO'},
         'django.db.backends': {'handlers': ['stream'], 'level': 'WARNING'},
-        'globus_portal_framework': {'handlers': ['stream'], 'level': 'INFO'},
-        'xpcs_index': {'handlers': ['stream'], 'level': 'DEBUG'},
+        'globus_portal_framework': {'handlers': ['stream'], 'level': 'DEBUG'},
+        'xpcs_portal': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
+        'automate_app': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
     },
 }
 
