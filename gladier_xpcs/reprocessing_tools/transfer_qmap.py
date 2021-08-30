@@ -13,7 +13,7 @@ class TransferQmap(GladierBaseTool):
               "ActionUrl": "https://actions.automate.globus.org/transfer/transfer",
               "Parameters": {
                   "source_endpoint_id.$": "$.input.qmap_source_endpoint",
-                  "destination_endpoint_id.$": "$.input.qmap_destination_endpoint",
+                  "destination_endpoint_id.$": "$.input.globus_endpoint_proc",
                   "transfer_items": [
                       {
                           "source_path.$": "$.input.qmap_source_path",
@@ -30,8 +30,10 @@ class TransferQmap(GladierBaseTool):
     }
 
     required_input = [
+        # Reuse
+        'globus_endpoint_proc',
+
         'qmap_source_endpoint',
-        'qmap_destination_endpoint',
         'qmap_source_path',
         'qmap_file',
     ]

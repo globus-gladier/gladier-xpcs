@@ -67,7 +67,7 @@ class XPCSReprocessingFlow(GladierBaseClient):
                 'dataset': str(hdf_file.parent),
                 'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
                 'project': 'xpcs-8id',
-                'source_globus_endpoint': dep_input['globus_endpoint_source'],
+                'source_globus_endpoint': dep_input['globus_endpoint_proc'],
                 # Extra groups can be specified here. The XPCS Admins group will always
                 # be provided automatically.
                 'groups': dep_input.get('groups', []),
@@ -80,3 +80,6 @@ class XPCSReprocessingFlow(GladierBaseClient):
             'qmap_file': str(qmap_file),
         })
         return flow_input
+
+    def get_label(self, flow_input):
+        return str(pathlib.Path(flow_input['input']['proc_dir']).name)
