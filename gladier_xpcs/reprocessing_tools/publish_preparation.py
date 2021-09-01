@@ -13,12 +13,12 @@ def publish_preparation(**event):
     # .../A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf
     hdf = pathlib.Path(event['hdf_file'])
     # A001_Aerogel_1mm_att6_Lq0_001_0001-1000<reprocessing_suffix>
-    new_hdf_name = f'{str(hdf.with_suffix("").name)}{event["reprocessing_suffix"]}'
+    new_hdf_name = f'{str(hdf.with_suffix("").name)}{event["reprocessing_suffix"]}.hdf'
 
     proc_dir = pathlib.Path(event['proc_dir'])
     # Rename the HDF first before the dataset (parent) directory changes
     # .../A001_Aerogel_1mm_att6_Lq0_001_0001-1000<reprocessing_suffix>.hdf
-    new_hdf = hdf.rename(proc_dir / hdf.with_stem(new_hdf_name))
+    new_hdf = hdf.rename(proc_dir / new_hdf_name)
     # Rename the parent dataset directory
     new_proc_dir = proc_dir.rename(proc_dir.parent / new_hdf.with_suffix('').name)
     # Prepend the new dataset (parent) directory to the HDF Filename
