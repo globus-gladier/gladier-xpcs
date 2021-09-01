@@ -1,0 +1,35 @@
+name: test_flow
+
+on:
+  schedule:
+    - cron: "0 10 * * *"
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        python-version: [3.7]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: main
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Check for vulnerabilities in libraries
+      run: |
+        pip install safety
+        pip freeze | safety check
+    - name: Test sdk by just importing
+      run: |
+        python -m pip install globus_automate_client
+        python -c "import globus_automate_client"
+    - name: Test flow
+      run: |
+        timeout 300 python tests/test_flow.py -i ${{ secrets.CLIENT_ID }} -s ${{ secrets.CLIENT_SECRET }}
+
+
