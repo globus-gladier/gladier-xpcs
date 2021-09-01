@@ -65,3 +65,7 @@ class EigenCorr(GladierBaseTool):
     funcx_functions = [
         eigen_corr
     ]
+
+    flow_input = {
+        'flags': '',
+    }
