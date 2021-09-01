@@ -23,7 +23,7 @@ def reprocessing_deployment():
     class MockDeployment(BaseDeployment):
         globus_endpoints = {
             'globus_endpoint_source': 'pertel_or_eagle_endpoint_uuid',
-            'globus_endpoint_compute': 'theta_endpoint_uuid',
+            'globus_endpoint_proc': 'theta_endpoint_uuid',
         }
         funcx_endpoints = {
             'funcx_endpoint_non_compute': '553e7b64-0480-473c-beef-be762ba979a9',
