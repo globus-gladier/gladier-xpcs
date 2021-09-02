@@ -15,7 +15,7 @@ apipatterns = [
 ]
 
 urlpatterns = [
-    path('<xpcs_index:index>/search/', XPCSSearchView.as_view(), name='search'),
+    path('<xpcs_index:index>/', XPCSSearchView.as_view(), name='search'),
     path('<xpcs_index:index>/detail/<path:subject>/', XPCSDetailView.as_view(), name='detail'),
     path('<xpcs_index:index>/reprocessing/', XPCSReprocessingCheckoutView.as_view(), name='reprocessing'),
 
