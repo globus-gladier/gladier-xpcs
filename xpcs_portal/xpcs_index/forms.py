@@ -4,16 +4,14 @@ import logging
 from xpcs_portal.xpcs_index import models
 from concierge_app.forms import SubjectSelectManifestCheckoutForm
 
-from xpcs_portal.xpcs_index.search_collector import (
-    XPCSSearchCollector, XPCSReprocessingSearchCollector
-)
+from xpcs_portal.xpcs_index.search_collector import XPCSReprocessingSearchCollector
 
 log = logging.getLogger(__name__)
 
 
-class ReprocessingTaskForm(forms.ModelForm):
+class ReprocessDatasetsCheckoutForm(SubjectSelectManifestCheckoutForm):
+    SEARCH_COLLECTOR_CLASS = XPCSReprocessingSearchCollector
 
-    corr_rigaku = forms.BooleanField(label='Corr Rigaku', required=False)
     options_cache = forms.CharField(label='Options', required=False)
     qmap_ep = forms.CharField(required=False)
     qmap_path = forms.CharField(required=False)
@@ -21,17 +19,13 @@ class ReprocessingTaskForm(forms.ModelForm):
 
     class Meta:
         model = models.ReprocessingTask
-        fields = ['manifest', 'options_cache', 'qmap_ep', 'qmap_path', 'reprocessing_suffix']
-
-    def clean(self):
-        self.cleaned_data['options_cache'] = json.dumps({
-            'rigaku': self.data.get('rigaku', False)
-        }, indent=2)
-        return self.cleaned_data
-
-
-class XPCSManifestCheckoutForm(SubjectSelectManifestCheckoutForm):
-    SEARCH_COLLECTOR_CLASS = XPCSSearchCollector
+        fields = ['query', 'options_cache', 'qmap_ep', 'qmap_path', 'reprocessing_suffix']
+    #
+    # def clean(self):
+    #     self.cleaned_data['options_cache'] = json.dumps({
+    #         'rigaku': self.data.get('rigaku', False)
+    #     }, indent=2)
+    #     return self.cleaned_data
 
     def get_search_collector(self):
         sc = super().get_search_collector()
@@ -51,22 +45,3 @@ class XPCSManifestCheckoutForm(SubjectSelectManifestCheckoutForm):
         log.debug(f'Loading form with {len(valid_gmetas)}/{len(sc.search_data["gmeta"])} valid results')
         sc.search_data['gmeta'] = valid_gmetas
         return sc
-
-
-class ReprocessDatasetsCheckoutForm(XPCSManifestCheckoutForm):
-    SEARCH_COLLECTOR_CLASS = XPCSReprocessingSearchCollector
-
-    options_cache = forms.CharField(label='Options', required=False)
-    qmap_ep = forms.CharField(required=False)
-    qmap_path = forms.CharField(required=False)
-    reprocessing_suffix = forms.CharField(required=False)
-
-    class Meta:
-        model = models.ReprocessingTask
-        fields = ['query', 'options_cache', 'qmap_ep', 'qmap_path', 'reprocessing_suffix']
-
-    def clean(self):
-        self.cleaned_data['options_cache'] = json.dumps({
-            'rigaku': self.data.get('rigaku', False)
-        }, indent=2)
-        return self.cleaned_data

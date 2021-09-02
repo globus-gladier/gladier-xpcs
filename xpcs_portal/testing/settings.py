@@ -109,6 +109,11 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     # Note: Automate scopes are only added if the globus-automate-client is installed
 ] + extra_scopes
 
+ALLOWED_FRONTEND_TOKENS = [
+    'petrel_https_server',
+    'c7683485-3c3f-454a-94c0-74310c80b32a',
+]
+
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases

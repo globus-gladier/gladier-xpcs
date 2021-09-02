@@ -1,34 +1,37 @@
 import logging
 import pathlib
 import urllib
-import datetime
 from django.urls import reverse, reverse_lazy
-from django.views.generic.edit import CreateView
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
-
-from automate_app.views.action import ActionDetail
-from automate_app.views.dashboard import Dashboard
-from automate_app.models import Action, Flow
-
-from alcf_data_portal.views import ProjectDetail
-
-from xpcs_portal.xpcs_index.forms import (
-    ReprocessingTaskForm, XPCSManifestCheckoutForm,
-    ReprocessDatasetsCheckoutForm,
-)
-from concierge_app.views.generic import ManifestListView
+from globus_portal_framework.views.generic import SearchView, DetailView
 from concierge_app.views.generic import ManifestCheckoutView
-
-from xpcs_portal.xpcs_index.models import ReprocessingTask, FilenameFilter
+from automate_app.models import Action, Flow
 from gladier_xpcs.flow_reprocess import XPCSReprocessingFlow
+
+from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm
+from xpcs_portal.xpcs_index.models import ReprocessingTask, FilenameFilter
 from xpcs_portal.xpcs_index.apps import REPROCESSING_FLOW_DEPLOYMENT
 
 log = logging.getLogger(__name__)
 
 
-class XPCSProjectDetail(ProjectDetail):
+class XPCSSearchView(SearchView):
+    """Custom XPCS Search view automatically filters on the xpcs-8id 'project'. This is old,
+    based on the pilot project feature and will be going away eventually."""
+
+    @property
+    def filters(self):
+        project_filters = [{
+            'type': 'match_all',
+            'field_name': 'project_metadata.project-slug',
+            'values': ['xpcs-8id']
+        }]
+        return super().filters + project_filters
+
+
+class XPCSDetailView(DetailView):
+    """The custom XPCS detail view adds support for toggling images on and off"""
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -50,56 +53,19 @@ class XPCSProjectDetail(ProjectDetail):
         return context
 
 
-class ReprocessingTaskCreate(LoginRequiredMixin, CreateView):
-    model = ReprocessingTask
-    form_class = ReprocessingTaskForm
-    template_name = 'xpcs/concierge-app/components/manifests-detail-reprocess-form.html'
-
-    def get_absolute_url(self):
-        return reverse_lazy('concierge-app:manifest-list', kwargs={'index': 'xpcs'})
-
-    def get_success_url(self):
-        return reverse_lazy('xpcs-index:automate-dashboard',
-                            kwargs={'index': 'xpcs'})
-
-    def form_valid(self, form):
-        user = self.request.user
-        manifest = form.cleaned_data['manifest']
-        form.instance.user = user
-        try:
-            form.instance.action = self.model.new_action(manifest, user)
-            resp = super().form_valid(form)
-            # Start the Globus Automate Flow
-            form.instance.generate_payload(form.cleaned_data)
-            form.instance.action.start_flow()
-            messages.success(self.request, 'Flow has been started')
-            return resp
-        except Exception as e:
-            log.error(f'Error starting flow for user {user}', exc_info=True)
-            messages.error(self.request, f'Error starting flow: {str(e)}')
-            # Delete the empty action if it ran into an error
-            if form.instance.action:
-                form.instance.action.delete()
-            return redirect(self.get_absolute_url())
-
-
-class XPCSManifestCheckoutView(ManifestCheckoutView):
-    """Manifest Limiter limits the number of results recorded by a user-provided
-    number. The actual results gathered are arbitrary."""
-    form_class = XPCSManifestCheckoutForm
-
-
-class XPCSReprocessDatasetsCheckoutView(ManifestCheckoutView):
+class XPCSReprocessingCheckoutView(ManifestCheckoutView):
     """Reprocessing Checkout starts the flow immediately on verifying
     each of the subject it can process are valid"""
     model = ReprocessingTask
     form_class = ReprocessDatasetsCheckoutForm
-    template_name = 'xpcs/concierge-app/tabbed-project/reprocess-datasets-checkout.html'
+    template_name = 'xpcs/reprocess-datasets-checkout.html'
+
+    def get_search_reference_url(self):
+        return self.get_success_url()
 
     def get_success_url(self):
-        return reverse_lazy('tp-project-search',
-                            kwargs={'index': 'xpcs',
-                                    'project': self.kwargs['project']})
+        return reverse_lazy('search',
+                            kwargs={'index': 'xpcs'})
 
     def form_valid(self, form):
         log.debug(f'Form valid for {form.__class__}')
@@ -146,25 +112,3 @@ class XPCSReprocessDatasetsCheckoutView(ManifestCheckoutView):
             'qmap_source_path': source_qmap,
         })
         return flow_input, self.get_parameters(flow_input)
-
-
-class XPCSManifestListView(ManifestListView, ReprocessingTaskCreate):
-    pass
-
-
-class AutomateDashboard(Dashboard):
-
-    def get_actions(self):
-        pk_ids = [sr.action.id for sr in ReprocessingTask.objects.all()]
-        return Action.objects.filter(pk__in=pk_ids)
-
-
-class XPCSActionDetail(ActionDetail):
-    template_name = 'xpcs/automate_app/action_detail.html'
-
-    def get_context_data(self, object):
-        context = super().get_context_data()
-        context['reprocessing_task'] = ReprocessingTask.objects.get(
-            action__id=object.id
-        )
-        return context

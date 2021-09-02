@@ -22,11 +22,11 @@
   <div class="card my-3">
     <div class="card-header">
       <h3 class="search-title">
-        <a href="{% url 'tp-project-detail' globus_portal_framework.index project result.subject %}">{{result.title|default:'Sample'}}</a>
+        <a href="{% url 'detail' globus_portal_framework.index result.subject %}">{{result.title|default:'Sample'}}</a>
       </h3>
     </div>
     <div class="card-body">
-    {% include 'xpcs/global/tabbed-project/components/search-result.html' %}
+    {% include 'xpcs/globus-portal-framework/v2/components/search-result.html' %}
     </div>
   </div>
   {% endfor %}
