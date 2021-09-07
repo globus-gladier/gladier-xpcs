@@ -78,7 +78,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR / 'alcf_data_portal' / 'templates',
+            BASE_DIR / 'testing' / 'templates',
         ],
         'APP_DIRS': True,
         'OPTIONS': {

@@ -12,9 +12,7 @@ api = [
 urlpatterns = [
     path('api/v1/', include(api)),
     path('', include('xpcs_portal.xpcs_index.urls')),
-    # path('', lambda r: redirect('/xpcs/')),
-    # path('', include('alcf_data_portal.urls_tabbed_project')),
-    # path('', index_selection, name='index-selection'),
+    path('', index_selection, name='index-selection'),
     path('favicon.ico', lambda r: redirect('/static/favicon.ico')),
     path('', include('social_django.urls', namespace='social')),
     path('', include('globus_portal_framework.urls')),
