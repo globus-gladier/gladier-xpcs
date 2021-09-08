@@ -110,14 +110,6 @@
 <li class="breadcrumb-item active"><a class="h5">{{title|default:'Search Result'}}</a></li>
 {% endblock %}
 
-
-{% comment %}
-<li class="breadcrumb-item"><a class="h5" href="{% url 'index-selection' %}">{{globus_portal_framework.project_title}}</a></li>
-<li class="breadcrumb-item"><a class="h5" href="{% url 'index-landing-page' index=globus_portal_framework.index %}">{{globus_portal_framework.index_data.name}}</a></li>
-<li class="breadcrumb-item"><a class="h5" href="{% url 'search' index=globus_portal_framework.index %}">{{project_info.title}} Search</a></li>
-<li class="breadcrumb-item {% is_active detail index=globus_portal_framework.index subject=subject%}"><a class="h5">{{title|default:'Search Result'}}</a></li>
-{% endcomment %}
-
 {% block detail_body %}
 
 <div class="row">

@@ -1,5 +1,5 @@
 {% load index_template %}
-<form action="{% block checkout_form_action_url %}{% url 'xpcs-index:xpcs-reprocess-datasets-checkout' index %}{% endblock %}" method="post">
+<form action="{% block checkout_form_action_url %}{% url 'xpcs-index:reprocessing' index %}{% endblock %}" method="post">
   <!--  Originally, "name" was the manifest name. We're still passing it as a hack, but
   this is simply discarded. If we can refactor serach collectors to not need this,
   we can discard the name field. -->
