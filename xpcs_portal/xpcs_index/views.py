@@ -1,6 +1,7 @@
 import logging
 import pathlib
 import urllib
+import copy
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.shortcuts import redirect
@@ -96,7 +97,7 @@ class XPCSReprocessingCheckoutView(ManifestCheckoutView):
 
     def get_input(self, cleaned_data, deployment, dataset):
         # Get filename src/dest for .hdf
-        flow_input = deployment.get_input()
+        flow_input = copy.deepcopy(deployment.get_input())
         source_hdf = pathlib.Path(next(d for d in dataset if str(d).endswith('.hdf')))
         # Get filename src/dest for .imm/.bin
         source_data = pathlib.Path(next(d for d in dataset if
