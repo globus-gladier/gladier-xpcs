@@ -1,4 +1,4 @@
-{%extends "global/tabbed-project/manifest-create.html"%}
+{%extends "globus-portal-framework/v2/detail-base.html"%}
 {% load static index_template %}
 
 {%block headextras%}
@@ -26,11 +26,11 @@ function selectAllCheckboxes(classID, source) {
   <div class="col"></div>
   <div class="col-10">
     <div>
-      <h1 class="text-center">Create Manifest</h1>
+      <h1 class="text-center">{%block checkout_title%}Reprocess Datasets{%endblock%}</h1>
       <div class="card">
         <div class="card-body">
           {% block manifest_create_form %}
-            {% index_template 'concierge-app/components/checkout-form.html' as checkout_form %}
+            {% index_template 'xpcs/reprocess-datasets-checkout-form.html' as checkout_form %}
             {% include checkout_form %}
           {% endblock %}
 

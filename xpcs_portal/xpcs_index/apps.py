@@ -22,7 +22,8 @@ SEARCH_INDEXES = {
         'name': 'APS XPCS',
         # 'tagline': 'APS Beamline Data',
         'group': '',
-        'tabbed_project': True,
+        'base_templates': 'globus-portal-framework/v2/',
+        'tabbed_project': False,
         'access': 'private',
         'template_override_dir': 'xpcs',
         'description': (

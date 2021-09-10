@@ -1,5 +1,4 @@
 import logging
-import os
 import pathlib
 import urllib
 import collections
@@ -14,27 +13,6 @@ def filter_xpcs_data_files(manifest, allowed_extensions=XPCS_DATA_EXTENSIONS):
     return [m for m in manifest if any(
         m['filename'].endswith(extension) for extension in allowed_extensions
     )]
-
-
-class XPCSSearchCollector(SearchCollector):
-
-    def get_manifest(self):
-        data_manifest = []
-        manifest = filter_xpcs_data_files(super().get_manifest())
-        for man in filter_xpcs_data_files(super().get_manifest()):
-            # Prefixing the filename with the hdf directory will cause manifests
-            # to create a 'dataset' directory within the 'processing' directory,
-            # where the .hdf and .imm/.bin will be kept separate from other
-            # datasets
-
-            man['filename'] = os.path.join(
-                os.path.basename(os.path.dirname(man['url'])),
-                os.path.basename(man['url'])
-            )
-            data_manifest.append(man)
-        # log.debug(f'Collected {len(data_manifest)}/{len(manifest)} XPCS Data '
-        #           f'files for reprocessing...')
-        return data_manifest[0:100]
 
 
 class XPCSReprocessingSearchCollector(SearchCollector):

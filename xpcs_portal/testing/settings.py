@@ -78,7 +78,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR / 'alcf_data_portal' / 'templates',
+            BASE_DIR / 'testing' / 'templates',
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -108,6 +108,11 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     'https://auth.globus.org/scopes/c7683485-3c3f-454a-94c0-74310c80b32a/https',  # noqa
     # Note: Automate scopes are only added if the globus-automate-client is installed
 ] + extra_scopes
+
+ALLOWED_FRONTEND_TOKENS = [
+    'petrel_https_server',
+    'c7683485-3c3f-454a-94c0-74310c80b32a',
+]
 
 
 # Database

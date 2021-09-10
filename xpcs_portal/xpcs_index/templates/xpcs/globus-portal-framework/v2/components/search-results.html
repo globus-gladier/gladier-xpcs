@@ -1,0 +1,41 @@
+{% load static humanize %}
+
+{% block headextras %}
+{% endblock %}
+
+<h3 class="h3">Results</h3>
+<div class="alert alert-secondary">
+  <div class="row">
+    <div class="col-md-6 align-self-center">
+      <h6 class="h5">{{search.total}} datasets found</h6>
+    </div>
+    <div class="col-md-1"></div>
+    <div class="col-md-5 align-self-end">
+      <a class="btn btn-outline-primary btn-block
+         {% if not request.user.is_authenticated %}
+         disabled
+         {% endif %}
+        " style="border-color: #708FCA; color: #708FCA; background-color: transparent"
+        href="{% url 'xpcs-index:reprocessing' globus_portal_framework.index %}?{{request.session.search.full_query}}">
+        <i class="fas fa-microchip" style="font-size: 24px;"></i>
+        <span style="font-size: 22px" class="pl-2">Reprocess Datasets</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div id="search-result" class="search-result">
+  {% for result in search.search_results %}
+  {% load humanize %}
+  <div class="card my-3">
+    <div class="card-header">
+      <h3 class="search-title">
+        <a href="{% url 'detail' globus_portal_framework.index result.subject %}">{{result.title|default:'Sample'}}</a>
+      </h3>
+    </div>
+    <div class="card-body">
+    {% include 'xpcs/globus-portal-framework/v2/components/search-result.html' %}
+    </div>
+  </div>
+  {% endfor %}
+</div>

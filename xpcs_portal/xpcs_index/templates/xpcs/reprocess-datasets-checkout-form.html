@@ -1,5 +1,5 @@
 {% load index_template %}
-<form action="{% block checkout_form_action_url %}{% url 'xpcs-index:xpcs-reprocess-datasets-checkout' index project %}{% endblock %}" method="post">
+<form action="{% block checkout_form_action_url %}{% url 'xpcs-index:reprocessing' index %}{% endblock %}" method="post">
   <!--  Originally, "name" was the manifest name. We're still passing it as a hack, but
   this is simply discarded. If we can refactor serach collectors to not need this,
   we can discard the name field. -->
@@ -67,8 +67,7 @@
         </div>
         <div id="collapse-search-record-{{forloop.counter}}" class="collapse" aria-labelledby="heading-search-record-{{forloop.counter}}" data-parent="#accordion-main-checkout">
           <div class="card-body">
-            {% index_template 'concierge-app/components/checkout-search-result.html' as checkout_search_result %}
-            {% include checkout_search_result %}
+            {% include 'xpcs/globus-portal-framework/v2/components/search-result.html' %}
           </div>
         </div>
       </div>

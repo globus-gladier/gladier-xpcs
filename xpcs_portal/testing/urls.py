@@ -12,7 +12,6 @@ api = [
 urlpatterns = [
     path('api/v1/', include(api)),
     path('', include('xpcs_portal.xpcs_index.urls')),
-    path('', include('alcf_data_portal.urls_tabbed_project')),
     path('', index_selection, name='index-selection'),
     path('favicon.ico', lambda r: redirect('/static/favicon.ico')),
     path('', include('social_django.urls', namespace='social')),
