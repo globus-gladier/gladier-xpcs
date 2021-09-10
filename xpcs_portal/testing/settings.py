@@ -74,6 +74,8 @@ AUTHENTICATION_BACKENDS = [
 
 ROOT_URLCONF = 'xpcs_portal.testing.urls'
 
+# This copies the ALCFDataPortal, which by default still uses the old templates
+BASE_TEMPLATES = ''
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -96,7 +98,6 @@ TEMPLATES = [
     },
 ]
 
-TABBED_PROJECT_INDEXES = ['xpcs']
 
 SOCIAL_AUTH_GLOBUS_SCOPE = [
     'urn:globus:auth:scope:search.api.globus.org:all',
