@@ -7,6 +7,7 @@
 
 import argparse
 import os
+import pathlib
 
 from gladier_xpcs.flow_online import XPCSOnlineFlow
 from gladier_xpcs.deployments import deployment_map
@@ -104,7 +105,7 @@ if __name__ == '__main__':
 
     corr_flow = XPCSOnlineFlow()
 
-    corr_run_label = hdf_name
+    corr_run_label = pathlib.Path(hdf_name).name[:62]
 
     flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label)
 
