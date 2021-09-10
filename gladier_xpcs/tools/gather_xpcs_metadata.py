@@ -2,13 +2,15 @@ from gladier import GladierBaseTool, generate_flow_definition
 
 
 def gather_xpcs_metadata(**event):
-    import os
+    import pathlib
+    import re
+    import traceback
     import datetime
     from gladier_xpcs.tools.xpcs_metadata import gather
 
     # Generate metadata
     hdf_file = event['hdf_file']
-    exp_name = os.path.basename(hdf_file).replace(".hdf", "")
+    exp_name = pathlib.Path(hdf_file).name.replace(".hdf", "")
     metadata = gather(hdf_file)
     metadata.update({
             'description': f'{exp_name}: Automated data processing.',
@@ -30,6 +32,19 @@ def gather_xpcs_metadata(**event):
     for evil_key in ['exchange.partition_norm_factor']:
         if evil_key in metadata.keys():
             metadata.pop(evil_key)
+
+    try:
+        # Get root_folder, ex: "/data/2020-1/sanat202002/"
+        root_folder = pathlib.Path(metadata['measurement.instrument.acquisition.root_folder'])
+        # Cycle: 2021-1
+        metadata['cycle'] = root_folder.parent.name
+        # Parent: sanat
+        metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
+    except Exception:
+        p = pathlib.Path(event['proc_dir']) / 'gather_xpcs_metadata.error'
+        with open(str(p), 'w+') as f:
+            f.write(traceback.format_exc())
+
 
     pilot = event['pilot']
     # metadata passed through from the top level takes precedence. This allows for
