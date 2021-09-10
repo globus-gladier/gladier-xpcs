@@ -64,6 +64,7 @@ class NickDeployment(BaseDeployment):
     flow_input = {
         'input': {
             'staging_dir': '/projects/APSDataAnalysis/nick/gladier_testing/',
+            'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
         }
     }
 
@@ -84,16 +85,16 @@ class NickPortalDeployment(NickDeployment):
     flow_input = {
         'input': {
             'staging_dir': '/projects/APSDataAnalysis/XPCS/portal/{now}/',
-
+            'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
             # We don't have a way to store authorization data within a database yet.
             # FuncX ids on the portal need to be specified manually
-            'apply_qmap_funcx_id': 'b248b123-961e-49df-913c-88d56d56ab4a',
-            'eigen_corr_funcx_id': '24a74093-f30b-407d-9c29-09e3f50f3e2d',
-            'gather_xpcs_metadata_funcx_id': '9406facf-c49c-4657-a55f-2d7b1b28d5bf',
-            'make_corr_plots_funcx_id': '744df9e2-80c4-4009-b8b6-98a5cc27c954',
-            'publish_gather_metadata_funcx_id': 'cf427819-dfc5-4aac-bbaa-2e43114d73dd',
-            'publish_preparation_funcx_id': 'e89efd13-3ab9-4273-9567-4426444d2e01',
-            'warm_nodes_funcx_id': '64a551b0-1549-42ea-9395-315eab7b8b7d'
+            'apply_qmap_funcx_id': '4d15c42d-a982-46ed-a548-497ac5977b70',
+            'eigen_corr_funcx_id': 'df859253-1113-4cbc-820c-8cf4afbf5764',
+            'gather_xpcs_metadata_funcx_id': '348e7fe6-7d64-4ccf-84b0-502294a087e9',
+            'make_corr_plots_funcx_id': 'dba85394-eae5-4651-827e-1cf03f536a75',
+            'publish_gather_metadata_funcx_id': '9a36d48b-b072-4e7d-a2dc-8f4a31ef9b45',
+            'publish_preparation_funcx_id': '4b39dbd5-1954-4923-89e3-9abbb39c0375',
+            'warm_nodes_funcx_id': 'f369eb60-9a4c-49cb-a078-abb1a81a7c66'
         }
     }
 

@@ -58,7 +58,7 @@
                  aria-describedby="publishHelpBlock"
                  {% if not form.subjects.value or result.subject in form.subjects.value %} checked{% endif %}
           >
-          <label class="form-check-label" style="min-width: 30%" for="form-input-search-record-{{forloop.counter}}">{{result.title|truncatechars:40}}</label>
+          <label class="form-check-label" style="min-width: 30%" for="form-input-search-record-{{forloop.counter}}">{{result.title|truncatechars:100}}</label>
           <div>
             <button type="button" class="btn btn-primary btn-sm ml-1 py-0" data-toggle="collapse" data-target="#collapse-search-record-{{forloop.counter}}" aria-expanded="true" aria-controls="collapse-search-record-{{forloop.counter}}">
               <i class="fas fa-info-circle"></i><span class="pl-2">Info</span>
