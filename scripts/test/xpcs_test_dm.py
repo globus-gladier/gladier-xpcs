@@ -35,7 +35,7 @@ if __name__ == '__main__':
     print(f'Executing {n_files} files')
     for k in range(0,n_files):
         k_sample = samples[k]
-        cmd = f'source /home/dm/etc/dm.setup.sh; dm-start-processing-job --workflow-name={dm_workflow} {k_sample}' 
+        cmd = f'source /home/dm/etc/dm.setup.sh; dm-start-processing-job --workflow-name={dm_workflow} {k_sample} xpcsGroupName:/xpcs sgeQueueName:xpcs8new.q' 
         print(cmd)
         sleep(beamline_wait)
         os.system(cmd)
