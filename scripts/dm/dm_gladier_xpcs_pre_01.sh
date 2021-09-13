@@ -107,6 +107,7 @@ clusterDataDir=$ORTHROS_DATA_ROOT/$relativeDataDir
 clusterResultsDir=`realpath -m $clusterDataDir/../$ORTHROS_RESULTS_DIR`
 clusterJobLogsDir=$clusterResultsDir/$ORTHROS_RESULTS_LOGS_RELATIVE_DIR
 clusterJobErrorLogsDir=$clusterResultsDir/$ORTHROS_RESULTS_ERRORLOGS_RELATIVE_DIR
+
 ssh $ORTHROS_USER_ACCOUNT "mkdir -p $clusterResultsDir; mkdir -p $clusterDataDir; mkdir -p $clusterJobLogsDir; mkdir -p $clusterJobErrorLogsDir; mkdir -p $ALCF_RESULTS_DIR; chmod 777 $ALCF_RESULTS_DIR" || exit 1
 echo "Input Directory: $inputDir"
 echo "Relative Data Directory: $relativeDataDir"
