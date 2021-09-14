@@ -67,6 +67,7 @@ MIDDLEWARE = [
     'globus_portal_framework.middleware.ExpiredTokenMiddleware',
 ]
 
+LOGIN_URL = '/login/globus'
 AUTHENTICATION_BACKENDS = [
     'globus_portal_framework.auth.GlobusOpenIdConnect',
     'django.contrib.auth.backends.ModelBackend',
