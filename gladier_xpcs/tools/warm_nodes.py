@@ -6,7 +6,7 @@ def warm_nodes(**data):
 
 
 @generate_flow_definition(modifiers={
-    warm_nodes: {'WaitTime': 3600}
+    warm_nodes: {'WaitTime': 86400}  # Wait 1 day for free nodes
 })
 class WarmNodes(GladierBaseTool):
     """Warm Nodes specifically does nothing, and is intended to be run before
