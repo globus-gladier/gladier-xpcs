@@ -1,4 +1,6 @@
 import datetime
+import copy
+
 
 class BaseDeployment:
     globus_endpoints = dict()
@@ -78,7 +80,7 @@ class NickPortalDeployment(NickDeployment):
         now = now - datetime.timedelta(microseconds=now.microsecond)
         now = now.isoformat().replace(':', '')
 
-        finput = super().get_input()
+        finput = copy.deepcopy(super().get_input())
         finput['input']['staging_dir'] = finput['input']['staging_dir'].format(now=now)
         return finput
 
