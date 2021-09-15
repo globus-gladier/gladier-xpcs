@@ -3,6 +3,7 @@
 ###############################################
 ###############################################
 ORTHROS_USER_ACCOUNT=8idiuser@orthros
+BEAMLINE_USER_ACCOUNT=8idiuser@talc
 ORTHROS_DATA_ROOT=/data/xpcs8
 ORTHROS_PROCESSING_ROOT=/data/xpcs8
 ORTHROS_RESULTS_DIR=cluster_results

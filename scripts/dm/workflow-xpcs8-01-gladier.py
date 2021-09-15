@@ -5,7 +5,7 @@
     'description': 'XPCS8-01 Gladier Workflow', 
     'stages': {
             '01-Staging' : {
-                'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/dm_gladier_xpcs_pre_01.sh $filePath $fileDataDir $xpcsGroupName $sgeQueueName', 
+                'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/dm_gladier_xpcs_pre_01.sh $filePath $fileDataDir $xpcsGroupName $sgeQueueName $experimentName', 
                 'outputVariableRegexList' : [
                     'Cluster Data Directory: (?P<clusterDataDir>.*)', 
                     'Cluster Results Directory: (?P<clusterResultsDir>.*)', 
