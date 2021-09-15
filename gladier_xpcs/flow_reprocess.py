@@ -82,4 +82,4 @@ class XPCSReprocessingFlow(GladierBaseClient):
         return flow_input
 
     def get_label(self, flow_input):
-        return str(pathlib.Path(flow_input['input']['proc_dir']).name)
+        return str(pathlib.Path(flow_input['input']['proc_dir']).name)[:62]

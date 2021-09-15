@@ -5,6 +5,7 @@ import copy
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 from globus_portal_framework.views.generic import SearchView, DetailView
 from concierge_app.views.generic import ManifestCheckoutView
 from automate_app.models import Action, Flow
@@ -17,7 +18,7 @@ from xpcs_portal.xpcs_index.apps import REPROCESSING_FLOW_DEPLOYMENT
 log = logging.getLogger(__name__)
 
 
-class XPCSSearchView(SearchView):
+class XPCSSearchView(LoginRequiredMixin, SearchView):
     """Custom XPCS Search view automatically filters on the xpcs-8id 'project'. This is old,
     based on the pilot project feature and will be going away eventually."""
 
