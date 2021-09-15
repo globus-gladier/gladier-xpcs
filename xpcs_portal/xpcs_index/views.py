@@ -91,7 +91,7 @@ class XPCSReprocessingCheckoutView(ManifestCheckoutView):
 
     def get_parameters(self, flow_input):
         return {
-            'label': str(pathlib.Path(flow_input['input']['hdf_file']).parent.name),
+            'label': str(pathlib.Path(flow_input['input']['hdf_file']).parent.name)[:62],
             'manage_by': '368beb47-c9c5-11e9-b455-0efb3ba9a670',
             'monitor_by': '368beb47-c9c5-11e9-b455-0efb3ba9a670',
         }
