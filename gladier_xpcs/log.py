@@ -9,11 +9,12 @@ logging.config.dictConfig({
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'level': 'INFO',
+            'level': 'DEBUG',
             'formatter': 'basic',
         }
     },
     'loggers': {
-        'gladier': {'level': 'DEBUG', 'handlers': ['console']},
+        'gladier': {'level': 'INFO', 'handlers': ['console']},
+        'gladier_xpcs': {'level': 'DEBUG', 'handlers': ['console']},
     },
 })

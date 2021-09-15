@@ -13,17 +13,6 @@ from gladier_xpcs.flow_online import XPCSOnlineFlow
 from gladier_xpcs.deployments import deployment_map
 
 
-def register_container():
-    from funcx.sdk.client import FuncXClient
-    fxc = FuncXClient()
-    from gladier_xpcs.tools.corr import eigen_corr
-    cont_dir = '/eagle/APSDataAnalysis/XPCS/containers/'
-    container_name = 'eigen_v2.simg'
-    eigen_cont_id = fxc.register_container(location=cont_dir+container_name,container_type='singularity')
-    corr_cont_fxid = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
-    return corr_cont_fxid
-
-
 def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument('--hdf', help='Path to the hdf file',
@@ -96,9 +85,6 @@ if __name__ == '__main__':
             # globus endpoints
             'globus_endpoint_clutch': depl_input['input']['globus_endpoint_source'],
             'globus_endpoint_theta': depl_input['input']['globus_endpoint_proc'],
-
-            # container hack for corr 
-            'eigen_corr_funcx_id': register_container()
         }
     }
 
