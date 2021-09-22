@@ -71,6 +71,14 @@ class NickDeployment(BaseDeployment):
     }
 
 
+class NickTalc(NickDeployment):
+
+    globus_endpoints = {
+        'globus_endpoint_source': 'fdc7e74a-fa78-11e8-9342-0e3d676669f4',
+        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+    }
+
+
 class NickPortalDeployment(NickDeployment):
 
     def get_input(self):
@@ -106,4 +114,5 @@ deployment_map = {
     'talc-prod': TalcDeployment(),
     'raf-cooley': RafCooleyDeployment(),
     'nick-testing': NickDeployment(),
+    'nick-talc': NickTalc(),
 }
