@@ -1,4 +1,7 @@
 import logging
+import time
+import random
+import globus_sdk
 from gladier import GladierBaseClient, generate_flow_definition, utils
 from gladier_xpcs.tools.corr import eigen_corr
 # import gladier_xpcs.log  # Uncomment for debug logging
@@ -11,6 +14,7 @@ log = logging.getLogger(__name__)
 })
 class XPCSOnlineFlow(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
+    max_retries = 10
     containers = {
         utils.name_generation.get_funcx_function_name(eigen_corr): {
             'container_type': 'singularity',
@@ -44,3 +48,18 @@ class XPCSOnlineFlow(GladierBaseClient):
             cfg.save()
         else:
             super().register_funcx_function(function)
+
+    def retry_backoff(self, method, *args, **kwargs):
+        retries = 0
+        while retries < self.max_retries:
+            try:
+                return method(*args, **kwargs)
+            except globus_sdk.GlobusTimeoutError:
+                time.sleep(random.randint(1, 10))
+        raise
+
+    def run_flow(self, *args, **kwargs):
+        return self.retry_backoff(super().run_flow, *args, **kwargs)
+
+    def get_status(self, *args, **kwargs):
+        return self.retry_backoff(super().get_status, *args, **kwargs)
