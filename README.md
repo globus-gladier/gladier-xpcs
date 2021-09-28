@@ -1,25 +1,32 @@
-# xpcs_gladier
+# XPCS
 
-XPCS Gladier for running the XPCS Reprocessing Flow.
+The Gladier XPCS project leverages the Globus Flows service for rapid data processing
+on HPC systems and publication of the results for easy viewing by users. There are 
+two major components to this repo: Globus flows for data processing, and portal code
+for visualization.
 
-## Installation
+The ``gladier_xpcs/`` package contains all files related to data processing. It contains
+all resources for starting and running a flow, in addition to user deployments so
+flows can run with ALCF compute resources tied to user allocations. Globus flows are 
+composed using the Gladier package.
 
-We highly encourage using [miniconda](miniconda)
+The ``xpcs_portal/`` package contains all portal-related code for visualizing the
+results from successful XPCS flows. In addition, the portal can also start
+reprocessing flows for existing datasets which have been published to the portal.
+Checkout the [Portal README](./xpcs_portal/README.md) for more information on running
+the portal.
 
-### Main Package
-    
-    conda create -n gladier python=3.8
-    conda activate gladier
+## Online Processing
 
-    git clone https://github.com/globus-gladier/gladier-xpcs.git
-    cd gladier-xpcs
-    python setup.py develop
+Online processing consists of a Gladier flow run on the talc machine. The core 
+flow is located at `gladier_xpcs/flow_online.py` A script for running the flow with
+input can be found in `scripts/xpcs_corr_client.py`. In order to run the previous
+script, a user needs access to ALCF HPC resources with a running funcx-endpoint.
+We track user funcx-endpoints through "deployments", which can be found in
+`gladier_xpcs/deployments.py`. 
 
-    ##install DM scripts
-    cp  scripts/dm/* /home/beams10/8IDIUSER/DM_Workflows/xpcs8/
-    
-    cd /home/beams10/8IDIUSER/DM_Workflows/xpcs8/
-    dm-add-workflow --py-spec workflow-xpcs8-01-gladier.py
+For more information on running online processing flows, see [online processing](./scripts/online-processing.md).
+
 
 ## Reprocessing
 
@@ -52,4 +59,75 @@ To test a reprocessing flow, ensure Test run a reprocessing flow with the follow
 ```
 cd scripts/
 python xpcs_reproc_client.py
+```
+
+### Theta Configuration
+
+Hopefully, this document is a little outdated and you're executing on Polaris!
+Please add, update, or correct information as things change. 
+
+### Example Config
+
+```
+~/.funcx/theta/config.py
+
+from parsl.addresses import address_by_hostname
+from parsl.launchers import AprunLauncher
+from parsl.providers import CobaltProvider
+
+from funcx_endpoint.endpoint.utils.config import Config
+from funcx_endpoint.executors import HighThroughputExecutor
+from funcx_endpoint.strategies import SimpleStrategy
+
+# PLEASE UPDATE user_opts BEFORE USE
+user_opts = {
+    'theta': {
+        # Add your config here.
+        'worker_init': 'source activate funcx',
+        'scheduler_options': '',
+        # Specify the account/allocation to which jobs should be charged
+    }
+}
+
+
+config = Config(
+    executors=[
+        HighThroughputExecutor(
+            heartbeat_period=15,
+            heartbeat_threshold=120,
+            address=address_by_hostname(),
+            scheduler_mode='soft',
+
+            # Set these for using containers
+            worker_mode='singularity_reuse',
+            container_type='singularity',
+            container_cmd_options='-H /home/$USER --bind /eagle/APSDataAnalysis --bind /projects/APSDataAnalysis/',
+            provider=CobaltProvider(
+                # These may change depending on your allocation
+                account='APSDataAnalysis',
+                queue='analysis',
+                # string to prepend to #COBALT blocks in the submit
+                # script to the scheduler eg: '#COBALT -t 50'
+                scheduler_options=user_opts['theta']['scheduler_options'],
+                # Command to be run before starting a worker, such as:
+                # 'module load Anaconda; source activate funcx_env'.
+                worker_init=user_opts['theta']['worker_init'],
+                launcher=AprunLauncher(overrides="-d 64"),
+                # Increase this if tasks consistently. outpace available nodes. 
+                nodes_per_block=2,
+                init_blocks=1,
+                min_blocks=0,
+                max_blocks=60,
+                cmd_timeout=300,
+                # 1 hour tends to be a good middleground -- short enough theta
+                # usually starts nodes quickly, long enough for (at least lambda)
+                # jobs to complete. NOTE: funcx==0.3.3 will not restart tasks that
+                # die due to walltime.
+                walltime='1:00:00',
+            ),
+            strategy=SimpleStrategy(max_idletime=900),
+            max_workers_per_node=16,
+            )
+        ]
+    )
 ```
