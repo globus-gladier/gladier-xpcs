@@ -26,6 +26,13 @@ SEARCH_INDEXES = {
         'tabbed_project': False,
         'access': 'private',
         'template_override_dir': 'xpcs',
+        # Automatically append these filters to all searches
+        # Currently, this is used to hide a globus-pilot record used for tracking project data
+        'default_filters': [{
+            'type': 'match_all',
+            'field_name': 'project_metadata.project-slug',
+            'values': ['xpcs-8id']
+        }],
         'description': (
             'X-ray Photon Correlation Spectroscopy (XPCS) is a technique to '
             'study dynamics in materials at nanoscale by identifying '
