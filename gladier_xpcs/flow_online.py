@@ -23,7 +23,7 @@ class XPCSOnlineFlow(GladierBaseClient):
         }
     }
     secret_config_lock = filelock.FileLock(f'{GladierBaseClient.secret_config_filename}.lock',
-                                           timeout=1)
+                                           timeout=10)
 
     gladier_tools = [
         'gladier_xpcs.tools.TransferFromClutchToTheta',
