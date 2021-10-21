@@ -2,9 +2,9 @@ import logging
 import time
 import random
 import globus_sdk
-import filelock
 from gladier import GladierBaseClient, generate_flow_definition, utils
 from gladier_xpcs.tools.corr import eigen_corr
+from gladier_xpcs.config import LockedConfig
 # import gladier_xpcs.log  # Uncomment for debug logging
 
 log = logging.getLogger(__name__)
@@ -22,8 +22,9 @@ class XPCSOnlineFlow(GladierBaseClient):
             'location': '/eagle/APSDataAnalysis/XPCS/containers/eigen_v2.simg',
         }
     }
-    secret_config_lock = filelock.FileLock(f'{GladierBaseClient.secret_config_filename}.lock',
-                                           timeout=10)
+
+    def _load_private_config(self):
+        return LockedConfig(self.secret_config_filename, self.section, self.client_id)
 
     gladier_tools = [
         'gladier_xpcs.tools.TransferFromClutchToTheta',
@@ -56,8 +57,7 @@ class XPCSOnlineFlow(GladierBaseClient):
         retries = 0
         while retries < self.max_retries:
             try:
-                with self.secret_config_lock:
-                    return method(*args, **kwargs)
+                return method(*args, **kwargs)
             except globus_sdk.GlobusTimeoutError:
                 time.sleep(random.randint(1, 10))
         raise
