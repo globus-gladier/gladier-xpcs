@@ -24,12 +24,7 @@ class XPCSSearchView(LoginRequiredMixin, SearchView):
 
     @property
     def filters(self):
-        project_filters = [{
-            'type': 'match_all',
-            'field_name': 'project_metadata.project-slug',
-            'values': ['xpcs-8id']
-        }]
-        return super().filters + project_filters
+        return super().filters + self.get_index_info().get('default_filters', [])
 
 
 class XPCSDetailView(DetailView):
