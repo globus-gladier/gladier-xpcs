@@ -4,7 +4,6 @@ import random
 import globus_sdk
 from gladier import GladierBaseClient, generate_flow_definition, utils
 from gladier_xpcs.tools.corr import eigen_corr
-from gladier_xpcs.config import LockedConfig
 # import gladier_xpcs.log  # Uncomment for debug logging
 
 log = logging.getLogger(__name__)
@@ -22,9 +21,6 @@ class XPCSOnlineFlow(GladierBaseClient):
             'location': '/eagle/APSDataAnalysis/XPCS/containers/eigen_v2.simg',
         }
     }
-
-    def _load_private_config(self):
-        return LockedConfig(self.secret_config_filename, self.section, self.client_id)
 
     gladier_tools = [
         'gladier_xpcs.tools.TransferFromClutchToTheta',
