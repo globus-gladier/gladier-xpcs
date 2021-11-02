@@ -70,5 +70,5 @@ if __name__ == '__main__':
         if curr_index>step_index:
             sys.exit(0)
 
-        time.sleep(60)
+        time.sleep(90)
 
