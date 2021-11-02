@@ -3,12 +3,12 @@
 import argparse
 import time
 import sys
-from pprint import pprint
+import pprint
 
 from gladier.utils.flow_generation import get_ordered_flow_states
-
-##import the client
 from gladier_xpcs.flow_online import XPCSOnlineFlow
+
+
 def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--run_id", help="The automate flow instance(run) to check.",
@@ -17,58 +17,84 @@ def arg_parse():
                         default=None)
     parser.add_argument("--timeout", help="How long to wait before exiting.",
                         default=300)
+    parser.add_argument("--interval", help="Interval between checking statuses", type=int,
+                        default=90)
     args = parser.parse_args()
     return args
 
 
+class TimedOut(Exception):
+    pass
+
+
+class RunSucceeded(Exception):
+    pass
+
+
+class RunFailed(Exception):
+    pass
+
+
+def get_current_state_name(run_status):
+    """Parse the state name from a flows run status response"""
+    if run_status.get('state_name'):
+        return run_status.get('state_name')
+    elif run_status.get('details'):
+        det = run_status.get('details')
+        if det.get('details'):
+            return run_status['details']['details']['state_name']
+        elif det.get('action_statuses'):
+            return run_status['details']['action_statuses'][0]['state_name']
+
+    print(f'BUG ENCOUNTERED! An unexpected status was returned by the flows '
+          f'service, a dump of the response is listed below. Please send this '
+          f'to us so we can fix it. Thanks!', file=sys.stderr)
+    pprint.pprint(run_status, stream=sys.stderr)
+    return None
+
+
+def state_has_completed(flow_state, flow_states, run_status):
+    current_state = get_current_state_name(run_status)
+    if current_state is None:
+        return False
+    return flow_states.index(current_state) > flow_states.index(flow_state)
+
+
+def check_run_status(run_status):
+    url = f'https://app.globus.org/runs/{run_status["run_id"]}'
+    if run_status['status'] == 'FAILED':
+        raise RunFailed(f'Run Failed: {url}')
+    elif run_status['status'] == 'SUCCEEDED':
+        raise RunSucceeded(f'Run Succeeded: {url}')
+
+
+def check_time(start_time, limit):
+    if time.time() - start_time >= float(limit):
+        raise TimedOut(f'Wait time has exceeded its limit of {limit} seconds.')
+
+
 if __name__ == '__main__':
     args = arg_parse()
-
-
-    mainFlow = XPCSOnlineFlow()
-
-    flow_dict = get_ordered_flow_states(mainFlow.flow_definition)
-    flow_steps = []
-    for key, value in flow_dict.items() :
-        flow_steps.append(key)
-    
+    main_flow = XPCSOnlineFlow()
+    flow_states = list(get_ordered_flow_states(main_flow.flow_definition).keys())
     start_time = time.time()
 
-    if args.step not in flow_steps:
-        print(args.step + ' not in valid steps')
-        print(flow_steps)
+    if args.step not in flow_states:
+        print(f'"{args.step}" is not valid, please choose from: {", ".join(flow_states)}')
         sys.exit(-1)
 
-
-    step_index = flow_steps.index(args.step)
-
-    status = mainFlow.get_status(args.run_id)
-
-    while status['status'] not in ['SUCCEEDED', 'FAILED']:
-
-        if args.timeout:
-            cur_time = time.time()
-            if int(cur_time - start_time) >= int(args.timeout):
-                sys.exit(1)
-
-        status = mainFlow.get_status(args.run_id)
-
-        if status.get('state_name'):
-            curr_step = status.get('state_name')       
-        elif status.get('details'):
-            det = status.get('details')
-            if det.get('details'):
-                curr_step = status['details']['details']['state_name']
-            elif det.get('action_statuses'):
-                curr_step = status['details']['action_statuses'][0]['state_name']
-        
-        curr_index = flow_steps.index(curr_step)
-
-        if status['status']=='FAILED': #this could be out of the loop to prevent overchecking
-            sys.exit(1)
-
-        if curr_index>step_index:
-            sys.exit(0)
-
-        time.sleep(90)
-
+    try:
+        while True:
+            status = main_flow.get_status(args.run_id)
+            check_time(start_time, args.timeout)
+            check_run_status(status)
+            if state_has_completed(args.step, flow_states, status):
+                print(f'Step {args.step}: Completed')
+                sys.exit(0)
+            time.sleep(args.interval)
+    except RunSucceeded as rs:
+        print(str(rs))
+        sys.exit(0)
+    except (TimedOut, RunFailed) as e:
+        print(f'{e.__class__.__name__}: {str(e)}', file=sys.stderr)
+        sys.exit(1)
