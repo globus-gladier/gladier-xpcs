@@ -4,7 +4,7 @@ from .corr import EigenCorr
 from .plot import MakeCorrPlots
 from .gather_xpcs_metadata import GatherXPCSMetadata
 from .publish import Publish
-from .warm_nodes import WarmNodes
+from .acquire_nodes import AcquireNodes
 
 
 
@@ -15,5 +15,5 @@ __all__ = [
     'MakeCorrPlots',
     'GatherXPCSMetadata',
     'Publish',
-    'WarmNodes',
+    'AcquireNodes',
     ]
