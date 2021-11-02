@@ -15,8 +15,9 @@ def arg_parse():
                         default=None)
     parser.add_argument("--step", help="The inside the flow execution to check",
                         default=None)
-    parser.add_argument("--timeout", help="How long to wait before exiting.",
-                        default=300)
+    parser.add_argument("--timeout", help="How long to wait before exiting. Defaults to "
+                                          "the original flow state or 300.",
+                        default=0)
     parser.add_argument("--interval", help="Interval between checking statuses", type=int,
                         default=90)
     args = parser.parse_args()
@@ -83,10 +84,13 @@ if __name__ == '__main__':
         print(f'"{args.step}" is not valid, please choose from: {", ".join(flow_states)}')
         sys.exit(-1)
 
+    state_wait_time = main_flow.flow_definition['States'][args.step].get('WaitTime')
+    timeout = args.timeout or state_wait_time or 300
+
     try:
         while True:
             status = main_flow.get_status(args.run_id)
-            check_time(start_time, args.timeout)
+            check_time(start_time, timeout)
             check_run_status(status)
             if state_has_completed(args.step, flow_states, status):
                 print(f'Step {args.step}: Completed')
