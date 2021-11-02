@@ -27,7 +27,7 @@ class XPCSReprocessingFlow(GladierBaseClient):
         'gladier_xpcs.reprocessing_tools.transfer_qmap.TransferQmap',
         # Apply custom hdf settings to pass info into corr
         'gladier_xpcs.reprocessing_tools.apply_qmap.ApplyQmap',
-        'gladier_xpcs.tools.WarmNodes',
+        'gladier_xpcs.tools.AcquireNodes',
         'gladier_xpcs.tools.EigenCorr',
         'gladier_xpcs.tools.MakeCorrPlots',
 

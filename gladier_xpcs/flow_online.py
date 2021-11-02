@@ -25,6 +25,7 @@ class XPCSOnlineFlow(GladierBaseClient):
     gladier_tools = [
         'gladier_xpcs.tools.TransferFromClutchToTheta',
         'gladier_xpcs.tools.PrePublish',
+        'gladier_xpcs.tools.AcquireNodes',
         'gladier_xpcs.tools.EigenCorr',
         # 'gladier_xpcs.tools.transfer_from_clutch_to_theta.TransferToClutch',
         'gladier_xpcs.tools.MakeCorrPlots',
