@@ -5,7 +5,7 @@
     'description': 'XPCS8-01 Gladier Workflow', 
     'stages': {
             '01-Staging' : {
-                'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/dm/dm_gladier_xpcs_pre_01.sh $filePath $fileDataDir $xpcsGroupName $sgeQueueName $experimentName', 
+                'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/dm/dm_gladier_xpcs_pre_01.sh $filePath $fileDataDir $xpcsGroupName $sgeQueueName $experimentName', 
                 'outputVariableRegexList' : [
                     'Cluster Data Directory: (?P<clusterDataDir>.*)', 
                     'Cluster Results Directory: (?P<clusterResultsDir>.*)', 
@@ -37,16 +37,16 @@
                     ],
                 },
             '02-Automate' : {
-                'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf $clusterResultsDir/$outputHdf5File --imm $clusterDataDir/$immFile --group $globusID"' ,  
+                'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/xpcs_corr_client.py --hdf $clusterResultsDir/$outputHdf5File --imm $clusterDataDir/$immFile --group $globusID"' ,  
                 'outputVariableRegexList' : [
                     'run_id : (?P<AutomateId>.*)'
                 ],
             },
             '03-MonitorAutomate' : {'command': '/bin/echo https://app.globus.org/runs/$AutomateId'},
-            '04-Automate_TransferOut': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step TransferFromClutchToTheta"'},
-            '05-Automate_AcquireNodes': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step AcquireNodes"'},
-            '06-Automate_Corr': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step EigenCorr"'},
-            '07-Automate_Plots': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step MakeCorrPlots"'},
-            '08-Automate_TransferBack': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step GatherXpcsMetadata"'},
+            '04-Automate_TransferOut': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step TransferFromClutchToTheta"'},
+            '05-Automate_AcquireNodes': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step AcquireNodes"'},
+            '06-Automate_Corr': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step EigenCorr"'},
+            '07-Automate_Plots': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step MakeCorrPlots"'},
+            '08-Automate_TransferBack': {'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step GatherXpcsMetadata"'},
 	    }
 }
