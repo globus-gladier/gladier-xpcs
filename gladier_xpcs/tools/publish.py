@@ -60,7 +60,7 @@ class Publish(GladierBaseTool):
                     }]
                 },
                 'ResultPath': '$.PublishGatherMetadata',
-                'WaitTime': 60,
+                'WaitTime': 1200,
                 'Next': 'PublishTransfer',
             },
             'PublishTransfer': {
