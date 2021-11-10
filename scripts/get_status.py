@@ -3,6 +3,7 @@
 import argparse
 import time
 import sys
+import traceback
 import pprint
 
 from gladier.utils.flow_generation import get_ordered_flow_states
@@ -38,20 +39,23 @@ class RunFailed(Exception):
 
 def get_current_state_name(run_status):
     """Parse the state name from a flows run status response"""
-    if run_status.get('state_name'):
-        return run_status.get('state_name')
-    elif run_status.get('details'):
-        det = run_status.get('details')
-        if det.get('details'):
-            return run_status['details']['details']['state_name']
-        elif det.get('action_statuses'):
-            return run_status['details']['action_statuses'][0]['state_name']
+    try:
+        if run_status.get('state_name'):
+            return run_status.get('state_name')
+        elif run_status.get('details'):
+            det = run_status.get('details')
+            if det.get('details'):
+                return run_status['details']['details']['state_name']
+            elif det.get('action_statuses'):
+                return run_status['details']['action_statuses'][0]['state_name']
+    except Exception:
+        print(traceback.format_exc(), file=sys.stderr)
 
     print(f'BUG ENCOUNTERED! An unexpected status was returned by the flows '
           f'service, a dump of the response is listed below. Please send this '
           f'to us so we can fix it. Thanks!', file=sys.stderr)
     pprint.pprint(run_status, stream=sys.stderr)
-    return None
+    sys.exit(2)
 
 
 def state_has_completed(flow_state, flow_states, run_status):
