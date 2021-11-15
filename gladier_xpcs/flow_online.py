@@ -55,7 +55,11 @@ class XPCSOnlineFlow(GladierBaseClient):
         while retries < self.max_retries:
             try:
                 return method(*args, **kwargs)
-            except (globus_sdk.GlobusTimeoutError, globus_sdk.GlobusAPIError):
+            except globus_sdk.GlobusTimeoutError:
+                time.sleep(random.randint(1, 10))
+            except globus_sdk.GlobusAPIError as gapie:
+                if gapie.http_status == 400:
+                    raise
                 time.sleep(random.randint(1, 10))
         raise
 
