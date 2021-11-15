@@ -11,15 +11,11 @@ class TransferToClutch(GladierBaseTool):
                 'Comment': 'Transfer from Theta to Clutch',
                 'Type': 'Action',
                 'ActionUrl': 'https://actions.automate.globus.org/transfer/transfer',
+                'ExceptionOnActionFailure': True,
                 'Parameters': {
                     'source_endpoint_id.$': '$.input.globus_endpoint_theta',
                     'destination_endpoint_id.$': '$.input.globus_endpoint_clutch',
-                    'transfer_items': [
-                        {
-                            'source_path.$': '$.input.hdf_file',
-                            'destination_path.$': '$.input.clutch_processed_hdf_destination'
-                        }
-                    ]
+                    'transfer_items.$': '$.input.transfer_to_clutch',
                 },
                 'ResultPath': '$.TransferToClutch',
                 'WaitTime': 600,
@@ -31,5 +27,5 @@ class TransferToClutch(GladierBaseTool):
     required_input = [
         'globus_endpoint_clutch',
         'globus_endpoint_theta',
-        'clutch_processed_hdf_destination'
+        'transfer_to_clutch'
     ]
