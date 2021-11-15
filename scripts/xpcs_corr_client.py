@@ -23,6 +23,8 @@ def arg_parse():
                                 '/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
     parser.add_argument('--group', help='Visibility in Search', default=None)
     parser.add_argument('--deployment','-d', default='nick-talc', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
+    parser.add_argument('--results', default='/data/xpcs8/2019-1/comm201901/ALCF_results/',
+                        help=f'Clutch transfer location for corr results on hdf file')
     return parser.parse_args()
 
 
@@ -45,6 +47,7 @@ if __name__ == '__main__':
     # Generate Destination Pathnames.
     hdf_file = os.path.join(dataset_dir, hdf_name)
     imm_file = os.path.join(dataset_dir, imm_name)
+    hdf_file_result = os.path.join(args.results, hdf_name)
 
     flow_input = {
         'input': {
@@ -68,6 +71,13 @@ if __name__ == '__main__':
                     'source_path': args.imm,
                     'destination_path': imm_file,
                 }
+            ],
+
+            'transfer_to_clutch': [
+                {
+                    'source_path': hdf_file,
+                    'destination_path': hdf_file_result,
+                },
             ],
 
             'proc_dir': dataset_dir,
