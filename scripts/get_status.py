@@ -44,8 +44,10 @@ def get_current_state_name(run_status):
             return run_status.get('state_name')
         elif run_status.get('details'):
             det = run_status.get('details')
-            if det.get('details'):
+            if det.get('details') and det['details'].get('state_name'):
                 return run_status['details']['details']['state_name']
+            elif det.get('details') and det['details'].get('output'):
+                return list(det['details']['output'].values())[0]['state_name']
             elif det.get('action_statuses'):
                 return run_status['details']['action_statuses'][0]['state_name']
     except Exception:
