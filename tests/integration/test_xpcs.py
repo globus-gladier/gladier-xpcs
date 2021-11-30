@@ -1,3 +1,22 @@
+"""
+This is NOT a normal pytest! This is a special client which will run a real live flow
+as an integration test to ensure services are working properly.
+
+Usage:
+
+First, run this file locally with the `authorize` command
+python test_xpcs.py authorize
+
+This will spit out a large block of text, which can be placed into an environment variable
+to run later. You can test locally by setting `export FLOW_PAYLOAD=...`, and running
+the flow with `python test_xpcs.py run-test`.
+
+To enable running integration tests with Github Actions, store the credentials here instead:
+
+https://github.com/globus-gladier/gladier-xpcs/settings/secrets/actions
+
+And the github workflow under .github/workflows/test_flow.yml will run it each day.
+"""
 import os
 import json
 import click
