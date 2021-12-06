@@ -108,11 +108,28 @@ class NickPortalDeployment(NickDeployment):
         }
     }
 
+class HannahDeployment(BaseDeployment):
+    globus_endpoints = {
+        'globus_endpoint_source': 'fdc7e74a-fa78-11e8-9342-0e3d676669f4',
+        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+    }
 
+    funcx_endpoints = {
+        'funcx_endpoint_non_compute': 'e3e1aef6-0a6f-4ef1-b9c6-a14b0efb1dfa',
+        'funcx_endpoint_compute': '3d9fde8a-1dfa-4ce7-93ab-5d524a59a4f6',
+    }
+
+    flow_input = {
+        'input': {
+            'staging_dir': '/projects/APSDataAnalysis/hannah/gladier_testing/',
+            'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
+        }
+    }
 
 deployment_map = {
     'talc-prod': TalcDeployment(),
     'raf-cooley': RafCooleyDeployment(),
     'nick-testing': NickDeployment(),
     'nick-talc': NickTalc(),
+    'hannah-testing': HannahDeployment()
 }
