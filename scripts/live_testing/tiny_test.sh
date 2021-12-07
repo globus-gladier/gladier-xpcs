@@ -1,0 +1,1 @@
+source /home/dm/etc/dm.setup.csh; sleep 0; dm-start-processing-job --workflow-name=xpcs8-01-gladier filePath:/net/wolf/data/xpcs8/2021-2/akcora202106/cluster_results/A001__Fast_att4_140C_Lq1_001_0001-10000.hdf fileDataDir:A001__Fast_att4_140C_Lq1_001 xpcsGroupName:/xpcs sgeQueueName:xpcs8new.q experimentName:akcora202106
