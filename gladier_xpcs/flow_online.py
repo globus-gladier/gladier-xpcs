@@ -27,7 +27,7 @@ class XPCSOnlineFlow(GladierBaseClient):
         'gladier_xpcs.tools.PrePublish',
         'gladier_xpcs.tools.AcquireNodes',
         'gladier_xpcs.tools.EigenCorr',
-        'gladier_xpcs.tools.transfer_to_clutch.TransferToClutch',
+        # 'gladier_xpcs.tools.transfer_to_clutch.TransferToClutch',
         'gladier_xpcs.tools.MakeCorrPlots',
         'gladier_xpcs.tools.gather_xpcs_metadata.GatherXPCSMetadata',
         'gladier_xpcs.tools.Publish',
