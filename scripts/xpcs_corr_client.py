@@ -22,7 +22,7 @@ def arg_parse():
                         default='/data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001'
                                 '/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
     parser.add_argument('--group', help='Visibility in Search', default=None)
-    parser.add_argument('--deployment','-d', default='nick-talc', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
+    parser.add_argument('--deployment','-d', default='nick-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
     parser.add_argument('--results', default='/data/xpcs8/2019-1/comm201901/ALCF_results/',
                         help=f'Clutch transfer location for corr results on hdf file')
     return parser.parse_args()
