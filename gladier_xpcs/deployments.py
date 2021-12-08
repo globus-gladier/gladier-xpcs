@@ -126,10 +126,31 @@ class HannahDeployment(BaseDeployment):
         }
     }
 
+class RyanPolarisDeployment(BaseDeployment):
+
+    globus_endpoints = {
+        'globus_endpoint_source': 'e55b4eab-6d04-11e5-ba46-22000b92c6ec',
+        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+    }
+
+    funcx_endpoints = {
+        'funcx_endpoint_non_compute': '6c4323f4-a062-4551-a883-146a352a43f5',
+        'funcx_endpoint_compute': 'dc2a0cdb-2aee-44f7-a422-c4e28d9f7617',
+    }
+
+    flow_input = {
+        'input': {
+            'staging_dir': '/eagle/APSDataAnalysis/rchard/xpcs/',
+            'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
+        }
+    }
+
+
 deployment_map = {
     'talc-prod': TalcDeployment(),
     'raf-cooley': RafCooleyDeployment(),
     'nick-testing': NickDeployment(),
     'nick-talc': NickTalc(),
-    'hannah-testing': HannahDeployment()
+    'hannah-testing': HannahDeployment(),
+    'ryan-polaris': RyanPolarisDeployment()
 }
