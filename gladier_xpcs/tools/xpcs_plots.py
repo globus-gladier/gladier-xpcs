@@ -26,9 +26,6 @@ def gen_image(dset, basename, cbar=True, log=False):
     if cbar:
         figsize[1] *= 1.1
         plt.title(basename)
-        ax = plt.gca()
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
     else:
         plt.axes([0, 0, 1, 1])  # Make the plot occupy the whole canvas
         plt.axis('off')
@@ -40,6 +37,9 @@ def gen_image(dset, basename, cbar=True, log=False):
         im = plt.imshow(dset)
 
     if cbar:
+        ax = plt.gca()
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
         plt.colorbar(im, cax=cax)
     
     plt.savefig(image_filename, dpi=100)
