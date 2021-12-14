@@ -279,7 +279,7 @@ def make_corr_plots(**event):
 
 
 @generate_flow_definition(modifiers={
-    'make_corr_plots': {'WaitTime': 7200}
+    'make_corr_plots': {'WaitTime': 28800}
 })
 class MakeCorrPlots(GladierBaseTool):
     required_input = [
