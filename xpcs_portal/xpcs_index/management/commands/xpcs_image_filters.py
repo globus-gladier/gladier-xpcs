@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from xpcs_index.models import FilenameFilter
+from xpcs_portal.xpcs_index.models import FilenameFilter
 from django.contrib.auth.models import User
 
 
