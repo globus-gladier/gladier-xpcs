@@ -351,6 +351,10 @@
             {{file.filename}}
           </label>
         </div>
+        {% empty %}
+        <div class="alert alert-info">
+          <p>No fit images to display</p>
+        </div>
         {% endfor %}
       </div>
     </div>
