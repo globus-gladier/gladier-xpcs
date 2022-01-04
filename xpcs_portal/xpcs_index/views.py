@@ -37,7 +37,8 @@ class XPCSDetailView(DetailView):
             'correlation_plot_previews',
             'correlation_plot_with_fit_previews',
             'intensity_plot_previews',
-            'structural_analysis_prev'
+            'structural_analysis_prev',
+            'text_outputs',
         )
         try:
             for preview in preview_list:
