@@ -67,6 +67,7 @@ SEARCH_INDEXES = {
              fields.correlation_plot_with_fit_previews),
             ('intensity_plot_previews', fields.intensity_plot_previews),
             ('structural_analysis_prev', fields.structural_analysis_prev),
+            ('text_outputs', fields.text_outputs),
         ],
         'facets': [
             {
