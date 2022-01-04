@@ -192,7 +192,7 @@
       {# All other rows should be nested under the 'expand' button #}
       {% with metadata_iteration=forloop.counter %}
       <tr {% if metadata_iteration > 1 %} class="collapseDetailMetadata collapse" aria-expanded="false"{%endif%}>
-        <td colspan="2" class="text-center">
+        <td colspan="2">
           <strong>{{group.name}}</strong>
           {% if forloop.counter == 1 %}
           <a role="button" class="btn btn-primary btn-sm collapsed" data-toggle="collapse"
