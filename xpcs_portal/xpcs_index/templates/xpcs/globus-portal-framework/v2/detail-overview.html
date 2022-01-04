@@ -416,7 +416,7 @@
 
   <div class="col-md-6">
     <h5 class="text-center mb-3 h3">{{dmg.name}}</h5>
-    <table class="table table-striped table-bordered">
+    <table class="table table-striped table-bordered" style="table-layout: fixed;">
       <tbody>
         {% for item in dmg.fields %}
         <tr>
@@ -426,7 +426,7 @@
           {% elif item.type == 'filesize' %}
           <td>{{item.value|filesizeformat}}</td>
           {% else %}
-          <td>{{item.value}}</td>
+          <td style="white-space: normal !important; word-wrap: break-word;">{{item.value}}</td>
           {% endif %}
         </tr>
         {% endfor %}
