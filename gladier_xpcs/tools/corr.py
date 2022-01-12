@@ -49,7 +49,7 @@ def eigen_corr(**event):
 
 
 @generate_flow_definition(modifiers={
-    eigen_corr: {'WaitTime': 7200}
+    eigen_corr: {'WaitTime': 28800}
 })
 class EigenCorr(GladierBaseTool):
 
