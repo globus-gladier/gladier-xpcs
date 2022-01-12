@@ -188,6 +188,13 @@ def intensity_plot_previews(result):
     ]
 
 
+def text_outputs(result):
+    return [
+        entry for entry in fetch_all_previews(result)
+        if entry['mime_type'] == 'text/x-log'
+    ]
+
+
 def total_intensity_vs_time_preview(result):
     prev = [
         entry for entry in fetch_all_previews(result)
@@ -205,7 +212,8 @@ def structural_analysis_prev(result):
         correlation_plot_with_fit_previews(result) +
         [listing_preview(result)] +
         [total_intensity_vs_time_preview(result)] +
-        intensity_plot_previews(result)
+        intensity_plot_previews(result) +
+        text_outputs(result)
     )
     other_urls = [p['url'] for p in other_prevs if p]
     previews = [entry for entry in fetch_all_previews(result)
@@ -222,8 +230,8 @@ def fetch_all_previews(result):
             'name': get_xpcs_field_title(entry['filename'], ''),
             'url': entry['url'],
             'filename': entry['filename'],
-        } for entry in result[0].get('files', {})
-        if 'image' in entry.get('mime_type')}
+            'mime_type': entry['mime_type']
+        } for entry in result[0].get('files', {})}
     # If the user provided 'preview' info, overwrite the manifest entry with
     # the 'preview' entry
     base_previews.update(
