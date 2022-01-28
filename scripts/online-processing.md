@@ -4,6 +4,84 @@ Before continuing, make sure you can run `xpcs_corr_client.py` with your own
 deployment in `gladier_xpcs/deployments.py`. If you are not comfortable running
 the test flow with that script, seek help before continuing! 
 
+## Setup
+
+Running the xpcs_corr_client.py requires setting up a FuncX endpoint for execution.
+Check `gladier/deploymets.py` to ensure your globus endpoints and FuncX endpoints are
+configured.
+
+### FuncX Endpoint setup
+
+Make sure you have a valid funcx endpoint setup. Below should serve as a valid
+config. In particular, configure the following:
+
+* `worker_init` -- needs to point to your python environment with funcx-endpoint installed
+* `container_cmd_options` -- should mount your user directories for using singularity
+
+```
+from parsl.addresses import address_by_hostname
+from parsl.launchers import AprunLauncher, SingleNodeLauncher
+from parsl.providers import CobaltProvider, PBSProProvider
+from funcx_endpoint.endpoint.utils.config import Config
+from funcx_endpoint.executors import HighThroughputExecutor
+from funcx_endpoint.strategies import SimpleStrategy
+
+# fmt: off
+
+# PLEASE UPDATE user_opts BEFORE USE
+user_opts = {
+    'polaris': {
+        'worker_init': 'source activate my-funcx-endpoint',
+        'scheduler_options': '',
+    }
+}
+
+config = Config(
+    executors=[
+        HighThroughputExecutor(
+            max_workers_per_node=4,
+            # strategy=SimpleStrategy(max_idletime=3600),
+            strategy=SimpleStrategy(max_idletime=600),
+            address='10.230.2.72', #edtb-02
+            scheduler_mode='soft',
+            worker_mode='singularity_reuse',
+            container_type='singularity',
+            container_cmd_options="-H /home/my-username -B /eagle,/projects,/home/my-username",
+            provider=PBSProProvider(
+                cpus_per_node=32,
+                launcher=SingleNodeLauncher(),
+                queue='workq',
+                scheduler_options=user_opts['polaris']['scheduler_options'],
+                # Command to be run before starting a worker, such as:
+                # 'module load Anaconda; source activate parsl_env'.
+                worker_init=user_opts['polaris']['worker_init'],
+                walltime='12:00:00',
+                nodes_per_block=1,
+                init_blocks=0,
+                min_blocks=0,
+                max_blocks=9,
+            ),
+        )
+    ],
+)
+```
+
+### Python Requirements
+
+The XPCS flow requires some python dependencies for plotting and publishing metadata.
+Install dependencies in the `requirements-tools.txt` file at the top of the repo:
+
+```
+pip install -r requirements-tools.txt
+```
+
+Additionally, Singularity is required for running corr inside a container. Install
+with conda:
+
+```
+conda install -c conda-forge singularity
+```
+
 ## Talc
 
 ### Overview
