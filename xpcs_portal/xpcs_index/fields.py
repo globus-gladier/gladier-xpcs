@@ -283,20 +283,14 @@ def filename(result):
 def https_url(result):
     rfm = get_file(result)
     if rfm and rfm.get('url'):
-        gurl = urlsplit(rfm.get('url'))
-        return urlunsplit(
-            ('https',
-             'e55b4eab-6d04-11e5-ba46-22000b92c6ec.e.globus.org',
-             gurl.path,
-             '', '')
-            )
+        return rfm['url']
 
 
 def globus_app_link(result):
     rfm = get_file(result)
     if rfm and rfm.get('url'):
         gurl = urlsplit(os.path.dirname(rfm.get('url')))
-        query_params = {'origin_id': gurl.netloc.replace('.e.globus.org', ''),
+        query_params = {'origin_id': '74defd5b-5f61-42fc-bcc4-834c9f376a4f',
                         'origin_path': gurl.path}
         return urlunsplit(('https', 'app.globus.org', 'file-manager',
                            urlencode(query_params), ''))

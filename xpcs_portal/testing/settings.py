@@ -104,16 +104,13 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     'urn:globus:auth:scope:search.api.globus.org:all',
     'urn:globus:auth:scope:transfer.api.globus.org:all',
     'urn:globus:auth:scope:groups.api.globus.org:view_my_groups_and_memberships',  # noqa
-    # General Petrel HTTPS scope used for previewing images and file content
-    'https://auth.globus.org/scopes/56ceac29-e98a-440a-a594-b41e7a084b62/all',
-    # Temporary scope for https on kanzus data,
-    'https://auth.globus.org/scopes/c7683485-3c3f-454a-94c0-74310c80b32a/https',  # noqa
+    # Scope for xpcs HTTPS data on an Eagle Shared Endpoint.
+    'https://auth.globus.org/scopes/74defd5b-5f61-42fc-bcc4-834c9f376a4f/https',  # noqa
     # Note: Automate scopes are only added if the globus-automate-client is installed
 ] + extra_scopes
 
 ALLOWED_FRONTEND_TOKENS = [
-    'petrel_https_server',
-    'c7683485-3c3f-454a-94c0-74310c80b32a',
+    '74defd5b-5f61-42fc-bcc4-834c9f376a4f',
 ]
 
 
