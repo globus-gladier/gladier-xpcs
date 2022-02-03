@@ -125,7 +125,7 @@ class NickPortalDeployment(NickTheta):
         }
     }
 
-class HannahDeployment(BaseDeployment):
+class HannahTheta(BaseDeployment):
     globus_endpoints = {
         'globus_endpoint_source': 'fdc7e74a-fa78-11e8-9342-0e3d676669f4',
         'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
@@ -138,8 +138,22 @@ class HannahDeployment(BaseDeployment):
 
     flow_input = {
         'input': {
-            'staging_dir': '/projects/APSDataAnalysis/hannah/gladier_testing/',
+            'staging_dir': '/eagle/projects/APSDataAnalysis/XPCS/hparraga/gladier_testing/',
             'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
+        }
+    }
+
+class HannahPolaris(HannahTheta):
+    funcx_endpoints = {
+        'funcx_endpoint_non_compute': 'e3e1aef6-0a6f-4ef1-b9c6-a14b0efb1dfa',
+        'funcx_endpoint_compute': '0bbf9fe3-0cae-43bd-9307-625c9b07e3b6',
+    }
+
+    flow_input = {
+        'input': {
+            'staging_dir': '/eagle/projects/APSDataAnalysis/XPCS/hparraga/gladier_testing/',
+            'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
+            'corr_gpu_loc' : '/eagle/projects/APSDataAnalysis/XPCS/mchu/xpcs_boost/gpu_corr.py',
         }
     }
 
@@ -166,7 +180,8 @@ class RyanPolarisDeployment(BaseDeployment):
 deployment_map = {
     'talc-prod': TalcDeployment(),
     'raf-cooley': RafCooleyDeployment(),
-    'hannah-testing': HannahDeployment(),
+    'hannah-theta': HannahTheta(),
+    'hannah-polaris': HannahPolaris(),
     'ryan-polaris': RyanPolarisDeployment(),
     'nick-theta': NickTheta(),
     'nick-cooley': NickCooley(),
