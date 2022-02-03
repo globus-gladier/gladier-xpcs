@@ -4,7 +4,6 @@ from unittest.mock import Mock
 import gladier
 from gladier_xpcs.flow_reprocess import XPCSReprocessingFlow
 from gladier_xpcs.deployments import BaseDeployment
-from gladier_xpcs.tools import xpcs_metadata
 
 
 
@@ -27,15 +26,6 @@ def mock_pathlib(monkeypatch):
         return path if isinstance(path, pathlib.Path) else pathlib.Path(path)
     monkeypatch.setattr(pathlib.Path, 'rename', rename)
     return pathlib.Path
-
-
-@pytest.fixture
-def mock_gather(monkeypatch):
-    monkeypatch.setattr(xpcs_metadata, 'gather', Mock())
-    xpcs_metadata.gather.return_value = {
-        'measurement.instrument.acquisition.root_folder': '/data/2020-1/sanat202002/',
-    }
-    return xpcs_metadata.gather
 
 
 @pytest.fixture
