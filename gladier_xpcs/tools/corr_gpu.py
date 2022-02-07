@@ -11,20 +11,21 @@ def eigen_corr_gpu(**event):
     raw_file = event.get('raw_file') # raw data
     qmap_file = event.get('qmap_file') # name of the qmap file
     corr_gpu_loc = event.get('corr_gpu_loc') #location of processing script
+    batch_size = event.get('batch_size') #processing batch size
+    verbose = event.get('verbose')
 
     if not os.path.exists(proc_dir):
         raise NameError(f'{proc_dir} \n Proc dir does not exist!')
 
     os.chdir(proc_dir)
 
-    flags = "--batch_size 256 --verbose" #TODO how to pick batch size?
-
     #gpu corr need a batchinfo file to exist in the input directory but does not use contents
     with open(f'{proc_dir}/input/scratch.batchinfo', 'w+') as f:
         f.write('This file can be ignored.')
 
-    cmd = f"python {corr_gpu_loc} {flags} -q {qmap_file} -r {raw_file} --output {proc_dir}/output"
-
+    cmd = f"python {corr_gpu_loc} --batch_size {batch_size} -q {qmap_file} -r {raw_file} --output {proc_dir}/output"
+    if verbose:
+        cmd += " --verbose"
     res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE,
                              shell=True, executable='/bin/bash')
 
@@ -46,7 +47,8 @@ class EigenCorrGPU(GladierBaseTool):
         'proc_dir',
         'raw_file',
         'qmap_file',
-        'flags',
+        'verbose',
+        'batch_size',
         'corr_gpu_loc',
         'funcx_endpoint_compute',
     ]
@@ -54,7 +56,3 @@ class EigenCorrGPU(GladierBaseTool):
     funcx_functions = [
         eigen_corr_gpu
     ]
-
-    flow_input = {
-        'flags': '',
-    }

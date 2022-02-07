@@ -28,6 +28,8 @@ def arg_parse():
     parser.add_argument('--deployment','-d', default='hannah-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
     parser.add_argument('--corr_gpu_loc', default='/eagle/projects/APSDataAnalysis/XPCS/mchu/xpcs_boost/gpu_corr.py',
                         help=f'Location of gpu corr processing script')
+    parser.add_argument('--batch_size', default='256', help=f'Size of gpu corr processing batch')
+    parser.add_argument('--verbose', default=False, action='store_true', help=f'Verbose output')
 
     return parser.parse_args()
 
@@ -90,7 +92,8 @@ if __name__ == '__main__':
             'metadata_file': input_hdf_file,
             'hdf_file': output_hdf_file,
             'corr_gpu_loc': args.corr_gpu_loc,
-            'flags': '',
+            'batch_size': args.batch_size,
+            'verbose': args.verbose,
 
             # funcX endpoints
             'funcx_endpoint_non_compute': depl_input['input']['funcx_endpoint_non_compute'],
