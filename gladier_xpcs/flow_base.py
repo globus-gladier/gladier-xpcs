@@ -9,6 +9,12 @@ log = logging.getLogger(__name__)
 
 
 class XPCSBaseClient(GladierBaseClient):
+    # Allow all admins of the XPCS developers group to deploy/run flows
+    globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
+    # This is a bit of a hack while we wait for Globus SDK v3, after that
+    # it should automaically retry on these codes
+    TRANSIENT_ERROR_STATUS_CODES = (429, 500, 502, 503, 504)
+    max_retries = 10
 
     def register_funcx_function(self, function):
         """Register containers for any functions listed in self.containers"""
@@ -35,7 +41,7 @@ class XPCSBaseClient(GladierBaseClient):
             except globus_sdk.GlobusTimeoutError:
                 time.sleep(random.randint(1, 10))
             except globus_sdk.GlobusAPIError as gapie:
-                if gapie.http_status == 400:
+                if gapie.http_status not in self.TRANSIENT_ERROR_STATUS_CODES:
                     raise
                 time.sleep(random.randint(1, 10))
         raise

@@ -7,8 +7,6 @@ from gladier_xpcs.flow_base import XPCSBaseClient
    'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result[0]'}
 })
 class XPCSGPUFlow(XPCSBaseClient):
-    globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
-    max_retries = 10
     # See flow_base.py for assigning containers.
     containers = {}
 
