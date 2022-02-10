@@ -8,6 +8,7 @@ import pprint
 
 from gladier.utils.flow_generation import get_ordered_flow_states
 from gladier_xpcs.flow_online import XPCSOnlineFlow
+from gladier_xpcs.flow_gpu import XPCSGPUFlow
 
 
 def arg_parse():
@@ -21,6 +22,8 @@ def arg_parse():
                         default=0)
     parser.add_argument("--interval", help="Interval between checking statuses", type=int,
                         default=90)
+    parser.add_argument("--gpu", help="Whether the flow is the GPU flow rather than online flow.",
+                        action='store_true', default=False)
     args = parser.parse_args()
     return args
 
@@ -82,7 +85,11 @@ def check_time(start_time, limit):
 
 if __name__ == '__main__':
     args = arg_parse()
-    main_flow = XPCSOnlineFlow()
+    if args.gpu:
+        main_flow = XPCSGPUFlow()
+    else:
+        main_flow = XPCSOnlineFlow()
+
     flow_states = list(get_ordered_flow_states(main_flow.flow_definition).keys())
     start_time = time.time()
 
