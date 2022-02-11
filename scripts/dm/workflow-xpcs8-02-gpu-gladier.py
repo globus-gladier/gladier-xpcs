@@ -34,8 +34,8 @@
                 'XPCS JOB FOLDER: (?P<XPCS_JOB_FOLDER>.*)', 'SOURCE ENDPOINT UUID: (?P<SOURCE_ENDPOINT_UUID>.*)',
                 'SOURCE ENDPOINT DATA ROOT: (?P<SOURCE_ENDPOINT_DATA_ROOT>.*)',
                 'ALCF Cluster Data Directory: (?P<ALCFclusterDataDir>.*)',
-                'ALCF Cluster Results Directory: (?P<ALCFclusterResultsDir>.*)'
-                'QMap Directory: (?P<qmapDir>.*)'
+                'ALCF Cluster Results Directory: (?P<ALCFclusterResultsDir>.*)',
+                'QMap Directory: (?P<qmapDir>.*)',
                 'Globus Group ID: (?P<globusID>.*)'
             ],
         },
@@ -44,7 +44,8 @@
                     --hdf $clusterDataDir/$inputHdf5File \
                     --raw $clusterDataDir/$immFile \
                     --qmap $qmapDir/$qmapFile \
-                    --group $globusID"',
+                    --group $globusID \
+                    -d nick-polaris-gpu"',
             'outputVariableRegexList' : [
                 'run_id : (?P<AutomateId>.*)'
             ],

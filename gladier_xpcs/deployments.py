@@ -85,6 +85,23 @@ class NickPolaris(NickTheta):
         'funcx_endpoint_compute': 'd2659fc0-0454-4af1-97ec-012771c869f9',
     }
 
+class NickPolarisGPU(NickPolaris):
+
+    funcx_endpoints = {
+        # Theta login
+        'funcx_endpoint_non_compute': '553e7b64-0480-473c-beef-be762ba979a9',
+        # Polaris Compute
+        # 'funcx_endpoint_compute': '9a291fa2-3542-42b7-91d6-f80b44629cfa',
+        # Containers
+        'funcx_endpoint_compute': '58f83203-fc24-4d47-a7f7-09342f320312',
+    }
+
+    flow_input = {
+        'input': {
+            'staging_dir': '/eagle/APSDataAnalysis/nick/xpcs_gpu',
+        }
+    }
+
 
 class NickCooley(NickTheta):
 
@@ -186,4 +203,5 @@ deployment_map = {
     'nick-theta': NickTheta(),
     'nick-cooley': NickCooley(),
     'nick-polaris': NickPolaris(),
+    'nick-polaris-gpu': NickPolarisGPU(),
 }

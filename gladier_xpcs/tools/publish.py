@@ -76,7 +76,7 @@ class Publish(GladierBaseTool):
                 'Comment': 'Ingest the search document',
                 'Type': 'Action',
                 'ActionUrl': 'https://actions.globus.org/search/ingest',
-                'ExceptionOnActionFailure': False,
+                'ExceptionOnActionFailure': True,
                 'InputPath': '$.PublishGatherMetadata.details.result[0].search',
                 'ResultPath': '$.PublishIngest',
                 'WaitTime': 300,

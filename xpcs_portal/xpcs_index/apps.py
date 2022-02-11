@@ -12,7 +12,7 @@ class XPCSIndexConfig(AppConfig):
 
 
 GLADIER_CFG = os.path.abspath(os.path.join(APP_DIR, 'gladier.cfg'))
-RESOURCE_SERVER = 'petrel_https_server'
+RESOURCE_SERVER = '74defd5b-5f61-42fc-bcc4-834c9f376a4f'
 # RESOURCE_SERVER = 'c7683485-3c3f-454a-94c0-74310c80b32a'
 REPROCESSING_FLOW_DEPLOYMENT = NickPortalDeployment()
 
