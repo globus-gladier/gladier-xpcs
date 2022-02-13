@@ -88,7 +88,7 @@ class PrePublish(GladierBaseTool):
                 'ActionUrl': 'https://actions.automate.globus.org/transfer/transfer',
                 'InputPath': '$.PrePublishGatherMetadata.details.result[0].transfer',
                 'ResultPath': '$.PrePublishTransfer',
-                'WaitTime': 600,
+                'WaitTime': 1800,
                 'Next': 'PrePublishIngest',
             },
             'PrePublishIngest': {

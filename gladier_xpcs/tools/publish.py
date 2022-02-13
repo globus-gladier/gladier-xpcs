@@ -69,7 +69,7 @@ class Publish(GladierBaseTool):
                 'ActionUrl': 'https://actions.automate.globus.org/transfer/transfer',
                 'InputPath': '$.PublishGatherMetadata.details.result[0].transfer',
                 'ResultPath': '$.PublishTransfer',
-                'WaitTime': 600,
+                'WaitTime': 1800,
                 'Next': 'PublishIngest',
             },
             'PublishIngest': {

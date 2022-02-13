@@ -17,7 +17,7 @@ class TransferFromClutchToTheta(GladierBaseTool):
                     'transfer_items.$': '$.input.transfer_from_clutch_to_theta_items',
                 },
                 'ResultPath': '$.TransferFromClutchToTheta',
-                'WaitTime': 600,
+                'WaitTime': 1800,
                 'End': True
             },
         }
