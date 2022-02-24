@@ -64,14 +64,16 @@ if __name__ == '__main__':
                 # This is the directory which will be published
                 'dataset': dataset_dir,
                 # Old index, switch back to this when we want to publish to the main index
-                # 'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
+                'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
                 # Test Index, use this for testing
-                'index': '2e72452f-e932-4da0-b43c-1c722716896e',
+                # 'index': '2e72452f-e932-4da0-b43c-1c722716896e',
                 'project': 'xpcs-8id',
                 'source_globus_endpoint': depl_input['input']['globus_endpoint_proc'],
                 # Extra groups can be specified here. The XPCS Admins group will always
                 # be provided automatically.
                 'groups': [args.group] if args.group else [],
+                'metadata': {'executable_name': 'corr_gpu',
+                             'executable_version': 'prototype'}
             },
 
             'transfer_from_clutch_to_theta_items': [
