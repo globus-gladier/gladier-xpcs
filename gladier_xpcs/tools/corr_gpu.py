@@ -11,6 +11,7 @@ def eigen_corr_gpu(**event):
     raw_file = event.get('raw_file') # raw data
     qmap_file = event.get('qmap_file') # name of the qmap file
     corr_gpu_loc = event.get('corr_gpu_loc') #location of processing script
+    corr_gpu_id = event.get('corr_gpu_id', 0) # Use GPU or CPU? -1 for cpu, 0 for gpu
     batch_size = event.get('batch_size') #processing batch size
     verbose = event.get('verbose')
 
@@ -23,7 +24,7 @@ def eigen_corr_gpu(**event):
     with open(f'{proc_dir}/input/scratch.batchinfo', 'w+') as f:
         f.write('This file can be ignored.')
 
-    cmd = f"python {corr_gpu_loc} --batch_size {batch_size} -q {qmap_file} -r {raw_file} --output {proc_dir}/output"
+    cmd = f"python {corr_gpu_loc} --gpu_id {corr_gpu_id}  --batch_size {batch_size} -q {qmap_file} -r {raw_file} --output {proc_dir}/output"
     if verbose:
         cmd += " --verbose"
     res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE,
