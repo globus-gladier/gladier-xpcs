@@ -13,7 +13,7 @@ class BaseDeployment:
         fi['input'].update(self.globus_endpoints)
         return fi
 
-class TalcDeployment(BaseDeployment):
+class Talc(BaseDeployment):
 
     globus_endpoints = {
         'globus_endpoint_source': 'fdc7e74a-fa78-11e8-9342-0e3d676669f4',
@@ -31,7 +31,7 @@ class TalcDeployment(BaseDeployment):
         }
     }
 
-class RafCooleyDeployment(BaseDeployment):
+class RafCooley(BaseDeployment):
 
     globus_endpoints = {
         'globus_endpoint_source': 'fdc7e74a-fa78-11e8-9342-0e3d676669f4',
@@ -174,7 +174,7 @@ class HannahPolaris(HannahTheta):
         }
     }
 
-class RyanPolarisDeployment(BaseDeployment):
+class RyanPolaris(BaseDeployment):
 
     globus_endpoints = {
         'globus_endpoint_source': 'e55b4eab-6d04-11e5-ba46-22000b92c6ec',
@@ -194,12 +194,32 @@ class RyanPolarisDeployment(BaseDeployment):
     }
 
 
+class RafPolaris(BaseDeployment):
+
+    globus_endpoints = {
+        'globus_endpoint_source': 'e55b4eab-6d04-11e5-ba46-22000b92c6ec',
+        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+    }
+
+    funcx_endpoints = {
+        'funcx_endpoint_non_compute': '6c4323f4-a062-4551-a883-146a352a43f5',
+        'funcx_endpoint_compute': 'dc2a0cdb-2aee-44f7-a422-c4e28d9f7617',
+    }
+
+    flow_input = {
+        'input': {
+            'staging_dir': '/eagle/APSDataAnalysis/rchard/xpcs/',
+            'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
+        }
+    }
+
 deployment_map = {
-    'talc-prod': TalcDeployment(),
-    'raf-cooley': RafCooleyDeployment(),
+    'talc-prod': Talc(),
+    'raf-cooley': RafCooley(),
+    'raf-polaris': RafPolaris(),
     'hannah-theta': HannahTheta(),
     'hannah-polaris': HannahPolaris(),
-    'ryan-polaris': RyanPolarisDeployment(),
+    'ryan-polaris': RyanPolaris(),
     'nick-theta': NickTheta(),
     'nick-cooley': NickCooley(),
     'nick-polaris': NickPolaris(),
