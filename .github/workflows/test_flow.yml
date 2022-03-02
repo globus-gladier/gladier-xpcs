@@ -1,10 +1,10 @@
 name: test_flow
 
-on:
-  schedule:
-    - cron: "0 10 * * *"
-  push:
-    branches: [ main ]
+# on:
+#   schedule:
+#     - cron: "0 10 * * *"
+#   push:
+#     branches: [ main ]
 
 jobs:
   test:
