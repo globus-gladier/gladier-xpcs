@@ -75,7 +75,7 @@ globusID=`cut -c 4- <<< $getGroup`
 inputHdf5File=`basename $inputFile`
 outputHdf5File=$inputHdf5File
 
-immFile=`ls -c1 $inputDir/*.{imm,bin} | head -1`
+immFile=`ls -c1 $inputDir/*.{imm,bin,h5} | head -1`
 immFile=`basename $immFile`
 
 ALCF_RESULTS_DIR=$ORTHROS_DATA_ROOT_NFS/$cycleDataDir/$userDataDir/$ORTHROS_RESULTS_DIR
