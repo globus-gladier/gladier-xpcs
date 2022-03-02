@@ -23,7 +23,7 @@ class XPCSGPUFlow(GladierBaseClient):
         'gladier_xpcs.tools.TransferFromClutchToTheta',
         'gladier_xpcs.tools.PrePublish',
         'gladier_xpcs.tools.AcquireNodes',
-        'gladier_xpcs.tools.XPCSBoost',
+        'gladier_xpcs.tools.BoostCorr',
         'gladier_xpcs.tools.MakeCorrPlots',
         'gladier_xpcs.tools.gather_xpcs_metadata.GatherXPCSMetadata',
         'gladier_xpcs.tools.Publish',

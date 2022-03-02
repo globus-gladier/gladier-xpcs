@@ -71,16 +71,10 @@ Please add, update, or correct information as things change.
 ```
   conda create -n gladier-xpcs
   conda activate gladier-xpcs
-  
-  pip install funcx
-  pip install funcx-endpoint
 
   pip install gladier
-
-  conda install -c nvidia cudatoolkit
-    conda install -c pytorch pytorch 
-    git clone git@github.com:AZjk/boost_corr.git
-    pip install boost_coor -e
+  conda install -c nvidia -c pytorch cudatoolkit pytorch
+  pip install -e git+https://github.com/AZjk/boost_corr#egg=boost_corr
 ```
 
 ### Example Config

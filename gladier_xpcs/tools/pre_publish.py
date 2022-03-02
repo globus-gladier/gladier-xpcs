@@ -24,16 +24,6 @@ def pre_publish_gather_metadata(**data):
     import traceback
     from pilot.client import PilotClient
     from pilot.exc import PilotClientException, FileOrFolderDoesNotExist
-
-    try:
-        import boost_corr
-        boost = True
-        boost_version = boost_corr.__version__
-        gpu = data.get('gpu_flag','0')
-    except:
-        boost = False
-        boost_version = 0
-        gpu = None
         
     try:
         dataset, destination = data['dataset'], data.get('destination', '/')

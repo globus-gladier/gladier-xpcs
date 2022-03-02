@@ -1,6 +1,6 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
-def xpcs_boost(**data):
+def xpcs_boost_corr(**data):
     import os
     import json
 
@@ -57,9 +57,9 @@ def xpcs_boost(**data):
 
 
 @generate_flow_definition(modifiers={
-    xpcs_boost: {'WaitTime': 7200}
+    xpcs_boost_corr: {'WaitTime': 7200}
 })
-class XPCSBoost(GladierBaseTool):
+class BoostCorr(GladierBaseTool):
 
     required_input = [
         'proc_dir',
@@ -69,7 +69,7 @@ class XPCSBoost(GladierBaseTool):
     ]
 
     funcx_functions = [
-        xpcs_boost
+        xpcs_boost_corr
     ]
 
 
@@ -78,5 +78,5 @@ if __name__ == '__main__':
     'raw_file':'C032_B315_A200_150C_att01_001_0001-1000/input/C032_B315_A200_150C_att01_001_00001-01000.imm',
     'qmap_file':'C032_B315_A200_150C_att01_001_0001-1000/qmap/bates202202_qmap_Lq1_ccdz25_S270_D54.h5',
     'gpu_flag':1}
-    xpcs_boost(**data)
+    xpcs_boost_corr(**data)
 

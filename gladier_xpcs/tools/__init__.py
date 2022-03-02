@@ -3,7 +3,7 @@ from .pre_publish import PrePublish
 
 from .corr import EigenCorr
 from .corr_gpu import EigenCorrGPU
-from .xpcs_boost_solver import XPCSBoost
+from .xpcs_boost_corr import BoostCorr
 
 from .plot import MakeCorrPlots
 from .gather_xpcs_metadata import GatherXPCSMetadata
@@ -17,7 +17,7 @@ __all__ = [
     'PrePublish',
     'EigenCorr',
     'EigenCorrGPU',
-    'XPCSBoost',
+    'BoostCorr',
     'MakeCorrPlots',
     'GatherXPCSMetadata',
     'Publish',
