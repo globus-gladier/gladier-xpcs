@@ -9,7 +9,7 @@ import argparse
 import os
 import pathlib
 
-from gladier_xpcs.flow_online import XPCSOnlineFlow
+from gladier_xpcs.flows import XPCSOnlineFlow
 from gladier_xpcs.deployments import deployment_map
 
 

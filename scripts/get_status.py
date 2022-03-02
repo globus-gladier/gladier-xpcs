@@ -7,8 +7,8 @@ import traceback
 import pprint
 
 from gladier.utils.flow_generation import get_ordered_flow_states
-from gladier_xpcs.flow_online import XPCSOnlineFlow
-from gladier_xpcs.flow_gpu import XPCSGPUFlow
+from gladier_xpcs.flows import XPCSOnlineFlow
+from gladier_xpcs.flows import XPCSGPUFlow
 
 
 def arg_parse():

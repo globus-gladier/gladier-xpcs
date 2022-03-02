@@ -8,7 +8,7 @@ from gladier import GladierBaseClient, utils
 log = logging.getLogger(__name__)
 
 
-class XPCSBaseClient(GladierBaseClient):
+class ContainerBaseClient(GladierBaseClient):
     # Allow all admins of the XPCS developers group to deploy/run flows
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
     # This is a bit of a hack while we wait for Globus SDK v3, after that

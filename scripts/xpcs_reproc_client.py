@@ -10,7 +10,7 @@ import argparse
 from pprint import pprint
 
 import gladier_xpcs.log
-from gladier_xpcs.flow_reprocess import XPCSReprocessingFlow
+from gladier_xpcs.flows import XPCSReprocessingFlow
 from gladier_xpcs.deployments import deployment_map
 
 
