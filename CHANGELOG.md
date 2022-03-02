@@ -21,3 +21,10 @@ Reprocessing flow third party users can invoke from petreldata.net.
 - Added README.md on several folder
 - Fixed reprocessing PR
 - Added scripts as command-line scripts
+
+### 0.0.5
+
+- Refactor to new gladier standard
+- Add xpcs_boost native functions
+- Add install documentation for Polaris
+- Remove old flows and definitions
