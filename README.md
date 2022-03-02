@@ -73,7 +73,9 @@ Please add, update, or correct information as things change.
   conda activate gladier-xpcs
 
   pip install gladier
-  conda install -c nvidia -c pytorch cudatoolkit pytorch
+
+  conda install -c nvidia cudatoolkit
+  conda install -c pytorch pytorch
   pip install -e git+https://github.com/AZjk/boost_corr#egg=boost_corr
 ```
 

@@ -1,7 +1,7 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
 
-def gather_xpcs_metadata(**event):
+def gather_xpcs_metadata(**data):
     import pathlib
     import re
     import traceback
@@ -120,7 +120,7 @@ def gather_xpcs_metadata(**event):
 
 
     # Generate metadata
-    hdf_file = event['hdf_file']
+    hdf_file = data['hdf_file']
     exp_name = pathlib.Path(hdf_file).name.replace(".hdf", "")
     metadata = gather(hdf_file)
     metadata.update({
@@ -135,7 +135,7 @@ def gather_xpcs_metadata(**event):
                 'resourceTypeGeneral': 'Dataset'
             }
         })
-    extra_metadata = event.get('metadata', {}) or {}
+    extra_metadata = data.get('metadata', {}) or {}
     metadata.update(extra_metadata)
     # Create metadata file
     # Some types have changed between search ingests, and they cause the search ingest
@@ -152,12 +152,12 @@ def gather_xpcs_metadata(**event):
         # Parent: sanat
         metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
     except Exception:
-        p = pathlib.Path(event['proc_dir']) / 'gather_xpcs_metadata.error'
+        p = pathlib.Path(data['proc_dir']) / 'gather_xpcs_metadata.error'
         with open(str(p), 'w+') as f:
             f.write(traceback.format_exc())
 
 
-    pilot = event['pilot']
+    pilot = data['pilot']
     # metadata passed through from the top level takes precedence. This allows for
     # overriding fields through $.input
     metadata.update(pilot.get('metadata', {}))

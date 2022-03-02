@@ -1,18 +1,18 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
 
-def eigen_corr_gpu(**event):
+def eigen_corr_gpu(**data):
     import os
     import subprocess
     from subprocess import PIPE
 
     ##minimal data inputs payload
-    proc_dir = event.get('proc_dir') # location of transfered files / results
-    raw_file = event.get('raw_file') # raw data
-    qmap_file = event.get('qmap_file') # name of the qmap file
-    corr_gpu_loc = event.get('corr_gpu_loc') #location of processing script
-    batch_size = event.get('batch_size') #processing batch size
-    verbose = event.get('verbose')
+    proc_dir = data.get('proc_dir') # location of transfered files / results
+    raw_file = data.get('raw_file') # raw data
+    qmap_file = data.get('qmap_file') # name of the qmap file
+    corr_gpu_loc = data.get('corr_gpu_loc') #location of processing script
+    batch_size = data.get('batch_size') #processing batch size
+    verbose = data.get('verbose')
 
     if not os.path.exists(proc_dir):
         raise NameError(f'{proc_dir} \n Proc dir does not exist!')
