@@ -60,3 +60,11 @@ class MultitauGPU(GladierBaseTool):
     funcx_functions = [
         gpu_multitau
     ]
+
+
+if __name__ == '__main__':
+    data = {'proc_dir':'/eagle/APSDataAnalysis/raf/xpcs_gpu',
+    'raw_file':'C032_B315_A200_150C_att01_001_0001-1000/input/C032_B315_A200_150C_att01_001_00001-01000.imm',
+    'qmap_file':'C032_B315_A200_150C_att01_001_0001-1000/qmap/bates202202_qmap_Lq1_ccdz25_S270_D54.h5',
+    }
+
