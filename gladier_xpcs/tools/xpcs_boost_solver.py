@@ -34,8 +34,8 @@ def xpcs_boost(**data):
                     use_loader=True,
                     begin_frame=1,
                     end_frame=-1,
-                    avg_frame=7,
-                    stride_frame=5,
+                    avg_frame=1,
+                    stride_frame=1,
                     overwrite=False)
 
     if atype == 'Twotime' or atype == 'Both':
