@@ -21,6 +21,7 @@ from gladier_xpcs.tools.corr import eigen_corr
     'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result[0]'}
 })
 class XPCSOnlineFlow(ContainerBaseClient):
+    globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
     containers = {
         utils.name_generation.get_funcx_function_name(eigen_corr): {
             'container_type': 'singularity',
