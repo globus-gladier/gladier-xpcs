@@ -19,6 +19,7 @@ from gladier_xpcs.flows.container_flow_base import ContainerBaseClient
    'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result[0]'}
 })
 class XPCSGPUFlow(GladierBaseClient):
+    globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
     gladier_tools = [
         'gladier_xpcs.tools.TransferFromClutchToTheta',
         'gladier_xpcs.tools.PrePublish',

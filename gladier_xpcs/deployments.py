@@ -31,24 +31,6 @@ class Talc(BaseDeployment):
         }
     }
 
-class RafCooley(BaseDeployment):
-
-    globus_endpoints = {
-        'globus_endpoint_source': 'fdc7e74a-fa78-11e8-9342-0e3d676669f4',
-        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
-    }
-
-    funcx_endpoints = {
-        'funcx_endpoint_non_compute': '1d5c6081-d716-4b94-b00b-661409876688',
-        'funcx_endpoint_compute':     'f8f611a1-0c45-4bf6-87c5-e85b9fb4d7c0',
-    }
-
-    flow_input = {
-        'input': {
-            'staging_dir': '/eagle/APSDataAnalysis/XPCS_test/cooley_raf',
-        }
-    }
-
 
 class NickTheta(BaseDeployment):
     """Nicks deployment on theta"""
@@ -202,20 +184,18 @@ class RafPolaris(BaseDeployment):
     }
 
     funcx_endpoints = {
-        'funcx_endpoint_non_compute': '6c4323f4-a062-4551-a883-146a352a43f5',
-        'funcx_endpoint_compute': 'dc2a0cdb-2aee-44f7-a422-c4e28d9f7617',
+        'funcx_endpoint_non_compute': 'e449e8b8-e114-4659-99af-a7de06feb847',
+        'funcx_endpoint_compute': 'a93b6438-6ff7-422e-a1a2-9a4c6d9c1ea5',
     }
 
     flow_input = {
         'input': {
-            'staging_dir': '/eagle/APSDataAnalysis/rchard/xpcs/',
-            'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
+            'staging_dir': '/eagle/APSDataAnalysis/XPCS/raf/xpcs/',
         }
     }
 
 deployment_map = {
     'talc-prod': Talc(),
-    'raf-cooley': RafCooley(),
     'raf-polaris': RafPolaris(),
     'hannah-theta': HannahTheta(),
     'hannah-polaris': HannahPolaris(),
