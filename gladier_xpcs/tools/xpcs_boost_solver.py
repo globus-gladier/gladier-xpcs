@@ -10,7 +10,7 @@ def xpcs_boost(**data):
     qmap_file = data.get('qmap_file') # name of the qmap file
     atype = data.get('atype','Both') #["Multitau", "Twotime", "Both"]
     config_file = data.get('config_file', None) # name of the config file
-    gpu_flag = data.get('gpu',0)
+    gpu_flag = data.get('gpu_flag',0)
     verbose = data.get('verbose', False)
 
     if not os.path.exists(proc_dir):
@@ -22,7 +22,7 @@ def xpcs_boost(**data):
     #     with open(config_file) as f:
     #         config = json.load(f)
 
-    if atype == 'Multitau' | atype == 'Both':
+    if atype == 'Multitau' or atype == 'Both':
         from boost_corr.xpcs_aps_8idi.gpu_corr_multitau import solve_multitau
         solve_multitau(qmap=qmap_file,
                     raw=raw_file,
@@ -34,11 +34,11 @@ def xpcs_boost(**data):
                     use_loader=True,
                     begin_frame=1,
                     end_frame=-1,
-                    avg_frame=7,
-                    stride_frame=5,
+                    avg_frame=1,
+                    stride_frame=1,
                     overwrite=False)
 
-    if atype == 'Twotime' | atype == 'Both':
+    if atype == 'Twotime' or atype == 'Both':
         from boost_corr.xpcs_aps_8idi.gpu_corr_twotime import solve_twotime
         solve_twotime(qmap=qmap_file,
                     raw=raw_file,
@@ -77,6 +77,6 @@ if __name__ == '__main__':
     data = {'proc_dir':'/eagle/APSDataAnalysis/raf/xpcs_gpu',
     'raw_file':'C032_B315_A200_150C_att01_001_0001-1000/input/C032_B315_A200_150C_att01_001_00001-01000.imm',
     'qmap_file':'C032_B315_A200_150C_att01_001_0001-1000/qmap/bates202202_qmap_Lq1_ccdz25_S270_D54.h5',
-    }
-
+    'gpu_flag':1}
+    xpcs_boost(**data)
 
