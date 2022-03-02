@@ -11,7 +11,7 @@ def gpu_multitau(**data):
     raw_file = data.get('raw_file') # raw data
     qmap_file = data.get('qmap_file') # name of the qmap file
     config_file = data.get('config_file', None) # name of the config file
-    gpu_flag = data.get('gpu',0)
+    gpu_flag = data.get('gpu_flag',0)
     verbose = data.get('verbose', False)
 
     if not os.path.exists(proc_dir):
@@ -66,5 +66,7 @@ if __name__ == '__main__':
     data = {'proc_dir':'/eagle/APSDataAnalysis/raf/xpcs_gpu',
     'raw_file':'C032_B315_A200_150C_att01_001_0001-1000/input/C032_B315_A200_150C_att01_001_00001-01000.imm',
     'qmap_file':'C032_B315_A200_150C_att01_001_0001-1000/qmap/bates202202_qmap_Lq1_ccdz25_S270_D54.h5',
+    'gpu_flag':1
     }
 
+    gpu_multitau(**data)
