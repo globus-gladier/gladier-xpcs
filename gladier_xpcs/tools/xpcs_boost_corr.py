@@ -18,17 +18,11 @@ def xpcs_boost_corr(**data):
     elif atype in ('Twotime', 'Both'):
         gpu_corr_twotime.solve_twotime(**data['boost_corr'])
 
-    return_values = {}
-    # These are assumed by the boost_corr client. Look for them ad append them to output
-    errors = os.path.join(data['proc_dir'], 'corr_errors.log')
-    output = os.path.join(data['proc_dir'], 'corr_output.log')
-    if os.path.exists(errors):
-        with open(errors) as f:
-            return_values['errors'] = f.read()
-    if os.path.exists(output):
-            return_values['output'] = f.read()
-
-    return return_values
+    return {
+        'result': 'SUCCESS',
+        'proc_dir': data['proc_dir'],
+        'boost_corr': data['boost_corr'],
+    }
 
 
 @generate_flow_definition(modifiers={
