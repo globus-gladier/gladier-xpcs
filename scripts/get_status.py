@@ -5,8 +5,13 @@ import time
 import sys
 import traceback
 import pprint
-
-from gladier.utils.flow_generation import get_ordered_flow_states
+# We depend on an internal module here for getting flow state information
+# This moved in Gladier v0.6.0, remove this after we update
+try:
+    from gladier.utils.flow_generation import get_ordered_flow_states
+except ImportError:
+    from gladier.utils.tool_chain import ToolChain
+    get_ordered_flow_states = ToolChain.get_ordered_flow_states
 from gladier_xpcs.flows import XPCSEigen
 from gladier_xpcs.flows import XPCSBoost
 
