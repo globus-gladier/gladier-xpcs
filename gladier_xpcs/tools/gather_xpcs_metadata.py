@@ -173,7 +173,7 @@ def gather_xpcs_metadata(**data):
     metadata.update({
         'executable' : {
             'name': 'boost_corr'
-            'version': version,
+            'version': boost_version,
             'device: 'gpu',
             'source': 'https://pypi.org/project/boost_corr/',
             }
