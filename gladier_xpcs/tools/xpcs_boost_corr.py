@@ -4,6 +4,7 @@ def xpcs_boost_corr(**data):
     import os
     import json
     from boost_corr.xpcs_aps_8idi import gpu_corr_multitau, gpu_corr_twotime
+    from boost_corr import __version__ as boost_version
 
     if not os.path.exists(data['proc_dir']):
         raise NameError(f'{data["proc_dir"]} \n Proc dir does not exist!')
@@ -17,6 +18,20 @@ def xpcs_boost_corr(**data):
         gpu_corr_multitau.solve_multitau(**data['boost_corr'])
     elif atype in ('Twotime', 'Both'):
         gpu_corr_twotime.solve_twotime(**data['boost_corr'])
+
+    
+    metadata = {
+        'executable' : {
+            'name': 'boost_corr',
+            'version': str(boost_version),
+            'device': 'gpu' if data['boost_corr'].get('gpu_flag', 0) >= 0 else 'cpu',
+            'source': 'https://pypi.org/project/boost_corr/',
+            }
+    }
+
+    if data.get('execution_metadata_file'):
+        with open(data['execution_metadata_file'], 'w') as f:
+            f.write(json.dumps(metadata, indent=2))
 
     return {
         'result': 'SUCCESS',
