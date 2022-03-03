@@ -26,6 +26,7 @@ def arg_parse():
                         default='/data/xpcs8/partitionMapLibrary/2019-1/comm201901_qmap_aerogel_Lq0.h5')
     parser.add_argument('--atype', help='Analysis type to be performed',
                         default='Both')
+    parser.add_argument('--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     parser.add_argument('--group', help='Visibility in Search', default=None)
     parser.add_argument('--deployment','-d', default='hannah-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
     parser.add_argument('--batch_size', default='256', help=f'Size of gpu corr processing batch')
@@ -96,6 +97,7 @@ if __name__ == '__main__':
             'raw_file': raw_file,
             'qmap_file': qmap_file,
             'atype': atype,
+            'gpu_flag': args.gpu_flag,
             'metadata_file': input_hdf_file,
             'hdf_file': output_hdf_file,
             'batch_size': args.batch_size,
