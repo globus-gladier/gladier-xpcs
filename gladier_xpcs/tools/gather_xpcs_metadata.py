@@ -156,11 +156,29 @@ def gather_xpcs_metadata(**data):
         with open(str(p), 'w+') as f:
             f.write(traceback.format_exc())
 
+    try:
+        import boost_corr
+        boost = True
+        boost_version = boost_corr.__version__
+        gpu = data.get('gpu_flag','0')
+    except:
+        boost = False
+        boost_version = 0
+        gpu = None
 
     pilot = data['pilot']
     # metadata passed through from the top level takes precedence. This allows for
     # overriding fields through $.input
     metadata.update(pilot.get('metadata', {}))
+    metadata.update({
+        'executable' : {
+            'name': 'boost_corr'
+            'version': version,
+            'device: 'gpu',
+            'source': 'https://pypi.org/project/boost_corr/',
+            }
+        })
+
     pilot['metadata'] = metadata
     pilot['groups'] = pilot.get('groups', [])
     return pilot
