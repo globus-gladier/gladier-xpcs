@@ -30,7 +30,7 @@ cycleDataDir=`dirname $userDataDir`
 userDataDir=`basename $userDataDir`
 
 #get globus group id
-experimentName=$5
+experimentName=$3
 source $DM_SETUP_FILE
 #make sure a group exists
 createGroup=`dm-create-globus-group --experiment=$experimentName`
@@ -39,8 +39,8 @@ getGroup=`dm-get-globus-group --experiment=$experimentName --display-keys id`
 globusID=`cut -c 4- <<< $getGroup`
 
 inputHdf5File=`basename $inputFile`
-rawFile=`ls -c1 $inputDir/*.{imm,bin,h5} | head -1`
-rawFile=`basename $immFile`
+rawFile=`ls -c1 $inputDir/*.{imm,bin} | head -1`
+rawFile=`basename $rawFile`
 
 clusterDataDir=$ORTHROS_DATA_ROOT/$relativeDataDir
 qmapDir=$CLUTCH_DATA_ROOT/partitionMapLibrary/$cycleDataDir

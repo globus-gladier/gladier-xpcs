@@ -7,7 +7,7 @@
     'stages': {
         '01-Staging' : {
             'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/dm/dm_gladier_xpcs_online_boost_pre_01.sh \
-                $filePath $qmapFile $experimentName',
+                $filePath $fileDataDir $experimentName',
             'outputVariableRegexList' : [
                 'Cluster Data Directory: (?P<clusterDataDir>.*)',
                 'Input HDF5 File: (?P<inputHdf5File>.*)',
@@ -21,11 +21,8 @@
                     --hdf $clusterDataDir/$inputHdf5File \
                     --raw $clusterDataDir/$rawFile \
                     --qmap $qmapDir/$qmapFile \
-                    --gpu_flag $gpuFlag \
                     --group $globusID \
-                    --atype $atype \
-                    --batch_size $batchSize \
-                    -d $deployment"',
+                    -d nick-polaris-gpu"',
             'outputVariableRegexList' : [
                 'run_id : (?P<AutomateId>.*)'
             ],
