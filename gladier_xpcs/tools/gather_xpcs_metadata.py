@@ -158,11 +158,9 @@ def gather_xpcs_metadata(**data):
 
     try:
         import boost_corr
-        boost = True
         boost_version = boost_corr.__version__
         gpu = data.get('gpu_flag','0')
     except:
-        boost = False
         boost_version = 0
         gpu = None
 

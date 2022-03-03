@@ -9,7 +9,7 @@ import argparse
 import os
 import pathlib
 
-from gladier_xpcs.flows import XPCSOnlineFlow
+from gladier_xpcs.flows import XPCSEigen
 from gladier_xpcs.deployments import deployment_map
 
 
@@ -98,12 +98,10 @@ if __name__ == '__main__':
         }
     }
 
-    corr_flow = XPCSOnlineFlow()
+    corr_flow = XPCSEigen()
 
     corr_run_label = pathlib.Path(hdf_name).name[:62]
-
     flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label)
-
     print('run_id : ' + flow_run['action_id'])
 
 

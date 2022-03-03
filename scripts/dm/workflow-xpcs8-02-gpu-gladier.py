@@ -40,10 +40,11 @@
             ],
         },
         '02-Automate' : {
-            'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/xpcs_corr_gpu_client.py \
+            'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/xpcs_online_boost_client.py \
                     --hdf $clusterDataDir/$inputHdf5File \
                     --raw $clusterDataDir/$immFile \
                     --qmap $qmapDir/$qmapFile \
+                    --gpu_flag 0 \
                     --group $globusID \
                     -d nick-polaris-gpu"',
             'outputVariableRegexList' : [
