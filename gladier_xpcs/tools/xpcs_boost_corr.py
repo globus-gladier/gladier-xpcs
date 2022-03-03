@@ -23,7 +23,7 @@ def xpcs_boost_corr(**data):
     metadata = {
         'executable' : {
             'name': 'boost_corr',
-            'version': str(boost_version),
+            'tool_version': str(boost_version),
             'device': 'gpu' if data['boost_corr'].get('gpu_flag', 0) >= 0 else 'cpu',
             'source': 'https://pypi.org/project/boost_corr/',
             }
