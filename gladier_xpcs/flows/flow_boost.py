@@ -1,11 +1,11 @@
 """
-XPCS Online GPU Flow
+XPCS Boost Flow
 
-Summary: This flow executes new xpcs_boost GPU flow.
+Summary: This flow executes new xpcs_boost CPU/GPU flow.
 - Data is transfered from Clutch to Theta
 - An "empty" publication is added to the index
 - Nodes are "warmed"
-- Eigen-Corr is applied
+- Boost Multitau and/or Twotime is applied using CPU/GPU
 - Plots are made
 - Gather + Publish the final data to the portal
 """

@@ -1,5 +1,5 @@
 """
-XPCS Online Flow
+XPCS Eigen Flow
 
 Summary: This flow executes standard XPCS flow using the EigenCorr container.
 - Data is transfered from Clutch to Theta
