@@ -159,10 +159,8 @@ def gather_xpcs_metadata(**data):
     try:
         import boost_corr
         boost_version = boost_corr.__version__
-        gpu = data.get('gpu_flag','0')
     except:
-        boost_version = 0
-        gpu = None
+        boost_version = 'unknown'
 
     pilot = data['pilot']
     # metadata passed through from the top level takes precedence. This allows for
@@ -172,7 +170,7 @@ def gather_xpcs_metadata(**data):
         'executable' : {
             'name': 'boost_corr',
             'version': boost_version,
-            'device': gpu,
+            'device': 'gpu' if data['boost_corr'].get('gpu_flag', 0) >= 0 else 'cpu',
             'source': 'https://pypi.org/project/boost_corr/',
             }
         })
@@ -203,7 +201,10 @@ class GatherXPCSMetadata(GladierBaseTool):
 if __name__ == '__main__':
     data = {
         'proc_dir':'/eagle/APSDataAnalysis/nick/xpcs_gpu',
-        'hdf_file': 'C032_B315_A200_150C_att01_001_0001-1000/output/C032_B315_A200_150C_att01_001_0001-1000.hdf',
+        'hdf_file': '/eagle/APSDataAnalysis/nick/xpcs_gpu/C032_B315_A200_150C_att01_001_0001-1000/output/C032_B315_A200_150C_att01_001_0001-1000.hdf',
+        'boost_corr': {
+            'gpu_flag': 0
+        },
         'pilot': {
             'metadata': {},
             'groups': []
