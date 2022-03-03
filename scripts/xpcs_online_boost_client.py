@@ -61,9 +61,29 @@ if __name__ == '__main__':
     #internally even though it is not specified as an argument
     input_hdf_file = os.path.join(dataset_dir, 'input', hdf_name)
     output_hdf_file = os.path.join(dataset_dir, 'output', hdf_name)
+    # Required by boost_corr to know where to stick the output HDF
+    output_dir = os.path.join(dataset_dir, 'output')
 
     flow_input = {
         'input': {
+
+            'boost_corr': {
+                    'atype': atype,
+                    "qmap": qmap_file,
+                    "raw": raw_file,
+                    "output": output_dir,
+                    "batch_size": 8,
+                    "gpu_id": args.gpu_flag,
+                    "verbose": args.verbose,
+                    "masked_ratio_threshold": 0.75,
+                    "use_loader": True,
+                    "begin_frame": 1,
+                    "end_frame": -1,
+                    "avg_frame": 1,
+                    "stride_frame": 1,
+                    "overwrite": False
+            },
+
             'pilot': {
                 # This is the directory which will be published
                 'dataset': dataset_dir,
@@ -94,14 +114,8 @@ if __name__ == '__main__':
             ],
 
             'proc_dir': dataset_dir,
-            'raw_file': raw_file,
-            'qmap_file': qmap_file,
-            'atype': atype,
-            'gpu_flag': args.gpu_flag,
             'metadata_file': input_hdf_file,
             'hdf_file': output_hdf_file,
-            'batch_size': args.batch_size,
-            'verbose': args.verbose,
 
             # funcX endpoints
             'funcx_endpoint_non_compute': depl_input['input']['funcx_endpoint_non_compute'],

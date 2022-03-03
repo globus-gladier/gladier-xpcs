@@ -3,58 +3,32 @@ from gladier import GladierBaseTool, generate_flow_definition
 def xpcs_boost_corr(**data):
     import os
     import json
+    from boost_corr.xpcs_aps_8idi.gpu_corr_multitau import solve_multitau, solve_twotime
 
-    ##minimal data inputs payload
-    proc_dir = data.get('proc_dir') # location of transfered files / results
-    raw_file = data.get('raw_file') # raw data
-    qmap_file = data.get('qmap_file') # name of the qmap file
-    atype = data.get('atype','Both') #["Multitau", "Twotime", "Both"]
-    config_file = data.get('config_file', None) # name of the config file
-    gpu_flag = data.get('gpu_flag',0)
-    verbose = data.get('verbose', False)
+    if not os.path.exists(data['proc_dic']):
+        raise NameError(f'{data["proc_dir"]} \n Proc dir does not exist!')
 
-    if not os.path.exists(proc_dir):
-        raise NameError(f'{proc_dir} \n Proc dir does not exist!')
+    os.chdir(data['proc_dir'])
 
-    os.chdir(proc_dir)
+    atype = data['boost_corr'].pop('atype')
 
-    output_dir = os.path.join(proc_dir,'output')
-    # if config_file:
-    #     with open(config_file) as f:
-    #         config = json.load(f)
 
-    if atype == 'Multitau' or atype == 'Both':
-        from boost_corr.xpcs_aps_8idi.gpu_corr_multitau import solve_multitau
-        solve_multitau(qmap=qmap_file,
-                    raw=raw_file,
-                    output=output_dir,
-                    batch_size=8,
-                    gpu_id=gpu_flag,
-                    verbose=verbose,
-                    masked_ratio_threshold=0.75,
-                    use_loader=True,
-                    begin_frame=1,
-                    end_frame=-1,
-                    avg_frame=1,
-                    stride_frame=1,
-                    overwrite=False)
+    if atype in ('Multitau', 'Both'):
+        solve_multitau(**data['boost_corr'])
+    elif atype in ('Twotime', 'Both'):
+        solve_twotime(**data['boost_corr'])
 
-    if atype == 'Twotime' or atype == 'Both':
-        from boost_corr.xpcs_aps_8idi.gpu_corr_twotime import solve_twotime
-        solve_twotime(qmap=qmap_file,
-                    raw=raw_file,
-                    output=output_dir,
-                    batch_size=256,
-                    gpu_id=gpu_flag,
-                    verbose=verbose,
-                    begin_frame=1,
-                    end_frame=-1,
-                    avg_frame=1,
-                    stride_frame=1,
-                    dq_selection=None,
-                    smooth='sqmap')
+    return_values = {}
+    # These are assumed by the boost_corr client. Look for them ad append them to output
+    errors = os.path.join(data['proc_dir'], 'corr_errors.log')
+    output = os.path.join(data['proc_dir'], 'corr_output.log')
+    if os.path.exists(errors):
+        with open(errors) as f:
+            return_values['errors'] = f.read()
+    if os.path.exists(output):
+            return_values['output'] = f.read()
 
-    return output_dir
+    return return_values
 
 
 @generate_flow_definition(modifiers={
@@ -64,8 +38,6 @@ class BoostCorr(GladierBaseTool):
 
     required_input = [
         'proc_dir',
-        'raw_file',
-        'qmap_file',
         'funcx_endpoint_compute',
     ]
 
