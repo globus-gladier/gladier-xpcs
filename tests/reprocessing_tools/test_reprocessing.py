@@ -1,4 +1,4 @@
-from gladier_xpcs.flow_reprocess import XPCSReprocessingFlow
+from gladier_xpcs.flows.flow_reprocess import XPCSReprocessingFlow
 from gladier_xpcs.reprocessing_tools.publish_preparation import publish_preparation
 
 def test_reprocessing_get_xpcs_input(reprocessing_deployment, reprocessing_input):
