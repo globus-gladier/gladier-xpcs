@@ -53,7 +53,7 @@ def xpcs_boost_corr(**data):
                     dq_selection=None,
                     smooth='sqmap')
 
-    return
+    return atype
 
 
 @generate_flow_definition(modifiers={
