@@ -63,6 +63,8 @@ if __name__ == '__main__':
     output_hdf_file = os.path.join(dataset_dir, 'output', hdf_name)
     # Required by boost_corr to know where to stick the output HDF
     output_dir = os.path.join(dataset_dir, 'output')
+    # This tells the corr state where to place version specific info
+    execution_metadata_file = os.path.join(dataset_dir, 'execution_metadata.json')
 
     flow_input = {
         'input': {
@@ -116,6 +118,7 @@ if __name__ == '__main__':
             'proc_dir': dataset_dir,
             'metadata_file': input_hdf_file,
             'hdf_file': output_hdf_file,
+            'execution_metadata_file': execution_metadata_file,
 
             # funcX endpoints
             'funcx_endpoint_non_compute': depl_input['input']['funcx_endpoint_non_compute'],
