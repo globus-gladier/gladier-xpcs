@@ -5,7 +5,8 @@ def publish_gather_metadata(**data):
     import traceback
     from pilot.client import PilotClient
     from pilot.exc import PilotClientException, FileOrFolderDoesNotExist
-        
+
+
     try:
         dataset, destination = data['dataset'], data.get('destination', '/')
         index, project, groups = data['index'], data['project'], data.get('groups', [])

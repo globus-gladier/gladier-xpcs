@@ -2,7 +2,7 @@ import pytest
 import pathlib
 from unittest.mock import Mock
 import gladier
-from gladier_xpcs.flow_reprocess import XPCSReprocessingFlow
+from gladier_xpcs.flows.flow_reprocess import XPCSReprocessingFlow
 from gladier_xpcs.deployments import BaseDeployment
 
 

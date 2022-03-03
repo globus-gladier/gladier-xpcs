@@ -9,7 +9,7 @@ import argparse
 import os
 import pathlib
 
-from gladier_xpcs.flow_gpu import XPCSGPUFlow
+from gladier_xpcs.flows import XPCSBoost
 from gladier_xpcs.deployments import deployment_map
 
 
@@ -24,10 +24,11 @@ def arg_parse():
                                 '/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
     parser.add_argument('--qmap', help='Path to the qmap file',
                         default='/data/xpcs8/partitionMapLibrary/2019-1/comm201901_qmap_aerogel_Lq0.h5')
+    parser.add_argument('--atype', help='Analysis type to be performed',
+                        default='Both')
+    parser.add_argument('--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     parser.add_argument('--group', help='Visibility in Search', default=None)
     parser.add_argument('--deployment','-d', default='hannah-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
-    parser.add_argument('--corr_gpu_loc', default='/eagle/projects/APSDataAnalysis/XPCS/mchu/xpcs_boost/gpu_corr.py',
-                        help=f'Location of gpu corr processing script')
     parser.add_argument('--batch_size', default='256', help=f'Size of gpu corr processing batch')
     parser.add_argument('--verbose', default=False, action='store_true', help=f'Verbose output')
 
@@ -49,6 +50,9 @@ if __name__ == '__main__':
     dataset_name = hdf_name[:hdf_name.rindex('.')] #remove file extension
 
     dataset_dir = os.path.join(depl_input['input']['staging_dir'], dataset_name)
+
+    #Processing type
+    atype = args.atype
 
     # Generate Destination Pathnames.
     raw_file = os.path.join(dataset_dir, 'input', raw_name)
@@ -94,9 +98,10 @@ if __name__ == '__main__':
             'proc_dir': dataset_dir,
             'raw_file': raw_file,
             'qmap_file': qmap_file,
+            'atype': atype,
+            'gpu_flag': args.gpu_flag,
             'metadata_file': input_hdf_file,
             'hdf_file': output_hdf_file,
-            'corr_gpu_loc': args.corr_gpu_loc,
             'batch_size': args.batch_size,
             'verbose': args.verbose,
 
@@ -110,7 +115,7 @@ if __name__ == '__main__':
         }
     }
 
-    corr_flow = XPCSGPUFlow()
+    corr_flow = XPCSBoost()
     corr_run_label = pathlib.Path(hdf_name).name[:62]
     flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label)
 

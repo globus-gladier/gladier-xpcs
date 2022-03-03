@@ -1,7 +1,7 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
 
-def make_corr_plots(**event):
+def make_corr_plots(**data):
     import os
     import sys
     import numpy
@@ -259,9 +259,9 @@ def make_corr_plots(**event):
         fig.suptitle('{} Correlation Fitting Parameters'.format(basename))
         plt.savefig('{}_corr_params.png'.format(basename), dpi=100)
 
-    os.chdir(os.path.join(event['proc_dir'], os.path.dirname(event['hdf_file'])))
+    os.chdir(os.path.join(data['proc_dir'], os.path.dirname(data['hdf_file'])))
     try:
-        h5filename = os.path.join(event['proc_dir'], event['hdf_file'])
+        h5filename = os.path.join(data['proc_dir'], data['hdf_file'])
         print('opening ' + h5filename)
         x_h5_file = h5py.File(h5filename, 'r')
         error_log = 'plot_errors.log'

@@ -7,20 +7,10 @@
 
 import argparse
 import os
+import pathlib
 
-from gladier_xpcs.flow_online import XPCSOnlineFlow
+from gladier_xpcs.flows import XPCSEigen
 from gladier_xpcs.deployments import deployment_map
-
-
-def register_container():
-    from funcx.sdk.client import FuncXClient
-    fxc = FuncXClient()
-    from gladier_xpcs.tools.corr import eigen_corr
-    cont_dir = '/eagle/APSDataAnalysis/XPCS/containers/'
-    container_name = 'eigen_v2.simg'
-    eigen_cont_id = fxc.register_container(location=cont_dir+container_name,container_type='singularity')
-    corr_cont_fxid = fxc.register_function(eigen_corr, container_uuid=eigen_cont_id)
-    return corr_cont_fxid
 
 
 def arg_parse():
@@ -32,7 +22,9 @@ def arg_parse():
                         default='/data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001'
                                 '/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
     parser.add_argument('--group', help='Visibility in Search', default=None)
-    parser.add_argument('--deployment','-d', default='talc-prod', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
+    parser.add_argument('--deployment','-d', default='nick-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
+    parser.add_argument('--results', default='/data/xpcs8/2019-1/comm201901/ALCF_results/',
+                        help=f'Clutch transfer location for corr results on hdf file')
     return parser.parse_args()
 
 
@@ -55,6 +47,7 @@ if __name__ == '__main__':
     # Generate Destination Pathnames.
     hdf_file = os.path.join(dataset_dir, hdf_name)
     imm_file = os.path.join(dataset_dir, imm_name)
+    hdf_file_result = os.path.join(args.results, hdf_name)
 
     flow_input = {
         'input': {
@@ -80,6 +73,13 @@ if __name__ == '__main__':
                 }
             ],
 
+            'transfer_to_clutch': [
+                {
+                    'source_path': hdf_file,
+                    'destination_path': hdf_file_result,
+                },
+            ],
+
             'proc_dir': dataset_dir,
             'hdf_file': hdf_file,
             'imm_file': imm_file,
@@ -95,66 +95,13 @@ if __name__ == '__main__':
             # globus endpoints
             'globus_endpoint_clutch': depl_input['input']['globus_endpoint_source'],
             'globus_endpoint_theta': depl_input['input']['globus_endpoint_proc'],
-
-            # container hack for corr 
-            'eigen_corr_funcx_id': register_container()
         }
     }
 
+    corr_flow = XPCSEigen()
 
-    corr_cli = XPCSOnlineFlow()
-
-    corr_flow_label = hdf_name + '_dev'
-
-    corr_flow = corr_cli.run_flow(flow_input=flow_input, label=corr_flow_label)
-
-    print('run_id : ' + corr_flow['action_id'])
-
-    #import pprint
-    # pprint.pprint(flow_input)
-    # pprint.pprint(corr_cli.flow_definition)
-    # corr_cli.progress(corr_flow['action_id'])
-    # pprint.pprint(corr_cli.get_status(corr_flow['action_id']))
+    corr_run_label = pathlib.Path(hdf_name).name[:62]
+    flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label)
+    print('run_id : ' + flow_run['action_id'])
 
 
-    import argparse
-    import time
-    import sys
-    from pprint import pprint
-
-    from gladier.utils.flow_generation import get_ordered_flow_states
-    flow_dict = get_ordered_flow_states(corr_cli.flow_definition)
-    flow_steps = []
-    for key, value in flow_dict.items() :
-        flow_steps.append(key)
-    
-    if 'EigenCorr' not in flow_steps:
-        print('EigenCorr' + ' not in valid steps')
-
-    step_index = flow_steps.index('EigenCorr')
-    status = corr_cli.get_status(corr_flow['action_id'])
-    
-    while status['status'] not in ['SUCCEEDED', 'FAILED']:
-
-        status = corr_cli.get_status(corr_flow['action_id'])
-
-        if status.get('state_name'):
-            curr_step = status.get('state_name')       
-        elif status.get('details'):
-            det = status.get('details')
-            if det.get('details'):
-                curr_step = status['details']['details']['state_name']
-            elif det.get('action_statuses'):
-                curr_step = status['details']['action_statuses'][0]['state_name']
-       
-        print(curr_step)
-        curr_index = flow_steps.index(curr_step)
-        print(curr_index)
-        
-        if status['status']=='FAILED': #this could be out of the loop to prevent overchecking
-            print('I have Failed!!')
-
-        if curr_index>step_index:
-            print('I already Passed Here!!')
-
-        time.sleep(2)

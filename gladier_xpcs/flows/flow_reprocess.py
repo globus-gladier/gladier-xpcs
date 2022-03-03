@@ -20,7 +20,6 @@ from gladier import GladierBaseClient, generate_flow_definition
 })
 class XPCSReprocessingFlow(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
-
     gladier_tools = [
         # Transfer XPCS files into our processing environment
         'gladier_xpcs.reprocessing_tools.transfer_to_proc.TransferToProc',

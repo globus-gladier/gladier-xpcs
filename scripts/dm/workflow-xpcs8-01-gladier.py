@@ -37,7 +37,7 @@
                     ],
                 },
             '02-Automate' : {
-                'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/xpcs_corr_client.py --hdf $clusterResultsDir/$outputHdf5File --imm $clusterDataDir/$immFile --group $globusID --results $ALCFclusterDataDir"' ,
+                'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/xpcs_online_eigen_client.py --hdf $clusterResultsDir/$outputHdf5File --imm $clusterDataDir/$immFile --group $globusID --results $ALCFclusterDataDir"' ,
                 'outputVariableRegexList' : [
                     'run_id : (?P<AutomateId>.*)'
                 ],

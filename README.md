@@ -61,10 +61,23 @@ cd scripts/
 python xpcs_reproc_client.py
 ```
 
-### Theta Configuration
+### ALCF Configuration
 
 Hopefully, this document is a little outdated and you're executing on Polaris!
 Please add, update, or correct information as things change. 
+
+## Environment Setup
+
+```
+  conda create -n gladier-xpcs
+  conda activate gladier-xpcs
+
+  pip install gladier
+
+  conda install -c nvidia cudatoolkit
+  conda install -c pytorch pytorch
+  pip install -e git+https://github.com/AZjk/boost_corr#egg=boost_corr
+```
 
 ### Example Config
 

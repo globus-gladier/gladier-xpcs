@@ -1,20 +1,20 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
 
-def eigen_corr(**event):
+def eigen_corr(**data):
     import os
     import h5py
     import subprocess
     from subprocess import PIPE
 
     ##minimal data inputs payload
-    proc_dir = event.get('proc_dir') # location of the HDF/QMAP process file / result
+    proc_dir = data.get('proc_dir') # location of the HDF/QMAP process file / result
 
-    imm_file = event.get('imm_file') # raw data
-    hdf_file = event.get('hdf_file') # name of the file to run EIGEN CORR
+    imm_file = data.get('imm_file') # raw data
+    hdf_file = data.get('hdf_file') # name of the file to run EIGEN CORR
 
     ##optional
-    corr_loc = event.get('corr_loc', 'corr')
+    corr_loc = data.get('corr_loc', 'corr')
 
     if not os.path.exists(proc_dir):
         raise NameError(f'{proc_dir} \n Proc dir does not exist!')

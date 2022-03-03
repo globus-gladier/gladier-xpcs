@@ -1,6 +1,6 @@
 import click
 import pathlib
-from gladier_xpcs.flow_online import XPCSOnlineFlow
+from gladier_xpcs.flows import XPCSOnlineFlow
 from globus_automate_client.client_helpers import create_flows_client
 
 
