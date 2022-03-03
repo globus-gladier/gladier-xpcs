@@ -7,8 +7,8 @@ import traceback
 import pprint
 
 from gladier.utils.flow_generation import get_ordered_flow_states
-from gladier_xpcs.flows import XPCSOnlineFlow
-from gladier_xpcs.flows import XPCSGPUFlow
+from gladier_xpcs.flows import XPCSEigen
+from gladier_xpcs.flows import XPCSBoost
 
 
 def arg_parse():
@@ -86,9 +86,9 @@ def check_time(start_time, limit):
 if __name__ == '__main__':
     args = arg_parse()
     if args.gpu:
-        main_flow = XPCSGPUFlow()
+        main_flow = XPCSBoost()
     else:
-        main_flow = XPCSOnlineFlow()
+        main_flow = XPCSEigen()
 
     flow_states = list(get_ordered_flow_states(main_flow.flow_definition).keys())
     start_time = time.time()

@@ -1,6 +1,6 @@
 import click
 import pathlib
-from gladier_xpcs.flows import XPCSOnlineFlow
+from gladier_xpcs.flows import XPCSBoost
 from globus_automate_client.client_helpers import create_flows_client
 
 
@@ -28,7 +28,7 @@ RUN_FIELDS = [
 
 def get_runs(flow_id=None):
     if flow_id is None:
-        flow_id = XPCSOnlineFlow().get_flow_id()
+        flow_id = XPCSBoost().get_flow_id()
     fc = create_flows_client()
 
     resp = fc.list_flow_runs(flow_id)
@@ -41,13 +41,13 @@ def get_runs(flow_id=None):
 
 def retry_single(run_id, flow_id=None):
     if flow_id is None:
-        flow_id = XPCSOnlineFlow().get_flow_id()
+        flow_id = XPCSBoost().get_flow_id()
     fc = create_flows_client()
 
     resp = fc.flow_action_log(flow_id, fc.scope_for_flow(flow_id), run_id)
     run_input = resp['entries'][0]['details']['input']
     label = pathlib.Path(run_input['input']['hdf_file']).name[:62]
-    return XPCSOnlineFlow().run_flow(flow_input=run_input, label=label)
+    return XPCSBoost().run_flow(flow_input=run_input, label=label)
 
 
 @click.group()
