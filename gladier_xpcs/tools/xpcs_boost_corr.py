@@ -18,6 +18,7 @@ def xpcs_boost_corr(**data):
 
     os.chdir(proc_dir)
 
+    output_dir = os.path.join(proc_dir,'output')
     # if config_file:
     #     with open(config_file) as f:
     #         config = json.load(f)
@@ -26,7 +27,7 @@ def xpcs_boost_corr(**data):
         from boost_corr.xpcs_aps_8idi.gpu_corr_multitau import solve_multitau
         solve_multitau(qmap=qmap_file,
                     raw=raw_file,
-                    output=proc_dir,
+                    output=output_dir,
                     batch_size=8,
                     gpu_id=gpu_flag,
                     verbose=verbose,
@@ -42,7 +43,7 @@ def xpcs_boost_corr(**data):
         from boost_corr.xpcs_aps_8idi.gpu_corr_twotime import solve_twotime
         solve_twotime(qmap=qmap_file,
                     raw=raw_file,
-                    output=proc_dir,
+                    output=output_dir,
                     batch_size=256,
                     gpu_id=gpu_flag,
                     verbose=verbose,
@@ -53,7 +54,7 @@ def xpcs_boost_corr(**data):
                     dq_selection=None,
                     smooth='sqmap')
 
-    return atype
+    return output_dir
 
 
 @generate_flow_definition(modifiers={
