@@ -198,3 +198,16 @@ class GatherXPCSMetadata(GladierBaseTool):
     funcx_functions = [
         gather_xpcs_metadata
     ]
+
+
+if __name__ == '__main__':
+    data = {
+        'proc_dir':'/eagle/APSDataAnalysis/nick/xpcs_gpu',
+        'hdf_file': 'C032_B315_A200_150C_att01_001_0001-1000/output/C032_B315_A200_150C_att01_001_0001-1000.hdf',
+        'pilot': {
+            'metadata': {},
+            'groups': []
+        },
+    }
+    from pprint import pprint
+    pprint(gather_xpcs_metadata(**data))
