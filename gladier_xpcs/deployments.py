@@ -114,13 +114,13 @@ class NickPortalDeployment(NickTheta):
             'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
             # We don't have a way to store authorization data within a database yet.
             # FuncX ids on the portal need to be specified manually
-            'apply_qmap_funcx_id': '4d15c42d-a982-46ed-a548-497ac5977b70',
-            'eigen_corr_funcx_id': 'df859253-1113-4cbc-820c-8cf4afbf5764',
-            'gather_xpcs_metadata_funcx_id': '348e7fe6-7d64-4ccf-84b0-502294a087e9',
-            'make_corr_plots_funcx_id': 'dba85394-eae5-4651-827e-1cf03f536a75',
-            'publish_gather_metadata_funcx_id': '9a36d48b-b072-4e7d-a2dc-8f4a31ef9b45',
-            'publish_preparation_funcx_id': '4b39dbd5-1954-4923-89e3-9abbb39c0375',
-            'warm_nodes_funcx_id': 'f369eb60-9a4c-49cb-a078-abb1a81a7c66'
+            'acquire_nodes_funcx_id': '5617d1f7-61d0-421c-8646-83dba923ea0e',
+            'apply_qmap_funcx_id': 'b248b123-961e-49df-913c-88d56d56ab4a',
+            'eigen_corr_funcx_id': '707eba19-4242-4850-9fca-23a88ae57ec4',
+            'gather_xpcs_metadata_funcx_id': 'c40573ae-c4e1-496a-af2f-ec41ad02c579',
+            'make_corr_plots_funcx_id': '83cc01ef-64a7-45b1-9858-0f6aba91be6d',
+            'publish_gather_metadata_funcx_id': '156aeb03-093a-4bf5-a0fe-76ac9c06e338',
+            'publish_preparation_funcx_id': '4ad09c22-7548-4690-805a-eda79f642da0',
         }
     }
 

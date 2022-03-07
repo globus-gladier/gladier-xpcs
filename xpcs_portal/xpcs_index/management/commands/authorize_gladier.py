@@ -1,7 +1,7 @@
 from pprint import pprint
 import os
 import sys
-from gladier_xpcs.flow_reprocess import XPCSReprocessingFlow
+from gladier_xpcs.flows.flow_reprocess import XPCSReprocessingFlow
 from django.core.management.base import BaseCommand
 from automate_app.models import FlowInstanceAuthorizer, Flow
 import globus_sdk

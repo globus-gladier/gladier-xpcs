@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from globus_portal_framework.views.generic import SearchView, DetailView
 from concierge_app.views.generic import ManifestCheckoutView
 from automate_app.models import Action, Flow
-from gladier_xpcs.flow_reprocess import XPCSReprocessingFlow
+from gladier_xpcs.flows.flow_reprocess import XPCSReprocessingFlow
 
 from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm
 from xpcs_portal.xpcs_index.models import ReprocessingTask, FilenameFilter
