@@ -30,7 +30,10 @@ cycleDataDir=`dirname $userDataDir`
 cycleDataDir=`echo $cycleDataDir | sed "s/$CLUTCH_DATA_ROOT//"`
 qmapDir=`echo $CLUTCH_DATA_ROOT/partitionMapLibrary$cycleDataDir | tr -d '\'`
 
+sgeJobName=`basename $clusterDataDir`
+
 echo "Input HDF5 File: $inputHdf5File"
+echo "SGE Job Name: $sgeJobName"
 echo "Raw Data File: $rawFile"
 echo "Cluster Data Directory: $clusterDataDir"
 echo "QMap Directory: $qmapDir"

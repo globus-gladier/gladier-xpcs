@@ -10,6 +10,7 @@
                 $filePath $experimentName',
             'outputVariableRegexList' : [
                 'Cluster Data Directory: (?P<clusterDataDir>.*)',
+                'SGE Job Name: (?P<sgeJobName>.*)', 
                 'Input HDF5 File: (?P<inputHdf5File>.*)',
                 'Raw Data File: (?P<rawFile>.*)',
                 'QMap Directory: (?P<qmapDir>.*)',
