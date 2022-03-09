@@ -96,7 +96,7 @@ outputHdf5File=$inputHdf5File
 
 #fullImmFilePath=`ls -c1 $ID8I_DATA_ROOT/$relativeDataDir/*.{imm,bin} 2> /dev/null | head -1`
 #immFile=`basename $fullImmFilePath`
-immFile=`ls -c1 $inputDir/*.{imm,bin} | head -1`
+immFile=`ls -c1 $inputDir/*.{imm,bin,h5} | head -1`
 immFile=`basename $immFile`
 
 ALCF_RESULTS_DIR=$ORTHROS_DATA_ROOT_NFS/$cycleDataDir/$userDataDir/ALCF_results

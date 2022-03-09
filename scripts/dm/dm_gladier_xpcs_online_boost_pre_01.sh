@@ -21,8 +21,18 @@ globusID=`cut -c 4- <<< $getGroup`
 
 inputHdf5File=`basename $inputFile`
 inputDir=`dirname $inputFile`
-rawFile=`ls -c1 $inputDir/*.{imm,bin} | head -1`
+
+#rawFile=`ls -c1 $inputDir/*.{imm,bin,h5} | head -1`
+
+for ext in bin h5 imm; do
+     rawFile=`ls -c1 $inputDir/*.$ext | head -1`
+     if [ ! -z $rawFile ]; then
+         break
+     fi
+done
+
 rawFile=`basename $rawFile`
+
 
 clusterDataDir=`echo $inputDir | sed "s/$ORTHROS_NFS_ROOT//"`
 userDataDir=`dirname $clusterDataDir`
