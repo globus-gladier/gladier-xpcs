@@ -22,15 +22,8 @@ globusID=`cut -c 4- <<< $getGroup`
 inputHdf5File=`basename $inputFile`
 inputDir=`dirname $inputFile`
 
-#rawFile=`ls -c1 $inputDir/*.{imm,bin,h5} | head -1`
-
-for ext in bin h5 imm; do
-     rawFile=`ls -c1 $inputDir/*.$ext | head -1`
-     if [ ! -z $rawFile ]; then
-         break
-     fi
-done
-
+# Fetch any .imm, .bin, or .h5. Redirect errors to null
+rawFile=`ls -c1 $inputDir/*.{imm,bin,h5} 2> /dev/null | head -1`
 rawFile=`basename $rawFile`
 
 

@@ -23,6 +23,7 @@
                     --raw $clusterDataDir/$rawFile \
                     --qmap $qmapDir/$qmapFile \
                     --group $globusID \
+                    --verbose \
                     -d nick-polaris-gpu"',
             'outputVariableRegexList' : [
                 'run_id : (?P<AutomateId>.*)'
