@@ -1,4 +1,4 @@
-##dm-upsert-workflow --py-spec workflow-xpcs8-02-gpu-gladier.py
+##dm-upsert-workflow --py-spec workflow-xpcs8-02-gladier-boost.py
 
 {
     'owner': '8idiuser',
