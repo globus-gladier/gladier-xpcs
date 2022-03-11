@@ -28,6 +28,16 @@ from scripts import get_status
                 }
             }
         },
+        # Double nested under details, but no state_name key
+        {
+            'details': {
+                'details': {
+                    'output': {
+                        'MyStateName': {},
+                    }
+                }
+            }
+        },
         # details.action_statuses
         {
             'details': {
