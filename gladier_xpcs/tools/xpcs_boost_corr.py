@@ -51,7 +51,7 @@ def xpcs_boost_corr(**data):
 
     return {
         'result': 'SUCCESS',
-        'boost_corr_log': logs,
+        # 'boost_corr_log': logs,
         'proc_dir': data['proc_dir'],
         'boost_corr': data['boost_corr'],
     }
