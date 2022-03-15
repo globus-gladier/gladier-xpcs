@@ -16,15 +16,21 @@ def make_corr_plots(**data):
     dataset_dir = os.path.join(data['proc_dir'], os.path.dirname(data['hdf_file']))
     log_file = os.path.join(dataset_dir, 'plot.log')
 
-    log_level = data.get('plot_logging_level', 'INFO')
+    log_level = data.get('plot_logging_level', 'DEBUG')
+    logger = logging.getLogger('make_corr_plots')
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    logger.setLevel(log_level)
     handlers = (
         # Useful for flows, logging will be captured in a file
         logging.FileHandler(filename=log_file, mode='w'),
         # Useful for testing, will only output when run directly on compute
         logging.StreamHandler(),
     )
-    logging.basicConfig(handlers=handlers, level=log_level)
-    logging.info(f'Logging setup with level {log_level}')
+    for handler in handlers:
+        handler.setLevel(log_level)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    logger.info(f'Logging setup with level {log_level}')
 
 
     def trim_axs(axs, N):
@@ -289,16 +295,16 @@ def make_corr_plots(**data):
             plot_fits
                 ):
             try:
-                logging.info(f'Plotting {xplot.__name__}...')
+                logger.info(f'Plotting {xplot.__name__}...')
                 xplot(x_h5_file)
                 plt.close('all')  # why does it need this?
             except KeyError as ke:
-                logging.error(f'{xplot.__name__}: Missing data needed for plot: {str(ke)}')
+                logger.error(f'{xplot.__name__}: Missing data needed for plot: {str(ke)}')
             except Exception as e:
-                logging.exception(e)
+                logger.exception(e)
     except (Exception, SystemExit) as e:
-        logging.critical('Plotting excited unexpectedly due to error')
-        logging.exception(e)
+        logger.critical('Plotting excited unexpectedly due to error')
+        logger.exception(e)
     return [img for img in os.listdir('.') if img.endswith('.png')]
 
 
