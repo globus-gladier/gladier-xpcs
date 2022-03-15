@@ -3,13 +3,27 @@ from gladier import GladierBaseTool, generate_flow_definition
 
 def make_corr_plots(**data):
     import os
-    import sys
+    import logging
     import numpy
     import matplotlib.pyplot as plt
     from matplotlib.colors import LogNorm
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     import pylab
     import h5py
+
+    dataset_dir = os.path.join(data['proc_dir'], os.path.dirname(data['hdf_file']))
+    log_file = os.path.join(dataset_dir, 'plot.log')
+
+    log_level = data.get('plot_logging_level', 'INFO')
+    handlers = (
+        # Useful for flows, logging will be captured in a file
+        logging.FileHandler(filename=log_file, mode='w'),
+        # Useful for testing, will only output when run directly on compute
+        logging.StreamHandler(),
+    )
+    logging.basicConfig(handlers=handlers, level=log_level)
+    logging.info(f'Logging setup with level {log_level}')
+
 
     def trim_axs(axs, N):
         """little helper to massage the axs list to have correct length..."""
@@ -259,22 +273,30 @@ def make_corr_plots(**data):
         fig.suptitle('{} Correlation Fitting Parameters'.format(basename))
         plt.savefig('{}_corr_params.png'.format(basename), dpi=100)
 
-    os.chdir(os.path.join(data['proc_dir'], os.path.dirname(data['hdf_file'])))
+    os.chdir(dataset_dir)
     try:
         h5filename = os.path.join(data['proc_dir'], data['hdf_file'])
-        print('opening ' + h5filename)
         x_h5_file = h5py.File(h5filename, 'r')
-        error_log = 'plot_errors.log'
-        for xplot in (plot_intensity_vs_time, plot_intensity_vs_q, plot_intensity_t_vs_q,
-                      plot_g2_all, plot_g2_all_fit, plot_pixelSum, plot_fits):
+        for xplot in (
+            plot_intensity_vs_time,
+            plot_intensity_vs_q,
+            plot_intensity_t_vs_q,
+            plot_g2_all,
+            plot_g2_all_fit,
+            plot_pixelSum,
+            plot_fits
+                ):
             try:
+                logging.info(f'Plotting {xplot.__name__}...')
                 xplot(x_h5_file)
                 plt.close('all')  # why does it need this?
+            except KeyError as ke:
+                logging.error(f'{xplot.__name__}: Missing data needed for plot: {str(ke)}')
             except Exception as e:
-                with open(error_log, 'w+') as f:
-                    f.write(f'Error Plotting {xplot.__name__}: {str(e)}')
+                logging.exception(e)
     except (Exception, SystemExit) as e:
-        return str(e)
+        logging.critical('Plotting excited unexpectedly due to error')
+        logging.exception(e)
     return [img for img in os.listdir('.') if img.endswith('.png')]
 
 
