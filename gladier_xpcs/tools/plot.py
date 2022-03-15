@@ -152,7 +152,7 @@ def make_corr_plots(**data):
                     g_index += 1
                     if g_index == n_plots:
                         sfig(basename, g_start, g_index - 1)
-                        break
+                        return
             sfig(basename, g_start, g_index - 1)
 
     def plot_g2_all_fit(xpcs_h5file):
@@ -189,7 +189,7 @@ def make_corr_plots(**data):
                     g_index += 1
                     if g_index == n_plots:
                         sfig(basename, g_start, g_index - 1)
-                        break
+                        return
             sfig(basename, g_start, g_index - 1)
 
     def plot_fits(xpcs_h5file):
