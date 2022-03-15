@@ -11,7 +11,7 @@ def xpcs_boost_corr(**data):
     log_file = os.path.join(data['proc_dir'], 'boost_corr.log')
     handlers = (
         # Useful for flows, logging will be captured in a file
-        logging.FileHandler(filename=log_file),
+        logging.FileHandler(filename=log_file, mode='w'),
         # Useful for testing, will only output when run directly on compute
         logging.StreamHandler(),
     )
