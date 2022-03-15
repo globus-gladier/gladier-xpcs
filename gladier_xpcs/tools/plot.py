@@ -1,3 +1,5 @@
+import pathlib
+import sys
 from gladier import GladierBaseTool, generate_flow_definition
 
 
@@ -312,3 +314,14 @@ class MakeCorrPlots(GladierBaseTool):
     funcx_functions = [
         make_corr_plots
     ]
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print('Usage: python plot.py my_file.hdf')
+    input_file = pathlib.Path(sys.argv[1]).absolute()
+    # Create the 'expected' processing directory, which should look like this:
+    # * Top level proc_dir/
+    #     * HDF_Folder/
+    #         * HDF_File.hdf
+    make_corr_plots(proc_dir=str(input_file.parent.parent), hdf_file=str(input_file))
