@@ -78,12 +78,6 @@ class NickPolarisGPU(NickPolaris):
         'funcx_endpoint_compute': '58f83203-fc24-4d47-a7f7-09342f320312',
     }
 
-    flow_input = {
-        'input': {
-            'staging_dir': '/eagle/APSDataAnalysis/nick/xpcs_gpu',
-        }
-    }
-
 
 class NickCooley(NickTheta):
 
@@ -95,7 +89,7 @@ class NickCooley(NickTheta):
     }
 
 
-class NickPortalDeployment(NickTheta):
+class NickPortalDeployment(NickPolarisGPU):
 
     def get_input(self):
         """Separate portal runs by current datetime/second. This prevents run collisions
@@ -108,19 +102,24 @@ class NickPortalDeployment(NickTheta):
         finput['input']['staging_dir'] = finput['input']['staging_dir'].format(now=now)
         return finput
 
+    globus_endpoints = {
+        # Clutch 8-id shared eagle endpoint
+        'globus_endpoint_source': '74defd5b-5f61-42fc-bcc4-834c9f376a4f',
+        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+    }
+
     flow_input = {
         'input': {
             'staging_dir': '/projects/APSDataAnalysis/XPCS/portal/{now}/',
             'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
             # We don't have a way to store authorization data within a database yet.
             # FuncX ids on the portal need to be specified manually
-            'acquire_nodes_funcx_id': '5617d1f7-61d0-421c-8646-83dba923ea0e',
-            'apply_qmap_funcx_id': 'b248b123-961e-49df-913c-88d56d56ab4a',
-            'eigen_corr_funcx_id': '707eba19-4242-4850-9fca-23a88ae57ec4',
-            'gather_xpcs_metadata_funcx_id': 'c40573ae-c4e1-496a-af2f-ec41ad02c579',
-            'make_corr_plots_funcx_id': '83cc01ef-64a7-45b1-9858-0f6aba91be6d',
-            'publish_gather_metadata_funcx_id': '156aeb03-093a-4bf5-a0fe-76ac9c06e338',
-            'publish_preparation_funcx_id': '4ad09c22-7548-4690-805a-eda79f642da0',
+            'acquire_nodes_funcx_id': '6f761add-484f-493f-b0a4-507e465de495',
+            'gather_xpcs_metadata_funcx_id': 'ca66c720-c862-440a-bc69-7ef829ae164d',
+            'make_corr_plots_funcx_id': '06a8db25-f181-45ac-9ec2-9d9462036cf6',
+            'pre_publish_gather_metadata_funcx_id': 'b7de717e-01a4-49e2-9bd7-98db027e90c9',
+            'publish_gather_metadata_funcx_id': 'f5b444b2-f5e9-4526-8b9f-419bd825ec6c',
+            'xpcs_boost_corr_funcx_id': '65a2b163-ed91-4b4a-b50c-aad7b56eeb24'
         }
     }
 

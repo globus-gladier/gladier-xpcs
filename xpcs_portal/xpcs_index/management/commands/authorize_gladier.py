@@ -1,7 +1,7 @@
 from pprint import pprint
 import os
 import sys
-from gladier_xpcs.flows.flow_reprocess import XPCSReprocessingFlow
+from gladier_xpcs.flows.flow_boost import XPCSBoost
 from django.core.management.base import BaseCommand
 from automate_app.models import FlowInstanceAuthorizer, Flow
 import globus_sdk
@@ -10,13 +10,15 @@ from django.utils.timezone import now
 
 
 class Command(BaseCommand):
+
+    GLADIER_CLIENT_CLASS = XPCSBoost
     help = 'Registers a FuncX Function for an Automate Flow'
 
     def add_arguments(self, parser):
         parser.add_argument('--user', required=False)
 
     def handle(self, *args, **options):
-        gcli = XPCSReprocessingFlow()
+        gcli = XPCSBoost()
         gcli.login()
         # Check register a new flow
         gcli.register_flow()

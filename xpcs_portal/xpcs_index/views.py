@@ -1,7 +1,6 @@
 import logging
 import pathlib
 import urllib
-import copy
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.shortcuts import redirect
@@ -9,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from globus_portal_framework.views.generic import SearchView, DetailView
 from concierge_app.views.generic import ManifestCheckoutView
 from automate_app.models import Action, Flow
-from gladier_xpcs.flows.flow_reprocess import XPCSReprocessingFlow
+from gladier_xpcs.flows.flow_boost import XPCSBoost
 
 from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm
 from xpcs_portal.xpcs_index.models import ReprocessingTask, FilenameFilter
@@ -68,9 +67,8 @@ class XPCSReprocessingCheckoutView(ManifestCheckoutView):
     def form_valid(self, form):
         log.debug(f'Form valid for {form.__class__}')
         user = self.request.user
-        sc = form.get_search_collector()
-        run_inputs = [self.get_input(form.cleaned_data, REPROCESSING_FLOW_DEPLOYMENT, m)
-                      for m in sc.get_manifest()]
+        run_inputs = [self.get_input(d, REPROCESSING_FLOW_DEPLOYMENT)
+                      for d in form.cleaned_data['datasets']]
         # HACK -- We need this to smartly choose the correct Flow, not
         # the one that was used last. This will fail for multiple deployed
         # flows.
@@ -87,26 +85,17 @@ class XPCSReprocessingCheckoutView(ManifestCheckoutView):
 
     def get_parameters(self, flow_input):
         return {
-            'label': str(pathlib.Path(flow_input['input']['hdf_file']).parent.name)[:62],
+            'label': str(pathlib.Path(flow_input['input']['hdf_file']).parent.parent.name)[:62],
             'manage_by': '368beb47-c9c5-11e9-b455-0efb3ba9a670',
             'monitor_by': '368beb47-c9c5-11e9-b455-0efb3ba9a670',
         }
 
-    def get_input(self, cleaned_data, deployment, dataset):
+    def get_input(self, dataset, deployment):
         # Get filename src/dest for .hdf
-        flow_input = copy.deepcopy(deployment.get_input())
-        source_hdf = pathlib.Path(next(d for d in dataset if str(d).endswith('.hdf')))
-        # Get filename src/dest for .imm/.bin
-        source_data = pathlib.Path(next(d for d in dataset if
-                                   any(str(d).endswith(s) for s in ['.imm', '.bin'])))
-        source_qmap = cleaned_data['qmap_path']
-
-        xpcs_input = XPCSReprocessingFlow().get_xpcs_input(
-            deployment, source_hdf, source_data, source_qmap)
-        flow_input['input'].update(xpcs_input['input'])
-        flow_input['input'].update({
-            'reprocessing_suffix': cleaned_data['reprocessing_suffix'],
-            'qmap_source_endpoint': cleaned_data['qmap_ep'],
-            'qmap_source_path': source_qmap,
-        })
+        flow_input = XPCSBoost().get_flow_input(
+            dataset['hdf_data'],
+            dataset['raw_data'],
+            dataset['qmap_file'],
+            deployment,
+        )
         return flow_input, self.get_parameters(flow_input)
