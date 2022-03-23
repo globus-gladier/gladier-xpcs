@@ -27,7 +27,7 @@ class XPCSSearchView(LoginRequiredMixin, SearchView):
         return super().filters + self.get_index_info().get('default_filters', [])
 
 
-class XPCSDetailView(DetailView):
+class XPCSDetailView(LoginRequiredMixin, DetailView):
     """The custom XPCS detail view adds support for toggling images on and off"""
 
     def get_context_data(self, *args, **kwargs):
