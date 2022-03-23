@@ -6,18 +6,10 @@ from gladier import GladierBaseTool, generate_flow_definition
 def make_corr_plots(**data):
     import os
     import json
-    import traceback
     from xpcs_webplot.plot_images import hdf2web_safe
     from xpcs_webplot import __version__ as webplot_version
-    
-    img_dir = os.path.join(data['proc_dir'], os.path.dirname(data['hdf_file']))
-    os.chdir(img_dir)
-    try:
-        h5filename = os.path.join(data['proc_dir'], data['hdf_file'])
-        hdf2web_safe(h5filename, target_dir=data['proc_dir'],
-                     image_only=True)
-    except (Exception, SystemExit):
-        return traceback.format_exc()
+
+    hdf2web_safe(data['hdf_file'], target_dir=data['proc_dir'], image_only=True)
 
     metadata = {
         'plotting': {
@@ -31,7 +23,7 @@ def make_corr_plots(**data):
         with open(data['plotting_metadata_file'], 'w') as f:
             f.write(json.dumps(metadata, indent=2))
 
-    return [img for img in os.listdir(img_dir) if img.endswith('.png')]
+    return [img for img in os.listdir(data['proc_dir']) if img.endswith('.png')]
 
 
 @generate_flow_definition(modifiers={
