@@ -1,4 +1,10 @@
 ##dm-upsert-workflow --py-spec workflow-xpcs8-02-gladier-boost.py
+##dm-start-processing-job \
+# --workflow-name xpcs8-02-gladier-boost \
+# filePath:/net/wolf/data/xpcs8/2022-1/comm202202/E010_Ceramic_Lq1_000C_att03_001/E010_Ceramic_Lq1_000C_att03_001_0001-1000.hdf \
+# qmapFile:comm202202_qmap_Ceramic_Lq0_S270_D54.h5 \
+# atype:Multitau 
+# experimentName:test-xpcs-boost-workflow
 
 {
     'owner': '8idiuser',
@@ -23,6 +29,7 @@
                     --hdf $clusterDataDir/$inputHdf5File \
                     --raw $clusterDataDir/$rawFile \
                     --qmap $qmapDir/$qmapFile \
+                    --atype $atype \
                     --group $globusID \
                     --verbose \
                     -d nick-polaris-gpu"',

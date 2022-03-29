@@ -24,8 +24,7 @@ def arg_parse():
                                 '/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
     parser.add_argument('--qmap', help='Path to the qmap file',
                         default='/data/xpcs8/partitionMapLibrary/2019-1/comm201901_qmap_aerogel_Lq0.h5')
-    parser.add_argument('--atype', help='Analysis type to be performed',
-                        default='Both')
+    parser.add_argument('--atype', default='Multitau', help='Analysis type to be performed. Available: Multitau, Twotime')
     parser.add_argument('--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     parser.add_argument('--group', help='Visibility in Search', default=None)
     parser.add_argument('--deployment','-d', default='hannah-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
