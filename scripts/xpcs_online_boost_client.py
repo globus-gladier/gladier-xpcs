@@ -25,7 +25,7 @@ def arg_parse():
     parser.add_argument('--qmap', help='Path to the qmap file',
                         default='/data/xpcs8/partitionMapLibrary/2019-1/comm201901_qmap_aerogel_Lq0.h5')
     parser.add_argument('--atype', help='Analysis type to be performed',
-                        default='Both')
+                        default='Multitau')
     parser.add_argument('--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     parser.add_argument('--group', help='Visibility in Search', default=None)
     parser.add_argument('--deployment','-d', default='hannah-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
@@ -53,9 +53,6 @@ if __name__ == '__main__':
 
     #Processing type
     atype = args.atype
-    #edge case where DM does not send a type on the call 
-    if not atype:
-        atype = 'Both'
 
     # Generate Destination Pathnames.
     raw_file = os.path.join(dataset_dir, 'input', raw_name)
