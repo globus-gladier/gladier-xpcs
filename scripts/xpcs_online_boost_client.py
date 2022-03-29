@@ -53,6 +53,9 @@ if __name__ == '__main__':
 
     #Processing type
     atype = args.atype
+    #edge case where DM does not send a type on the call 
+    if not atype:
+        atype = 'Both'
 
     # Generate Destination Pathnames.
     raw_file = os.path.join(dataset_dir, 'input', raw_name)
