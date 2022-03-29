@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from globus_portal_framework.views.generic import SearchView, DetailView
 from concierge_app.views.generic import ManifestCheckoutView
 from automate_app.models import Action, Flow
-from gladier_xpcs.flow_reprocess import XPCSReprocessingFlow
+from gladier_xpcs.flows import XPCSReprocessingFlow
 
 from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm
 from xpcs_portal.xpcs_index.models import ReprocessingTask, FilenameFilter
@@ -27,7 +27,7 @@ class XPCSSearchView(LoginRequiredMixin, SearchView):
         return super().filters + self.get_index_info().get('default_filters', [])
 
 
-class XPCSDetailView(DetailView):
+class XPCSDetailView(LoginRequiredMixin, DetailView):
     """The custom XPCS detail view adds support for toggling images on and off"""
 
     def get_context_data(self, *args, **kwargs):
