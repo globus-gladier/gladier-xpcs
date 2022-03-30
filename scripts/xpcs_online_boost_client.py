@@ -24,7 +24,7 @@ def arg_parse():
                                 '/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
     parser.add_argument('--qmap', help='Path to the qmap file',
                         default='/data/xpcs8/partitionMapLibrary/2019-1/comm201901_qmap_aerogel_Lq0.h5')
-    parser.add_argument('--atype', default='Multitau', help='Analysis type to be performed. Available: Multitau, Twotime')
+    parser.add_argument('--atype', default='Both', help='Analysis type to be performed. Available: Multitau, Twotime')
     parser.add_argument('--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     parser.add_argument('--group', help='Visibility in Search', default=None)
     parser.add_argument('--deployment','-d', default='hannah-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
@@ -40,6 +40,10 @@ if __name__ == '__main__':
     depl = deployment_map.get(args.deployment)
     if not depl:
         raise ValueError(f'Invalid Deployment, deployments available: {list(deployment_map.keys())}')
+
+    atype_options = ['Multitau', 'Both'] # "Twotime" is currently not supported!
+    if args.atype not in atype_options:
+        raise ValueError(f'Invalid --atype, must be one of: {", ".join(atype_options)}')
 
     depl_input = depl.get_input()
 

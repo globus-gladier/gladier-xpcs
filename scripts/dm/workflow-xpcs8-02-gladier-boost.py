@@ -29,7 +29,6 @@
                     --hdf $clusterDataDir/$inputHdf5File \
                     --raw $clusterDataDir/$rawFile \
                     --qmap $qmapDir/$qmapFile \
-                    --atype $atype \
                     --group $globusID \
                     --verbose \
                     -d nick-polaris-gpu"',
