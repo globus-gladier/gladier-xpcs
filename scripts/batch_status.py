@@ -81,9 +81,15 @@ def get_run_input(run_id, flow_id, scope=None):
 
 
 
-def retry_single(run_id, flow_id, scope=None):
+def retry_single(run_id, flow_id, scope=None, use_local=False):
     run_input = get_run_input(run_id, flow_id, scope)        
     label = pathlib.Path(run_input['input']['hdf_file']).name[:62]
+    # Check for all values that resemble funcx functions and remove them.
+    # Gladier will replace them with local functions
+    if use_local:
+        for k in list(run_input['input'].keys()):
+            if k.endswith('_funcx_id'):
+                run_input['input'].pop(k)
     return FLOW_CLASS().run_flow(flow_input=run_input, label=label)
 
 
@@ -143,8 +149,10 @@ def summary(flow):
 @batch_status.command()
 @click.option('--run', help='Run to retry', required=True)
 @click.option('--flow', default=None, help='Flow id to use')
-def retry_run(run, flow):
-    resp = retry_single(run, flow)
+@click.option('--local-fx', default=False, is_flag=True,
+help='Use local FuncX functions instead of the functions from the last run.')
+def retry_run(run, flow, local_fx):
+    resp = retry_single(run, flow, use_local=local_fx)
     click.secho(f'Retried {resp["label"]} (https://app.globus.org/runs/{resp["run_id"]})')
 
 
