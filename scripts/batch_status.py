@@ -157,6 +157,13 @@ def retry_run(run, flow, local_fx):
 
 
 @batch_status.command()
+@click.option('--run', help='Run to retry', required=True)
+@click.option('--flow', default=None, help='Flow id to use')
+def dump_run_input(run, flow):
+    pprint.pprint(get_run_input(run, flow)['input'])
+
+
+@batch_status.command()
 @click.option('--flow', help='Flow id to use')
 @click.option('--status', default='FAILED', help='Flow id to use')
 @click.option('--preview', is_flag=True, default=False, help='Flow id to use')
