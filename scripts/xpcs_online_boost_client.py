@@ -86,7 +86,7 @@ if __name__ == '__main__':
                     "end_frame": -1,
                     "avg_frame": 1,
                     "stride_frame": 1,
-                    "overwrite": False
+                    "overwrite": True,
             },
 
             'pilot': {
