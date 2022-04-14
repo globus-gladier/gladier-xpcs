@@ -14,13 +14,13 @@
         '00-name'  : {'command': 'echo xpcs8-02-gladier-boost', 'outputVariableRegexList' : ['(?P<name>.*)']},
         '01-Staging' : {
             'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/dm/dm_gladier_xpcs_online_boost_pre_01.sh \
-                $filePath $experimentName',
+                $filePath $experimentName $qmapFile',
             'outputVariableRegexList' : [
                 'Cluster Data Directory: (?P<clusterDataDir>.*)',
                 'SGE Job Name: (?P<sgeJobName>.*)', 
                 'Input HDF5 File: (?P<inputHdf5File>.*)',
                 'Raw Data File: (?P<rawFile>.*)',
-                'QMap Directory: (?P<qmapDir>.*)',
+                'QMap File: (?P<qmapFile>.*)',
                 'Globus Group ID: (?P<globusID>.*)'
             ],
         },
@@ -28,7 +28,7 @@
             'command': 'ssh 8idiuser@talc "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/xpcs_online_boost_client.py \
                     --hdf $clusterDataDir/$inputHdf5File \
                     --raw $clusterDataDir/$rawFile \
-                    --qmap $qmapDir/$qmapFile \
+                    --qmap $qmapFile \
                     --atype $atype \
                     --group $globusID \
                     --verbose \
