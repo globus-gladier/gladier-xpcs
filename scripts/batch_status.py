@@ -1,6 +1,8 @@
 import pprint
 import time
 import json
+import queue
+import threading
 import click
 import globus_sdk
 import pathlib
@@ -11,6 +13,8 @@ FLOW_CLASS = XPCSBoost
 RUNS_CACHE = f'/tmp/{FLOW_CLASS.__name__}RunsCache.json'
 CACHE_TTL = 3600
 USE_CACHE = False
+RUN_QUEUE = queue.Queue()
+
 
 RUN_FIELDS = [
     'status',
@@ -81,10 +85,32 @@ def get_run_input(run_id, flow_id, scope=None):
 
 
 
-def retry_single(run_id, flow_id, scope=None):
+def retry_single(run_id, flow_id, scope=None, use_local=False):
     run_input = get_run_input(run_id, flow_id, scope)        
     label = pathlib.Path(run_input['input']['hdf_file']).name[:62]
+    # Check for all values that resemble funcx functions and remove them.
+    # Gladier will replace them with local functions
+    if use_local:
+        for k in list(run_input['input'].keys()):
+            if k.endswith('_funcx_id'):
+                run_input['input'].pop(k)
     return FLOW_CLASS().run_flow(flow_input=run_input, label=label)
+
+
+def run_worker():
+    flow_client_instance = FLOW_CLASS()
+    while True:
+        run, flow_id, kwargs = RUN_QUEUE.get()
+        try:
+            resp = retry_single(run['run_id'], flow_id, **kwargs)
+            if resp is None:
+                print(f'Failed retry: {run["label"]}: {run["run_id"]}')
+            print(f'Retried {resp["label"]} (https://app.globus.org/runs/{resp["run_id"]})')
+            while flow_client_instance.get_status(resp['run_id']).get('status') not in ['SUCCEEDED', 'FAILED']:
+                time.sleep(30)
+        except globus_sdk.exc.GlobusAPIError as gapie:
+            print(f'Failed retry: {resp["label"]}, message: {gapie.message}')
+        RUN_QUEUE.task_done()
 
 
 def make_csv(runs, sort_field='start_time'):
@@ -143,17 +169,29 @@ def summary(flow):
 @batch_status.command()
 @click.option('--run', help='Run to retry', required=True)
 @click.option('--flow', default=None, help='Flow id to use')
-def retry_run(run, flow):
-    resp = retry_single(run, flow)
+@click.option('--local-fx', default=False, is_flag=True,
+help='Use local FuncX functions instead of the functions from the last run.')
+def retry_run(run, flow, local_fx):
+    resp = retry_single(run, flow, use_local=local_fx)
     click.secho(f'Retried {resp["label"]} (https://app.globus.org/runs/{resp["run_id"]})')
 
 
 @batch_status.command()
+@click.option('--run', help='Run to retry', required=True)
+@click.option('--flow', default=None, help='Flow id to use')
+def dump_run_input(run, flow):
+    pprint.pprint(get_run_input(run, flow)['input'])
+
+
+@batch_status.command()
 @click.option('--flow', help='Flow id to use')
+@click.option('--local-fx', default=False, is_flag=True,
+    help='Use local FuncX functions instead of the functions from the last run.')
 @click.option('--status', default='FAILED', help='Flow id to use')
 @click.option('--preview', is_flag=True, default=False, help='Flow id to use')
 @click.option('--since', help='Re-run all failed jobs since the label of this failed job')
-def retry_runs(flow, status, preview, since):
+@click.option('--workers', help='Number of parallel processing jobs', default=5)
+def retry_runs(flow, local_fx, status, preview, since, workers):
     runs = [run for run in get_runs(flow) if run['status'] == status]
     runs = sort_runs(runs)
     if since:
@@ -168,17 +206,29 @@ def retry_runs(flow, status, preview, since):
         click.confirm('re-run the above flows?', abort=True)
     fc = create_flows_client()
     scope = fc.scope_for_flow(flow)
+    # Build up the queue
     for run in runs:
-        try:
-            resp = retry_single(run['run_id'], flow, scope)
-            if resp is None:
-                click.secho(f'Failed retry: {run["label"]}: {run["run_id"]}', fg='red')
-                continue
-            click.secho(f'Retried {resp["label"]} (https://app.globus.org/runs/{resp["run_id"]})')
-        except globus_sdk.exc.GlobusAPIError as gapie:
-            click.secho(f'Failed retry: {resp["label"]}, message: {gapie.message}', fg='red')
+        args = (run, flow, dict(scope=scope, use_local=local_fx))
+        RUN_QUEUE.put(args)
 
+    # Start threads to consume the queue
+    for _ in range(workers):
+        threading.Thread(target=run_worker, daemon=True).start()
+        # Allow each thread a little time to start its own flow.
+        # This will ensure we stagger runs a bit, and don't start all transfer tasks at the same time.
+        time.sleep(1)
+
+    try:
+        # Monitor queue size and notify the user of progress
+        while RUN_QUEUE.qsize() > 0:
+            print(f'Remaining in queue: {RUN_QUEUE.qsize()}/{len(runs)}')
+            time.sleep(30)
+        click.secho('Waiting on final runs to complete...')
+        RUN_QUEUE.join()
+        click.secho('Done', fg='green')
+    except KeyboardInterrupt:
+        click.secho(f'Exiting due to user Interrupt. Queue was {RUN_QUEUE.qsize()}/{len(runs)}',
+            fg='red')
 
 if __name__ == '__main__':
     batch_status()
-
