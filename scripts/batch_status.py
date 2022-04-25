@@ -11,7 +11,8 @@ from globus_automate_client.client_helpers import create_flows_client
 
 FLOW_CLASS = XPCSBoost
 RUNS_CACHE = f'/tmp/{FLOW_CLASS.__name__}RunsCache.json'
-CACHE_TTL = 3600
+# Keep cache for a week
+CACHE_TTL = 60 * 60 * 24 * 7
 USE_CACHE = False
 RUN_QUEUE = queue.Queue()
 
