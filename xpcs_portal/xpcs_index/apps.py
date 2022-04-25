@@ -24,6 +24,7 @@ SEARCH_INDEXES = {
         'group': '',
         'base_templates': 'globus-portal-framework/v2/',
         'tabbed_project': False,
+        'reprocessing_enabled': False,
         'access': 'private',
         'template_override_dir': 'xpcs',
         # Automatically append these filters to all searches
