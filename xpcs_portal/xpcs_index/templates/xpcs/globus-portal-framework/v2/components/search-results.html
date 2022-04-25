@@ -12,7 +12,7 @@
     <div class="col-md-1"></div>
     <div class="col-md-5 align-self-end">
       <a class="btn btn-outline-primary btn-block
-         {% if not request.user.is_authenticated %}
+         {% if not request.user.is_authenticated or not globus_portal_framework.index_data.reprocessing_enabled %}
          disabled
          {% endif %}
         " style="border-color: #708FCA; color: #708FCA; background-color: transparent"
