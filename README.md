@@ -1,38 +1,37 @@
 # XPCS
 
-The Gladier XPCS project leverages the Globus Flows service for rapid data processing
-on HPC systems and publication of the results for easy viewing by users. There are 
-two major components to this repo: Globus flows for data processing, and portal code
+The Gladier XPCS provides an automation and integration layer for the 8ID beamline at the Advanced Photon Source.
+
+The project leverages the Globus Flows service for rapid data processing
+on HPC systems and publication of the results for easy viewing by users. There are two major components to this repo: Globus flows for data processing, and portal code
 for visualization.
 
 The ``gladier_xpcs/`` package contains all files related to data processing. It contains
 all resources for starting and running a flow, in addition to user deployments so
-flows can run with ALCF compute resources tied to user allocations. Globus flows are 
-composed using the Gladier package.
+flows can run with ALCF compute resources tied to user allocations. Globus flows are composed using the Gladier package.
 
-The ``xpcs_portal/`` package contains all portal-related code for visualizing the
+The ``xpcs_portal/`` package contains all globus-portal related code for visualizing the
 results from successful XPCS flows. In addition, the portal can also start
 reprocessing flows for existing datasets which have been published to the portal.
 Checkout the [Portal README](./xpcs_portal/README.md) for more information on running
 the portal.
 
-## Online Processing
+---
+## XPCS Flow Client
 
-Online processing consists of a Gladier flow run on the talc machine. The core 
-flow is located at `gladier_xpcs/flow_online.py` A script for running the flow with
-input can be found in `scripts/xpcs_corr_client.py`. In order to run the previous
-script, a user needs access to ALCF HPC resources with a running funcx-endpoint.
+The main process flow consists of a Gladier flow that moves the data from an endpoint into the HPC resource, applies the Boost package, create graphs and metadata and publishes it into the portal. The core flow is located at `gladier_xpcs/flow_boost.py` A script for running the flow withinput can be found in `scripts/xpcs_corr_client.py`. In order to run the previous script, a user needs access to ALCF HPC resources with a running funcx-endpoint.
+
+### Running the flow
+
 We track user funcx-endpoints through "deployments", which can be found in
 `gladier_xpcs/deployments.py`. 
 
 For more information on running online processing flows, see [online processing](./scripts/online-processing.md).
 
+---
+## XPCS Reprocessing 
 
-## Reprocessing
-
-XPCS Reprocessing takes data already published in the portal and re-runs it on corr with
-a customized (with a qmap file) hdf file. Reprocessing also has an extra step to rename
-the dataset to publish it under a different title in the portal. 
+XPCS Reprocessing takes data already published in the portal and re-runs the main flow (above)  with a customized (with a qmap file) hdf file. This flow has an extra step to rename the dataset to publish it under a different title in the portal.
 
 Although scripts exist here to test the reprocessing flow, the actual production flow is
 deployed separately on the portal. The portal installs the `gladier_xpcs` package and
@@ -43,7 +42,7 @@ testing reprocessing is located at `scripts/xpcs_reproc_client.py`. Reprocessing
 shares some tools with the online processing flow, but contains a handful of custom
 tools under `gladier_xpcs/reprocessing_tools`.
 
-### Running The Reprocessing Flow
+### Running the flow
 
 You need to setup your deployment on Theta before you can run reprocessing. This includes
 setting up
@@ -54,19 +53,35 @@ setting up
 Make sure you are also in the XPCS Developers Globus group to access XPCS datasets which
 have already been published.
 
+### Testing the flow
 To test a reprocessing flow, ensure Test run a reprocessing flow with the following:
 
 ```
 cd scripts/
 python xpcs_reproc_client.py
 ```
+---
+## Deployment
 
-### ALCF Configuration
+Information related to deploying the flow at 8-ID.
+Checklist
 
-Hopefully, this document is a little outdated and you're executing on Polaris!
-Please add, update, or correct information as things change. 
+Local:
 
-## Environment Setup
+* Install gladier
+* Download gladier-xpcs
+* Deploy DM scripts if necessary
+
+Remote:
+* Install gladier-xpcs
+* 
+
+Portal:
+
+*
+
+
+### Installing the package
 
 ```
   conda create -n gladier-xpcs
@@ -78,6 +93,14 @@ Please add, update, or correct information as things change.
   conda install -c pytorch pytorch
   pip install -e git+https://github.com/AZjk/boost_corr#egg=boost_corr
 ```
+
+### Beamline Setup
+
+
+
+### Remote Setup
+
+
 
 ### Example Config
 
