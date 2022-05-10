@@ -9,8 +9,17 @@ Summary: This flow executes new xpcs_boost CPU/GPU flow.
 - Plots are made
 - Gather + Publish the final data to the portal
 """
-from gladier import GladierBaseClient, generate_flow_definition, utils
-from gladier_xpcs.flows.container_flow_base import ContainerBaseClient
+
+from gladier import GladierBaseClient, generate_flow_definition
+
+##Import individual functions
+from gladier_xpcs.tools import TransferFromClutchToTheta
+from gladier_xpcs.tools import PrePublish
+from gladier_xpcs.tools import AcquireNodes
+from gladier_xpcs.tools import BoostCorr
+from gladier_xpcs.tools import MakeCorrPlots
+from gladier_xpcs.tools import GatherXPCSMetadata
+from gladier_xpcs.tools import Publish
 
 # import gladier_xpcs.log  # Uncomment for debug logging
 
@@ -21,11 +30,11 @@ from gladier_xpcs.flows.container_flow_base import ContainerBaseClient
 class XPCSBoost(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
     gladier_tools = [
-        'gladier_xpcs.tools.TransferFromClutchToTheta',
-        'gladier_xpcs.tools.PrePublish',
-        'gladier_xpcs.tools.AcquireNodes',
-        'gladier_xpcs.tools.BoostCorr',
-        'gladier_xpcs.tools.MakeCorrPlots',
-        'gladier_xpcs.tools.gather_xpcs_metadata.GatherXPCSMetadata',
-        'gladier_xpcs.tools.Publish',
+        TransferFromClutchToTheta,
+        PrePublish,
+        AcquireNodes,
+        BoostCorr,
+        MakeCorrPlots,
+        GatherXPCSMetadata,
+        Publish,
     ]
