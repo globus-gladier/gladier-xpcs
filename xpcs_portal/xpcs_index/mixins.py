@@ -21,9 +21,14 @@ class PaginatedSearchView(SearchView):
                                                              self.get_results_per_page())
         return result
 
-    def get_results_per_page(self):
-        index_data = self.get_index_info()
-        return index_data.get('results_per_page', self.results_per_page)
+    @property
+    def page(self):
+        max_page = self.maximum_pagination // self.results_per_page
+        page = super().page
+        if int(page) > max_page:
+            page = max_page
+        return str(page)
+
 
     def get_results_per_page(self):
         try:
