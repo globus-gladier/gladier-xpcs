@@ -1,5 +1,6 @@
 import math
 from globus_portal_framework.views.generic import SearchView
+from globus_portal_framework.gsearch import get_index
 
 
 
@@ -8,6 +9,9 @@ class PaginatedSearchView(SearchView):
     # Maximum offset defined in Globus Search
     maximum_pagination = 10000
 
+    def __init__(self, *args, **kwargs):
+        kwargs['results_per_page'] = self.results_per_page
+        super().__init__(*args, **kwargs)
         
     def process_result(self, *args, **kwargs):
         # Include pagination in results
@@ -21,6 +25,12 @@ class PaginatedSearchView(SearchView):
         index_data = self.get_index_info()
         return index_data.get('results_per_page', self.results_per_page)
 
+    def get_results_per_page(self):
+        try:
+            index_data = self.get_index_info()
+            return index_data.get('results_per_page', self.results_per_page)
+        except AttributeError:
+            return self.results_per_page
 
     def get_pagination(self, total_results, offset, per_page):
         page_count = math.ceil(total_results / per_page) or 1
