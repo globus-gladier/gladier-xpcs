@@ -34,15 +34,7 @@
     <div class="card-header">
       <h3 class="search-title">
         <a href="{% url 'detail' globus_portal_framework.index result.subject %}">{{result.title|default:'Sample'}}</a>
-        <a class="btn btn-primary" data-toggle="collapse" href="#collapseSearchResult-{{forloop.counter}}" role="button" aria-expanded="false" aria-controls="collapseSearchResult-{{forloop.counter}}">
-          Details
-        </a>
       </h3>
-    </div>
-    <div class="collapse" id="collapseSearchResult-{{forloop.counter}}">
-      <div class="card-body">
-      {% include 'xpcs/globus-portal-framework/v2/components/search-result.html' %}
-      </div>
     </div>
   </div>
   {% endfor %}

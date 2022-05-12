@@ -5,35 +5,6 @@ from alcf_data_portal.templatetags.xpcs_filters import format_aps_cycle_v2
 LISTING_PREVIEW = 'scattering_pattern_log.png'
 
 
-def search_results(result):
-    # tsv_stats = [
-    #     {'field': 'numrows', 'name': 'Row Count', 'type': 'int'},
-    #     {'field': 'numcols', 'name': 'Column Count', 'type': 'int'},
-    # ]
-    dc_fields = [
-        {'field': 'publicationYear', 'name': 'Publication Year'},
-    ]
-    project_metadata_fields = [
-        {'field': 'measurement.instrument.acquisition.parent_folder',
-         'name': 'Parent Folder'},
-        {'field': 'aps_cycle_v2', 'name': 'APS Cycle'},
-    ]
-    # project_metadata_fields = [{
-    #     'field': k,
-    #     'name': ' '.join([n.capitalize() for n in k.split('_')])}
-    #     for k in result[0]['project_metadata'].keys()
-    #     if k not in ['project-slug', 'preview']
-    # ]
-    rfm_size = [
-        {'field': 'length', 'name': 'Size', 'type': 'filesize'}
-    ]
-    populated_fields = (
-        get_fields(project_metadata_fields, result[0]['project_metadata']) +
-        get_fields(dc_fields, result[0]['dc']) +
-        get_fields(rfm_size, get_file(result))
-        )
-    return populated_fields
-
 
 def cherry_picked_detail(result):
     aps_cycle = get_fields([{'field': 'aps_cycle_v2', 'name': 'APS Cycle'}],

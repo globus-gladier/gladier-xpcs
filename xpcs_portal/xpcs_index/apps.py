@@ -45,7 +45,6 @@ SEARCH_INDEXES = {
             ('truncated_description',
              fields.get_truncated_description),
             ('description', fields.get_full_description),
-            ('search_results', fields.search_results),
             ('detail_field_groups', fields.detail_field_groups),
             ('field_metadata', fields.field_metadata),
             ('globus_app_link', fields.globus_app_link),
