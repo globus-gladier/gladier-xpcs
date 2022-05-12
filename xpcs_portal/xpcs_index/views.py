@@ -48,9 +48,12 @@ class XPCSSearchView(LoginRequiredMixin, SearchView):
 
     def get_pagination(self, total_results, offset, per_page):
         page_count = math.ceil(total_results / per_page) or 1
-        max_page = 10000 // per_page
-        all_pages = [{'number': p + 1} for p in range(page_count)
-                     if p < max_page]
+        max_page = self.maximum_pagination // per_page
+        all_pages = [
+            {
+                'number': p + 1,
+            } for p in range(page_count) if p < max_page
+        ]
         current_page = offset // per_page + 1
         if len(all_pages) <= 10:
             # If we can fit all pages on one screen, do that.
@@ -79,7 +82,11 @@ class XPCSSearchView(LoginRequiredMixin, SearchView):
             pages = pages
         return {
             'current_page': offset // per_page + 1,
-            'pages': pages
+            'pages': pages,
+            'current_range': {
+                'low': offset,
+                'high': offset + per_page if offset + per_page < total_results else total_results
+                }
         }
 
 class XPCSDetailView(LoginRequiredMixin, DetailView):
