@@ -2,6 +2,7 @@ import logging
 import pathlib
 import urllib
 import copy
+import math
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.shortcuts import redirect
@@ -34,10 +35,46 @@ class XPCSSearchView(LoginRequiredMixin, SearchView):
 
     def process_result(self, *args, **kwargs):
         result = super().process_result(*args, **kwargs)
-        result['search']['pagination'] = get_pagination(result['search']['total'],
-                                                        result['search']['offset'],
-                                                        self.results_per_page)
+        result['search']['pagination'] = self.get_pagination(result['search']['total'],
+                                                             result['search']['offset'],
+                                                             self.results_per_page)
         return result
+
+    def get_pagination(self, total_results, offset, per_page):
+        page_count = math.ceil(total_results / per_page) or 1
+        max_page = 10000 // per_page
+        all_pages = [{'number': p + 1} for p in range(page_count)
+                     if p < max_page]
+        current_page = offset // per_page + 1
+        if len(all_pages) <= 10:
+            # If we can fit all pages on one screen, do that.
+            pages = all_pages
+        else:
+            # We have more pages than can fit on the screen.
+            # pagination should show a few pages ahead and behind the users
+            # current location. These are bracketed with 'low' and 'high'.
+            num_pages = 10
+            low_bracket = current_page - num_pages // 2 - 1
+            high_bracket = current_page + num_pages // 2
+            # Shift pages to the higher bracket if there aren't enough 'previous' pages
+            # This allows us to continue showing the same amount of pages on screen.
+            if low_bracket < 0:
+                high_bracket += abs(low_bracket)
+                low_bracket = 0
+
+            pages = all_pages[low_bracket: high_bracket]
+
+            # Ensure the first and last pages always exist, so the user
+            # can jump to either end quickly
+            if low_bracket > 0:
+                pages[0] = all_pages[0]
+            if high_bracket < max_page:
+                pages[-1] = all_pages[-1]
+            pages = pages
+        return {
+            'current_page': offset // per_page + 1,
+            'pages': pages
+        }
 
 class XPCSDetailView(LoginRequiredMixin, DetailView):
     """The custom XPCS detail view adds support for toggling images on and off"""
