@@ -23,7 +23,9 @@ log = logging.getLogger(__name__)
 class XPCSSearchView(LoginRequiredMixin, SearchView):
     """Custom XPCS Search view automatically filters on the xpcs-8id 'project'. This is old,
     based on the pilot project feature and will be going away eventually."""
-    results_per_page = 100
+    results_per_page = 50
+    # Maximum offset defined in Globus Search
+    maximum_pagination = 10000
 
     def __init__(self, *args, **kwargs):
         kwargs['results_per_page'] = self.results_per_page
@@ -37,8 +39,12 @@ class XPCSSearchView(LoginRequiredMixin, SearchView):
         result = super().process_result(*args, **kwargs)
         result['search']['pagination'] = self.get_pagination(result['search']['total'],
                                                              result['search']['offset'],
-                                                             self.results_per_page)
+                                                             self.get_results_per_page())
         return result
+
+    def get_results_per_page(self):
+        index_data = self.get_index_info()
+        return index_data.get('results_per_page', self.results_per_page)
 
     def get_pagination(self, total_results, offset, per_page):
         page_count = math.ceil(total_results / per_page) or 1

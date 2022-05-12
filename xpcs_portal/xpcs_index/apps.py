@@ -21,6 +21,7 @@ SEARCH_INDEXES = {
         'uuid': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
         'name': 'APS XPCS',
         # 'tagline': 'APS Beamline Data',
+        'results_per_page': 50,
         'group': '',
         'base_templates': 'globus-portal-framework/v2/',
         'tabbed_project': False,
