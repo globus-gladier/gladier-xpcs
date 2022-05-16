@@ -13,6 +13,13 @@ from gladier import generate_flow_definition, utils
 from gladier_xpcs.flows.container_flow_base import ContainerBaseClient
 
 from gladier_xpcs.tools.eigen_corr import eigen_corr
+from gladier_xpcs.tools import TransferFromClutchToTheta
+from gladier_xpcs.tools import PrePublish
+from gladier_xpcs.tools import AcquireNodes
+from gladier_xpcs.tools import EigenCorr
+from gladier_xpcs.tools import MakeCorrPlots
+from gladier_xpcs.tools import GatherXPCSMetadata
+from gladier_xpcs.tools import Publish
 
 # import gladier_xpcs.log  # Uncomment for debug logging
 
@@ -30,11 +37,11 @@ class XPCSEigen(ContainerBaseClient):
     }
 
     gladier_tools = [
-        'gladier_xpcs.tools.TransferFromClutchToTheta',
-        'gladier_xpcs.tools.PrePublish',
-        'gladier_xpcs.tools.AcquireNodes',
-        'gladier_xpcs.tools.EigenCorr',
-        'gladier_xpcs.tools.MakeCorrPlots',
-        'gladier_xpcs.tools.gather_xpcs_metadata.GatherXPCSMetadata',
-        'gladier_xpcs.tools.Publish',
+        TransferFromClutchToTheta,
+        PrePublish,
+        AcquireNodes,
+        EigenCorr,
+        MakeCorrPlots,
+        GatherXPCSMetadata,
+        Publish,
     ]
