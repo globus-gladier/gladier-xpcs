@@ -74,7 +74,7 @@ class Publish(GladierBaseTool):
                 'Comment': 'Transfer files for publication',
                 'Type': 'Action',
                 'ActionUrl': 'https://actions.automate.globus.org/transfer/transfer',
-                'InputPath': 'c',
+                'InputPath': '$.PublishGatherMetadata.details.result[0].transfer',
                 'ResultPath': '$.PublishTransfer',
                 'WaitTime': 1800,
                 'Next': 'PublishIngest',
@@ -92,6 +92,7 @@ class Publish(GladierBaseTool):
                     "principal_type.$": "$.input.principal_type",
                     "operation": "CREATE",
                 },
+                "ExceptionOnActionFailure": False,
                 "ResultPath": "$.SetPermission",
                 "End": True
             },
