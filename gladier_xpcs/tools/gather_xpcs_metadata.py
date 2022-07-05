@@ -167,6 +167,7 @@ def gather_xpcs_metadata(**data):
         os.unlink(data['execution_metadata_file'])
     pilot['metadata'] = metadata
     pilot['groups'] = pilot.get('groups', [])
+    pilot['destination'] = f'/{metadata["cycle"]}/{metadata["parent"]}'
     return pilot
 
 

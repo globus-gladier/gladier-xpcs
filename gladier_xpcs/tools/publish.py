@@ -35,6 +35,12 @@ def publish_gather_metadata(**data):
                     'destination_path': dest,
                     # 'recursive': False,  # each file is explicit in pilot, no directories
                 } for src, dest in pc.get_globus_transfer_paths(dataset, destination)]
+            },
+            'permissions': {
+                'endpoint': pc.get_endpoint(),
+                'path': pc.get_path(destination),
+                'group': groups[0] if groups else None,
+                'principal_type': 'group'
             }
         }
     except (PilotClientException, FileOrFolderDoesNotExist):
@@ -68,10 +74,26 @@ class Publish(GladierBaseTool):
                 'Comment': 'Transfer files for publication',
                 'Type': 'Action',
                 'ActionUrl': 'https://actions.automate.globus.org/transfer/transfer',
-                'InputPath': '$.PublishGatherMetadata.details.result[0].transfer',
+                'InputPath': 'c',
                 'ResultPath': '$.PublishTransfer',
                 'WaitTime': 1800,
                 'Next': 'PublishIngest',
+            },
+            "PublishTransferSetPermission": {
+                "Comment": "Grant read permission on the data to the Tutorial users group",
+                "Type": "Action",
+                # https://globus-automate-client.readthedocs.io/en/latest/globus_action_providers.html#globus-transfer-set-manage-permissions
+                "ActionUrl": "https://actions.automate.globus.org/transfer/set_permission",
+                "Parameters": {
+                    "endpoint_id.$": "$.input.pilot.permissions.endpoint_id",
+                    "path.$": "$.input.pilot.permissions.path",
+                    "permissions": "r",  # read-only access
+                    "principal.$": "$.input.principal_identifier",  # 'group'
+                    "principal_type.$": "$.input.principal_type",
+                    "operation": "CREATE",
+                },
+                "ResultPath": "$.SetPermission",
+                "End": True
             },
             'PublishIngest': {
                 'Comment': 'Ingest the search document',
