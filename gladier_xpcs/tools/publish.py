@@ -18,6 +18,14 @@ def publish_gather_metadata(**data):
         # the endpoint and base project path. After publication, you may refer to your
         # dataset via the short path -- ``pilot describe short_path``
         short_path = pc.build_short_path(dataset, destination)
+
+        # Get the parent of the dataset, which is the name of the group who owns the dataset
+        # The path always looks like this, where "group" is the ACL we want to set:
+        # /base_automate_dir/cycle/group/dataset
+        # `destination` will look like `cycle/group`, while `pc.get_path` will return the base.
+        permissions_path = pc.get_path(destination)
+        if not permissions_path.endswith('/'):
+            permissions_path += '/'
         return {
             'search': {
                 'id': data.get('id', 'metadata'),
@@ -35,6 +43,12 @@ def publish_gather_metadata(**data):
                     'destination_path': dest,
                     # 'recursive': False,  # each file is explicit in pilot, no directories
                 } for src, dest in pc.get_globus_transfer_paths(dataset, destination)]
+            },
+            'permissions': {
+                'endpoint_id': pc.get_endpoint(),
+                'path': permissions_path,
+                'principal_identifier': groups[0] if groups else None,
+                'principal_type': 'group'
             }
         }
     except (PilotClientException, FileOrFolderDoesNotExist):
@@ -71,7 +85,24 @@ class Publish(GladierBaseTool):
                 'InputPath': '$.PublishGatherMetadata.details.result[0].transfer',
                 'ResultPath': '$.PublishTransfer',
                 'WaitTime': 1800,
-                'Next': 'PublishIngest',
+                'Next': 'PublishTransferSetPermission',
+            },
+            "PublishTransferSetPermission": {
+                "Comment": "Grant read permission on the data to the Tutorial users group",
+                "Type": "Action",
+                # https://globus-automate-client.readthedocs.io/en/latest/globus_action_providers.html#globus-transfer-set-manage-permissions
+                "ActionUrl": "https://actions.automate.globus.org/transfer/set_permission",
+                "Parameters": {
+                    "endpoint_id.$": "$.PublishGatherMetadata.details.result[0].permissions.endpoint_id",
+                    "path.$": "$.PublishGatherMetadata.details.result[0].permissions.path",
+                    "permissions": "r",  # read-only access
+                    "principal.$": "$.PublishGatherMetadata.details.result[0].permissions.principal_identifier",  # 'group'
+                    "principal_type.$": "$.PublishGatherMetadata.details.result[0].permissions.principal_type",
+                    "operation": "CREATE",
+                },
+                "ExceptionOnActionFailure": False,
+                "ResultPath": "$.SetPermission",
+                "Next": "PublishIngest"
             },
             'PublishIngest': {
                 'Comment': 'Ingest the search document',
