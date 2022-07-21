@@ -1,6 +1,6 @@
 # Online Processing (talc setup)
 
-Before continuing, make sure you can run `xpcs_corr_client.py` with your own
+Before continuing, make sure you can run `xpcs_online_boost_client.py` with your own
 deployment in `gladier_xpcs/deployments.py`. If you are not comfortable running
 the test flow with that script, seek help before continuing! 
 
@@ -107,7 +107,7 @@ conda install -c conda-forge singularity
 ### Overview
 
 The Talc machine at the APS is responsible for running the online processing
-flow. In effect, it calls the `xpcs_corr_client.py` script using DM, the data
+flow. In effect, it calls the `xpcs_online_boost_client.py` script using DM, the data
 management tool widely used at the APS. An example for a DM call for starting
 a flow looks like this:
 
@@ -121,7 +121,7 @@ This line contains several things to note. First, DM setup is invoked with the
 `source /home/dm/etc/dm.setup.csh;` statement. Second a DM workflow is started
 using the `--workflow-name=xpcs8-01-gladier` flag. These workflows need to be
 configured ahead of time to properly start flows. Third are arguments which are
-eventually passed to the `gladier_xpcs/scripts/xpcs_corr_client.py` script for
+eventually passed to the `gladier_xpcs/scripts/xpcs_online_boost_client.py` script for
 starting the flow. 
 
 ### Configuring Workflows
