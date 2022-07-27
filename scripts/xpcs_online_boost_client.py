@@ -28,7 +28,7 @@ def arg_parse():
     parser.add_argument('--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     # Group MUST not be None in order for PublishTransferSetPermission to succeed. Group MAY
     # be specified even if the flow owner does not have a role to set ACLs, in which case PublishTransferSetPermission will be skipped.
-    parser.add_argument('--group', help='Visibility in Search', default='74defd5b-5f61-42fc-bcc4-834c9f376a4f')
+    parser.add_argument('--group', help='Visibility in Search', default='368beb47-c9c5-11e9-b455-0efb3ba9a670')
     parser.add_argument('--deployment','-d', default='hannah-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
     parser.add_argument('--batch_size', default='256', help=f'Size of gpu corr processing batch')
     parser.add_argument('--verbose', default=False, action='store_true', help=f'Verbose output')
