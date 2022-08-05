@@ -25,7 +25,7 @@ For more information on running online processing flows, see [online processing]
 ## Reprocessing
 
 XPCS Reprocessing takes data already published in the portal and re-runs it on corr with
-a customized (with a qmap file) hdf file. Reprocessing also has an extra step to rename
+a customized (with a qmap file) HDF file. Reprocessing also has an extra step to rename
 the dataset to publish it under a different title in the portal. 
 
 Although scripts exist here to test the reprocessing flow, the actual production flow is
@@ -40,15 +40,15 @@ tools under `gladier_xpcs/reprocessing_tools`.
 ### Running The Reprocessing Flow
 
 You need to setup your deployment on Theta before you can run reprocessing. This includes
-setting up
+setting up:
 
-* a 'login' and 'compute' funcx-endpoint on theta
-* a 'processing' directory on theta you have read/write access to
+* 'login' and 'compute' funcC endpoints on theta
+* a 'processing' directory on theta to which you have read/write access
 
 Make sure you are also in the XPCS Developers Globus group to access XPCS datasets which
 have already been published.
 
-To test a reprocessing flow, ensure Test run a reprocessing flow with the following:
+To test a reprocessing flow, run the following:
 
 ```
 cd scripts/
