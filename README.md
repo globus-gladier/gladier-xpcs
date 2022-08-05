@@ -1,8 +1,8 @@
-# XPCS
+# Gladier XPCS Application
 
-The Gladier XPCS project leverages the Globus Flows service for rapid data processing
-on HPC systems and publication of the results for easy viewing by users. There are 
-two major components to this repo: Globus flows for data processing, and portal code
+The Gladier XPCS project leverages the Globus Flows service for rapid processing of XPCS data
+on HPC systems and publication of processed results for easy viewing by users. There are 
+two major components to this repository: Globus flows for data processing, and portal code
 for visualization.
 
 The ``gladier_xpcs/`` package contains all files related to data processing. It contains
@@ -18,11 +18,11 @@ the portal.
 
 ## Online Processing
 
-Online processing consists of a Gladier flow run on the talc machine. The core 
+Online processing is performed by a Gladier flow run on the `talc` machine. The core 
 flow is located at `gladier_xpcs/flow_online.py` A script for running the flow with
 input can be found in `scripts/xpcs_corr_client.py`. In order to run the previous
-script, a user needs access to ALCF HPC resources with a running funcx-endpoint.
-We track user funcx-endpoints through "deployments", which can be found in
+script, a user needs access to ALCF HPC resources with a running funcX endpoint.
+We track user funcX endpoints through "deployments", which can be found in
 `gladier_xpcs/deployments.py`. 
 
 For more information on running online processing flows, see [online processing](./scripts/online-processing.md).
