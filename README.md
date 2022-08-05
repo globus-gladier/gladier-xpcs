@@ -2,19 +2,13 @@
 
 The Gladier XPCS project leverages the Globus Flows service for rapid processing of XPCS data
 on HPC systems and publication of processed results for easy viewing by users. There are 
-two major components to this repository: Globus flows for data processing, and portal code
-for visualization.
+two major components to this repository:
 
-The ``gladier_xpcs/`` package contains all files related to data processing. It contains
-all resources for starting and running a flow, in addition to user deployments so
-flows can run with ALCF compute resources tied to user allocations. Globus flows are 
-composed using the Gladier package.
+* The ``gladier_xpcs/`` package contains all files related to data processing. It contains all resources for starting and running a flow, in addition to user deployments so that flows can run with ALCF compute resources tied to user allocations. Globus flows are implemented by using the Gladier package.
 
-The ``xpcs_portal/`` package contains all portal-related code for visualizing the
-results from successful XPCS flows. In addition, the portal can also start
-reprocessing flows for existing datasets which have been published to the portal.
-Checkout the [Portal README](./xpcs_portal/README.md) for more information on running
-the portal.
+* The ``xpcs_portal/`` package contains all portal-related code for visualizing the results from successful XPCS flows. In addition, the portal can also start
+reprocessing flows for existing datasets which have been published to the portal. Checkout the [Portal README](./xpcs_portal/README.md) for more information on running the portal.
+
 
 ## Online Processing
 
