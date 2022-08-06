@@ -17,7 +17,7 @@ The code leverages the [Gladier Toolkit](https://gladier.readthedocs.io/en/lates
 
 The [`gladier_xpcs/flows/flow_eigen.py`](https://github.com/globus-gladier/gladier-xpcs/blob/main/gladier_xpcs/flows/flow_eigen.py) program uses the Gladier Toolkit to define a flow with the following sequence of **Transfer**, **Compute**, and **Search** actions:
 
-1. **Transfer** experiment data file from instrument to HPC
+1. **Transfer** experiment data file from instrument to HPC (tool [`gladier_xpcs/tools/transfer_from_clutch_to_theta.py`](https://github.com/globus-gladier/gladier-xpcs/blob/main/gladier_xpcs/tools/transfer_from_clutch_to_theta.py))
 1. **Compute** task to extract metadata from experiment data file (tool [`gladier_xpcs/tools/pre_publish.py`](https://github.com/globus-gladier/gladier-xpcs/blob/main/gladier_xpcs/tools/pre_publish.py))
 1. **Transfer** metadata to persistent storage (also tool [`gladier_xpcs/tools/pre_publish.py`](https://github.com/globus-gladier/gladier-xpcs/blob/main/gladier_xpcs/tools/pre_publish.py))
 1. **Search** task to load metadata into catalog (also tool [`gladier_xpcs/tools/pre_publish.py`](https://github.com/globus-gladier/gladier-xpcs/blob/main/gladier_xpcs/tools/pre_publish.py))
