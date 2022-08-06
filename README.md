@@ -33,7 +33,7 @@ A script `scripts/xpcs_corr_client.py` can be used to run the flow with specifie
 
 The flow's Compute tasks involve both simple data manipulations (e.g., metadata extraction) and compute-intensive computations (XPCS Boost). On an HPC system, the former may be run on a "non-compute" (front-end) node, while the latter must be submitted via a scheduler to run on a "compute" node (ideally GPU-enabled). To this end, the flow dispatches each task to the `funcx_endpoint_non_compute` or `funcx_endpoint_compute` funcX endpoint, respectively, as defined in [`gladier_xpcs/deployments.py`](https://github.com/globus-gladier/gladier-xpcs/blob/main/gladier_xpcs/deployments.py). 
         
-
+Details on how to run the online processing script on an APS beamline computer, talc, are [provided on a separate page](https://github.com/globus-gladier/gladier-xpcs/blob/main/scripts/online-processing.md). 
 
 ## Reprocessing
 
