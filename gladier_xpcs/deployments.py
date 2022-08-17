@@ -75,12 +75,12 @@ class NickPolarisGPU(NickPolaris):
         # Polaris Compute
         # 'funcx_endpoint_compute': '9a291fa2-3542-42b7-91d6-f80b44629cfa',
         # Containers
-        'funcx_endpoint_compute': '58f83203-fc24-4d47-a7f7-09342f320312',
+        'funcx_endpoint_compute': '4a6f2b52-d392-4a57-ad77-ae6e86daf503',
     }
 
     flow_input = {
         'input': {
-            'staging_dir': '/eagle/APSDataAnalysis/nick/xpcs_gpu',
+            'staging_dir': '/lus/eagle/projects/APSDataAnalysis/nick/xpcs_gpu',
         }
     }
 
