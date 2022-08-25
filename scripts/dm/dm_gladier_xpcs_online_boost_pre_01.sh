@@ -1,7 +1,7 @@
 #!/bin/sh
 
-ORTHROS_NFS_ROOT="\/net\/wolf"
-CLUTCH_DATA_ROOT="\/data\/xpcs8"
+ORTHROS_NFS_ROOT="\/net\/wolf\/data\/xpcs8"
+EAGLE_DATA_ROOT=/lus/eagle/projects/XPCS-DATA-DYS/XPCSDATA
 DM_SETUP_FILE=/home/dm/etc/dm.setup.sh
 
 inputFile=$1
@@ -45,7 +45,6 @@ fi
 clusterDataDir=`echo $inputDir | sed "s/$ORTHROS_NFS_ROOT//"`
 userDataDir=`dirname $clusterDataDir`
 cycleDataDir=`dirname $userDataDir`
-cycleDataDir=`echo $cycleDataDir | sed "s/$CLUTCH_DATA_ROOT//"`
 sgeJobName=`basename $clusterDataDir`
 
 qmapName=$3
@@ -54,13 +53,15 @@ if [ -z $qmapName ]; then
     exit 1
 fi
 #suppress tr warning about backslash
-qmapDir=`echo $CLUTCH_DATA_ROOT/partitionMapLibrary$cycleDataDir | tr -d '\' 2> /dev/null`
+qmapDir=`echo $EAGLE_DATA_ROOT/partitionMapLibrary$cycleDataDir | tr -d '\' 2> /dev/null`
 qmapFile=$qmapDir/$qmapName
 ORTHROS_NFS_ROOT=`echo $ORTHROS_NFS_ROOT | tr -d '\' 2> /dev/null` 
-if [ ! -f $ORTHROS_NFS_ROOT$qmapFile ]; then
+if [ ! -f $ORTHROS_NFS_ROOT/partitionMapLibrary$cycleDataDir/$qmapName ]; then
     echo "Qmap file $qmapFile does not exist or it is not a file"
     exit 1
 fi
+
+clusterDataDir=$EAGLE_DATA_ROOT$clusterDataDir
 
 echo "Input HDF5 File: $inputHdf5File"
 echo "SGE Job Name: $sgeJobName"
