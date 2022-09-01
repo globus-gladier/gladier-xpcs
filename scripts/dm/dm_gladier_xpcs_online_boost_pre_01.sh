@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ORTHROS_NFS_ROOT="\/net\/wolf\/data\/xpcs8"
-EAGLE_DATA_ROOT=/lus/eagle/projects/XPCS-DATA-DYS/XPCSDATA
+EAGLE_DATA_ROOT=/XPCSDATA #/lus/eagle/projects/XPCS-DATA-DYS/XPCSDATA
 DM_SETUP_FILE=/home/dm/etc/dm.setup.sh
 
 inputFile=$1
@@ -11,7 +11,6 @@ if [ -z $inputFile ]; then
 fi
 if [ ! -f $inputFile ]; then
     echo "Input file $inputFile does not exist or it is not a file"
-    exit 1
 fi
 
 #get globus group id
@@ -35,11 +34,9 @@ rawFile=`ls -c1 $inputDir/*.{imm,bin,h5} 2> /dev/null | head -1`
 rawFile=`basename $rawFile 2> /dev/null` 
 if [ -z $rawFile ]; then
     echo "Raw data file not found for input file $inputFile. Expected .imm, .bin, or .h5 raw data file in input directory."
-    exit 1
 fi
 if [ ! -f $inputDir/$rawFile ]; then
     echo "Data file $inputDir/$rawFile does not exist or it is not a file"
-    exit 1
 fi
 
 clusterDataDir=`echo $inputDir | sed "s/$ORTHROS_NFS_ROOT//"`
@@ -58,10 +55,14 @@ qmapFile=$qmapDir/$qmapName
 ORTHROS_NFS_ROOT=`echo $ORTHROS_NFS_ROOT | tr -d '\' 2> /dev/null` 
 if [ ! -f $ORTHROS_NFS_ROOT/partitionMapLibrary$cycleDataDir/$qmapName ]; then
     echo "Qmap file $qmapFile does not exist or it is not a file"
-    exit 1
 fi
 
 clusterDataDir=$EAGLE_DATA_ROOT$clusterDataDir
+
+userInputRawFile=$4
+if [ -z $rawFile ] && [ ! -z $userInputRawFile ]; then
+    rawFile=$userInputRawFile
+fi    
 
 echo "Input HDF5 File: $inputHdf5File"
 echo "SGE Job Name: $sgeJobName"
