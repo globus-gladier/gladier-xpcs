@@ -8,11 +8,14 @@
   <div class="row">
     <div class="col-md-6 align-self-center">
       <h6 class="h5">{{search.total}} datasets found</h6>
+      <p class="text-small">
+        Showing {{search.pagination.current_range.low}} - {{search.pagination.current_range.high}}
+      </p>
     </div>
     <div class="col-md-1"></div>
     <div class="col-md-5 align-self-end">
-      <a class="btn btn-outline-primary btn-block
-         {% if not request.user.is_authenticated %}
+      <a class="btn btn-outline-primary btn-block mb-3
+         {% if not request.user.is_authenticated or not globus_portal_framework.index_data.reprocessing_enabled %}
          disabled
          {% endif %}
         " style="border-color: #708FCA; color: #708FCA; background-color: transparent"
@@ -32,9 +35,6 @@
       <h3 class="search-title">
         <a href="{% url 'detail' globus_portal_framework.index result.subject %}">{{result.title|default:'Sample'}}</a>
       </h3>
-    </div>
-    <div class="card-body">
-    {% include 'xpcs/globus-portal-framework/v2/components/search-result.html' %}
     </div>
   </div>
   {% endfor %}

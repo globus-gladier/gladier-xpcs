@@ -4,20 +4,20 @@ from scripts import get_status
 
 
 @pytest.mark.parametrize(
-    'flows_status_response',
+    'flows_status_response, expected_result',
     [
         # Top level
-        {'state_name': 'MyStateName'},
+        ({'state_name': 'MyStateName'}, 'MyStateName'),
         # Double nested under details
-        {
+        ({
             'details': {
                 'details': {
                     'state_name': 'MyStateName'
                 }
             }
-        },
+        }, 'MyStateName'),
         # Double nested under details inside output.
-        {
+        ({
             'details': {
                 'details': {
                     'output': {
@@ -27,9 +27,9 @@ from scripts import get_status
                     }
                 }
             }
-        },
+        }, 'MyStateName'),
         # Double nested under details, but no state_name key
-        {
+        ({
             'details': {
                 'details': {
                     'output': {
@@ -37,9 +37,9 @@ from scripts import get_status
                     }
                 }
             }
-        },
+        }, 'MyStateName'),
         # details.action_statuses
-        {
+        ({
             'details': {
                 'action_statuses': [
                     {
@@ -47,11 +47,17 @@ from scripts import get_status
                     },
                 ]
             }
-        },
+        }, 'MyStateName'),
+        # details.FlowStarting
+        ({
+            'details': {
+                'code': 'FlowStarting',
+            }
+        }, None),
     ],
 )
-def test_get_current_state_name(flows_status_response):
-    assert get_status.get_current_state_name(flows_status_response) == 'MyStateName'
+def test_get_current_state_name(flows_status_response, expected_result):
+    assert get_status.get_current_state_name(flows_status_response) == expected_result
 
 
 @patch('builtins.print')

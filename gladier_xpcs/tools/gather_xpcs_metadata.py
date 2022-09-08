@@ -145,17 +145,13 @@ def gather_xpcs_metadata(**data):
         if evil_key in metadata.keys():
             metadata.pop(evil_key)
 
-    try:
-        # Get root_folder, ex: "/data/2020-1/sanat202002/"
-        root_folder = pathlib.Path(metadata['measurement.instrument.acquisition.root_folder'])
-        # Cycle: 2021-1
-        metadata['cycle'] = root_folder.parent.name
-        # Parent: sanat
-        metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
-    except Exception:
-        p = pathlib.Path(data['proc_dir']) / 'gather_xpcs_metadata.error'
-        with open(str(p), 'w+') as f:
-            f.write(traceback.format_exc())
+    # Get root_folder, ex: "/data/2020-1/sanat202002/"
+    # All datasets need this info to publish correctly, not having it will raise an exception.
+    root_folder = pathlib.Path(metadata['measurement.instrument.acquisition.root_folder'])
+    # Cycle: 2021-1
+    metadata['cycle'] = root_folder.parent.name
+    # Parent: sanat
+    metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
 
     pilot = data['pilot']
     # metadata passed through from the top level takes precedence. This allows for
@@ -167,6 +163,7 @@ def gather_xpcs_metadata(**data):
         os.unlink(data['execution_metadata_file'])
     pilot['metadata'] = metadata
     pilot['groups'] = pilot.get('groups', [])
+    pilot['destination'] = f'/{metadata["cycle"]}/{root_folder.name}'
     return pilot
 
 
