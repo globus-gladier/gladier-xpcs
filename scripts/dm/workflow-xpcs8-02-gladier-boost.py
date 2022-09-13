@@ -14,7 +14,7 @@
         '00-name'  : {'command': 'echo xpcs8-02-gladier-boost', 'outputVariableRegexList' : ['(?P<name>.*)']},
         '01-Staging' : {
             'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/dm/dm_gladier_xpcs_online_boost_pre_01.sh \
-                $filePath $experimentName $qmapFile',
+                $filePath $experimentName $qmapFile $rawFile',
             'outputVariableRegexList' : [
                 'Cluster Data Directory: (?P<clusterDataDir>.*)',
                 'SGE Job Name: (?P<sgeJobName>.*)', 
