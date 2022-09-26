@@ -68,10 +68,10 @@ def get_runs(flow_id, cache_ttl=CACHE_TTL):
         return get_run_cache(cache_ttl)
     fc = create_flows_client()
     resp = fc.list_flow_runs(flow_id)
-    runs = resp['actions']
+    runs = resp['runs']
     while resp['has_next_page']:
         resp = fc.list_flow_runs(flow_id, marker=resp['marker'])
-        runs += resp['actions']
+        runs += resp['runs']
     save_run_cache(runs)
     return runs
 
@@ -107,10 +107,15 @@ def run_worker():
             if resp is None:
                 print(f'Failed retry: {run["label"]}: {run["run_id"]}')
             print(f'Retried {resp["label"]} (https://app.globus.org/runs/{resp["run_id"]})')
-            while flow_client_instance.get_status(resp['run_id']).get('status') not in ['SUCCEEDED', 'FAILED']:
+            status = None
+            while status not in ['SUCCEEDED', 'FAILED']:
+                status = flow_client_instance.get_status(resp['run_id']).get('status')
                 time.sleep(30)
+            if status == 'FAILED':
+                print(f'Run FAILED: {resp["label"]} ({run["run_id"]}):  https://app.globus.org/runs/{resp["run_id"]}')
+
         except globus_sdk.exc.GlobusAPIError as gapie:
-            print(f'Failed retry: {resp["label"]}, message: {gapie.message}')
+            print(f'Failed retry: {resp["label"]} ({run["run_id"]}), message: {gapie.message}')
         RUN_QUEUE.task_done()
 
 
@@ -191,7 +196,7 @@ def dump_run_input(run, flow):
 @click.option('--status', default='FAILED', help='Flow id to use')
 @click.option('--preview', is_flag=True, default=False, help='Flow id to use')
 @click.option('--since', help='Re-run all failed jobs since the label of this failed job')
-@click.option('--workers', help='Number of parallel processing jobs', default=5)
+@click.option('--workers', help='Number of parallel processing jobs', default=30)
 def retry_runs(flow, local_fx, status, preview, since, workers):
     runs = [run for run in get_runs(flow) if run['status'] == status]
     runs = sort_runs(runs)
