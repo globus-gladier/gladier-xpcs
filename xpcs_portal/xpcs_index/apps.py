@@ -99,6 +99,9 @@ SEARCH_INDEXES = {
                 "field_name": "project_metadata.reprocessing.suffix",
             },
         ],
+        'facet_modifiers': [
+            'xpcs_portal.xpcs_index.modifiers.sort_cycle',
+        ],
         # 'result_format_version': '2019-08-27',
     }
 }
