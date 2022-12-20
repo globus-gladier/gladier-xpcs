@@ -36,8 +36,8 @@ class NickTheta(BaseDeployment):
     """Nicks deployment on theta"""
 
     globus_endpoints = {
-        # Clutch DMZ
-        'globus_endpoint_source': 'fdc7e74a-fa78-11e8-9342-0e3d676669f4',
+        # Eagle -- XPCS Data 8-ID APS
+        'globus_endpoint_source': '74defd5b-5f61-42fc-bcc4-834c9f376a4f',
         'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
     }
 
@@ -75,12 +75,12 @@ class NickPolarisGPU(NickPolaris):
         # Polaris Compute
         # 'funcx_endpoint_compute': '9a291fa2-3542-42b7-91d6-f80b44629cfa',
         # Containers
-        'funcx_endpoint_compute': '58f83203-fc24-4d47-a7f7-09342f320312',
+        'funcx_endpoint_compute': '4a6f2b52-d392-4a57-ad77-ae6e86daf503',
     }
 
     flow_input = {
         'input': {
-            'staging_dir': '/eagle/APSDataAnalysis/nick/xpcs_gpu',
+            'staging_dir': '/lus/eagle/projects/APSDataAnalysis/nick/xpcs_gpu',
         }
     }
 
@@ -126,7 +126,7 @@ class NickPortalDeployment(NickTheta):
 
 class HannahTheta(BaseDeployment):
     globus_endpoints = {
-        'globus_endpoint_source': 'fdc7e74a-fa78-11e8-9342-0e3d676669f4',
+        'globus_endpoint_source': '74defd5b-5f61-42fc-bcc4-834c9f376a4f',
         'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
     }
 
@@ -142,17 +142,22 @@ class HannahTheta(BaseDeployment):
         }
     }
 
-class HannahPolaris(HannahTheta):
+class HannahPolaris(BaseDeployment):
+    globus_endpoints = {
+        # Eagle -- XPCS Data 8-ID APS
+        'globus_endpoint_source': '74defd5b-5f61-42fc-bcc4-834c9f376a4f',
+        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+    }
+
     funcx_endpoints = {
         'funcx_endpoint_non_compute': 'e3e1aef6-0a6f-4ef1-b9c6-a14b0efb1dfa',
-        'funcx_endpoint_compute': '0bbf9fe3-0cae-43bd-9307-625c9b07e3b6',
+        'funcx_endpoint_compute': '0676a1f2-b92f-41f7-8e4f-6cc93eb6f929',
     }
 
     flow_input = {
         'input': {
-            'staging_dir': '/eagle/projects/APSDataAnalysis/XPCS/hparraga/gladier_testing/',
-            'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
-            'corr_gpu_loc' : '/eagle/projects/APSDataAnalysis/XPCS/mchu/xpcs_boost/gpu_corr.py',
+            'staging_dir': '/lus/eagle/projects/APSDataAnalysis/XPCS/hparraga/gladier_testing/',
+            'corr_loc': '/lus/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
         }
     }
 

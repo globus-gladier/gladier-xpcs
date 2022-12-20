@@ -58,6 +58,8 @@ def get_current_state_name(run_status):
                 return list(det['details']['output'].keys())[0]
             elif det.get('action_statuses'):
                 return run_status['details']['action_statuses'][0]['state_name']
+            elif det.get('code') == 'FlowStarting':
+                return None
     except Exception:
         print(traceback.format_exc(), file=sys.stderr)
 
