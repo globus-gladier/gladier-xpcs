@@ -76,17 +76,25 @@ Please add, update, or correct information as things change.
 ## Environment Setup
 
 ```
-  conda create -n gladier-xpcs
+  conda create -n gladier-xpcs python=3.9
   conda activate gladier-xpcs
 
-  pip install gladier
-
-  conda install -c nvidia cudatoolkit
-  conda install -c pytorch pytorch
+  # Install boost_corr tooling
+  conda install pytorch==1.12.1 cudatoolkit=11.6 -c pytorch -c conda-forge
   pip install -e git+https://github.com/AZjk/boost_corr#egg=boost_corr
+
+  # Install and setup funcx
+  pip install funcx-endpoint
+
 ```
 
 ### Example Config
+
+Follow the first time setup in the FuncX documentation here:
+
+https://funcx.readthedocs.io/en/latest/endpoints.html#first-time-setup
+
+A reference config we use for Polaris is below:
 
 ```
 ~/.funcx/theta/config.py
