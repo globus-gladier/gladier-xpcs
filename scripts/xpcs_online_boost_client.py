@@ -17,13 +17,13 @@ def arg_parse():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--hdf', help='Path to the hdf (metadata) file',
-                        default='/XPCSDATA/2019-1/comm201901/cluster_results/'
+                        default='/eagle/XPCS-DATA-DYS/XPCSDATA/2019-1/comm201901/cluster_results/'
                                 'A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf')
     parser.add_argument('--raw', help='Path to the raw data file. Multiple formats (.imm, .bin, etc) supported',
-                        default='/XPCSDATA/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001'
+                        default='/eagle/XPCS-DATA-DYS/XPCSDATA/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001'
                                 '/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
     parser.add_argument('--qmap', help='Path to the qmap file',
-                        default='/XPCSDATA/partitionMapLibrary/2019-1/comm201901_qmap_aerogel_Lq0.h5')
+                        default='/eagle/XPCS-DATA-DYS/XPCSDATA/partitionMapLibrary/2019-1/comm201901_qmap_aerogel_Lq0.h5')
     parser.add_argument('--atype', default='Both', help='Analysis type to be performed. Available: Multitau, Twotime')
     parser.add_argument('--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     # Group MUST not be None in order for PublishTransferSetPermission to succeed. Group MAY
@@ -39,15 +39,15 @@ def arg_parse():
 if __name__ == '__main__':
     args = arg_parse()
 
-    depl = deployment_map.get(args.deployment)
-    if not depl:
+    deployment = deployment_map.get(args.deployment)
+    if not deployment:
         raise ValueError(f'Invalid Deployment, deployments available: {list(deployment_map.keys())}')
 
     atype_options = ['Multitau', 'Both'] # "Twotime" is currently not supported!
     if args.atype not in atype_options:
         raise ValueError(f'Invalid --atype, must be one of: {", ".join(atype_options)}')
 
-    depl_input = depl.get_input()
+    depl_input = deployment.get_input()
 
     raw_name = os.path.basename(args.raw)
     hdf_name = os.path.basename(args.hdf)
@@ -100,25 +100,30 @@ if __name__ == '__main__':
                 # 'index': '2e72452f-e932-4da0-b43c-1c722716896e',
                 'project': 'xpcs-8id',
                 'source_globus_endpoint': depl_input['input']['globus_endpoint_proc'],
+                'source_collection_basepath': str(deployment.staging_collection.path),
                 # Extra groups can be specified here. The XPCS Admins group will always
                 # be provided automatically.
                 'groups': [args.group] if args.group else [],
             },
 
-            'transfer_from_clutch_to_theta_items': [
-                {
-                    'source_path': args.raw,
-                    'destination_path': raw_file,
-                },
-                {
-                    'source_path': args.hdf,
-                    'destination_path': input_hdf_file,
-                },
-                {
-                    'source_path': args.qmap,
-                    'destination_path': qmap_file,
-                }
-            ],
+            'source_transfer': {
+                'source_endpoint_id': deployment.source_collection.uuid,
+                'destination_endpoint_id': deployment.staging_collection.uuid,
+                'transfer_items': [
+                    {
+                        'source_path': deployment.source_collection.to_globus(args.raw),
+                        'destination_path': deployment.staging_collection.to_globus(raw_file),
+                    },
+                    {
+                        'source_path': deployment.source_collection.to_globus(args.hdf),
+                        'destination_path': deployment.staging_collection.to_globus(input_hdf_file),
+                    },
+                    {
+                        'source_path': deployment.source_collection.to_globus(args.qmap),
+                        'destination_path': deployment.staging_collection.to_globus(qmap_file),
+                    }
+                ],
+            },
 
             'proc_dir': dataset_dir,
             'metadata_file': input_hdf_file,
@@ -128,10 +133,6 @@ if __name__ == '__main__':
             # funcX endpoints
             'funcx_endpoint_non_compute': depl_input['input']['funcx_endpoint_non_compute'],
             'funcx_endpoint_compute': depl_input['input']['funcx_endpoint_compute'],
-
-            # globus endpoints
-            'globus_endpoint_clutch': depl_input['input']['globus_endpoint_source'],
-            'globus_endpoint_theta': depl_input['input']['globus_endpoint_proc'],
         }
     }
 

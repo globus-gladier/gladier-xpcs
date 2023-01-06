@@ -1,2 +1,2 @@
-gladier
+gladier==0.7.1
 gladier_tools

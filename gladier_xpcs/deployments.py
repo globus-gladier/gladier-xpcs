@@ -1,8 +1,20 @@
 import datetime
 import copy
+from gladier_xpcs.collections import SharedCollection
+
+
+apsdataanalysis = SharedCollection('f3305466-c63d-4a54-8bfc-624402c970bc',
+                                           '/eagle/APSDataAnalysis/XPCS/', name='Gladier XPCS')
+xpcs_data = SharedCollection('74defd5b-5f61-42fc-bcc4-834c9f376a4f',
+                             '/eagle/XPCS-DATA-DYS/', name='XPCS Data 8-ID APS')
+clutch = SharedCollection('fdc7e74a-fa78-11e8-9342-0e3d676669f4', '/', name='APS#Clutchsdmz')
+theta_ep = SharedCollection('08925f04-569f-11e7-bef8-22000b9a448b', '/', name='alcf#dtn_theta')
 
 
 class BaseDeployment:
+    source_collection: SharedCollection = None
+    staging_collection: SharedCollection = None
+    pub_collection: SharedCollection = None
     globus_endpoints = dict()
     funcx_endpoints = dict()
     flow_input = dict()
@@ -16,8 +28,8 @@ class BaseDeployment:
 class Talc(BaseDeployment):
 
     globus_endpoints = {
-        'globus_endpoint_source': 'fdc7e74a-fa78-11e8-9342-0e3d676669f4',
-        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+        'globus_endpoint_source': clutch.uuid,
+        'globus_endpoint_proc': theta_ep.uuid,
     }
 
     funcx_endpoints = {
@@ -27,75 +39,38 @@ class Talc(BaseDeployment):
 
     flow_input = {
         'input': {
-            'staging_dir': '/eagle/APSDataAnalysis/XPCS/data_online',
+            'staging_dir': apsdataanalysis.path / 'data_online',
         }
     }
 
 
-class NickTheta(BaseDeployment):
-    """Nicks deployment on theta"""
+class NickPolarisGPU(BaseDeployment):
+
+    source_collection = xpcs_data
+    staging_collection = apsdataanalysis
+    pub_collection = xpcs_data
 
     globus_endpoints = {
         # Eagle -- XPCS Data 8-ID APS
-        'globus_endpoint_source': '74defd5b-5f61-42fc-bcc4-834c9f376a4f',
-        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+        'globus_endpoint_source': xpcs_data.uuid,
+        'globus_endpoint_proc': apsdataanalysis.uuid,
     }
-
-    funcx_endpoints = {
-        # Theta Login
-        'funcx_endpoint_non_compute': '553e7b64-0480-473c-beef-be762ba979a9',
-        # Theta Compute
-        'funcx_endpoint_compute': '2272d362-c13b-46c6-aa2d-bfb22255f1ba',
-    }
-
-    flow_input = {
-        'input': {
-            'staging_dir': '/eagle/APSDataAnalysis/nick/xpcs',
-            'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
-        }
-    }
-
-
-class NickPolaris(NickTheta):
 
     funcx_endpoints = {
         # Theta login
         'funcx_endpoint_non_compute': '553e7b64-0480-473c-beef-be762ba979a9',
-        # Polaris Compute
-        # 'funcx_endpoint_compute': '9a291fa2-3542-42b7-91d6-f80b44629cfa',
-        # Containers
-        'funcx_endpoint_compute': 'd2659fc0-0454-4af1-97ec-012771c869f9',
-    }
-
-class NickPolarisGPU(NickPolaris):
-
-    funcx_endpoints = {
-        # Theta login
-        'funcx_endpoint_non_compute': '553e7b64-0480-473c-beef-be762ba979a9',
-        # Polaris Compute
-        # 'funcx_endpoint_compute': '9a291fa2-3542-42b7-91d6-f80b44629cfa',
         # Containers
         'funcx_endpoint_compute': '4a6f2b52-d392-4a57-ad77-ae6e86daf503',
     }
 
     flow_input = {
         'input': {
-            'staging_dir': '/lus/eagle/projects/APSDataAnalysis/nick/xpcs_gpu',
+            'staging_dir': staging_collection.path / 'nick/xpcs_staging',
         }
     }
 
 
-class NickCooley(NickTheta):
-
-    funcx_endpoints = {
-        # Theta login
-        'funcx_endpoint_non_compute': '553e7b64-0480-473c-beef-be762ba979a9',
-        # Cooley Compute
-        'funcx_endpoint_compute': '9a291fa2-3542-42b7-91d6-f80b44629cfa',
-    }
-
-
-class NickPortalDeployment(NickTheta):
+class NickPortalDeployment(BaseDeployment):
 
     def get_input(self):
         """Separate portal runs by current datetime/second. This prevents run collisions
@@ -126,8 +101,8 @@ class NickPortalDeployment(NickTheta):
 
 class HannahTheta(BaseDeployment):
     globus_endpoints = {
-        'globus_endpoint_source': '74defd5b-5f61-42fc-bcc4-834c9f376a4f',
-        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+        'globus_endpoint_source': xpcs_data.uuid,
+        'globus_endpoint_proc': apsdataanalysis.uuid,
     }
 
     funcx_endpoints = {
@@ -137,8 +112,8 @@ class HannahTheta(BaseDeployment):
 
     flow_input = {
         'input': {
-            'staging_dir': '/eagle/projects/APSDataAnalysis/XPCS/hparraga/gladier_testing/',
-            'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
+            'staging_dir': apsdataanalysis.path / 'hparraga/gladier_testing/',
+            'corr_loc': apsdataanalysis.path / 'xpcs-eigen/build/corr',
         }
     }
 
@@ -165,7 +140,7 @@ class RyanPolaris(BaseDeployment):
 
     globus_endpoints = {
         'globus_endpoint_source': 'e55b4eab-6d04-11e5-ba46-22000b92c6ec',
-        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+        'globus_endpoint_proc': theta_ep.uuid,
     }
 
     funcx_endpoints = {
@@ -185,7 +160,7 @@ class RafPolaris(BaseDeployment):
 
     globus_endpoints = {
         'globus_endpoint_source': 'e55b4eab-6d04-11e5-ba46-22000b92c6ec',
-        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+        'globus_endpoint_proc': theta_ep.uuid,
     }
 
     funcx_endpoints = {
@@ -205,8 +180,5 @@ deployment_map = {
     'hannah-theta': HannahTheta(),
     'hannah-polaris': HannahPolaris(),
     'ryan-polaris': RyanPolaris(),
-    'nick-theta': NickTheta(),
-    'nick-cooley': NickCooley(),
-    'nick-polaris': NickPolaris(),
     'nick-polaris-gpu': NickPolarisGPU(),
 }
