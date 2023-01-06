@@ -100,9 +100,21 @@ class NickPortalDeployment(BaseDeployment):
     }
 
 class HannahTheta(BaseDeployment):
+
+    source_collection = xpcs_data
+    staging_collection = apsdataanalysis
+    pub_collection = xpcs_data
+
     globus_endpoints = {
+        # Eagle -- XPCS Data 8-ID APS
         'globus_endpoint_source': xpcs_data.uuid,
         'globus_endpoint_proc': apsdataanalysis.uuid,
+    }
+
+    flow_input = {
+        'input': {
+            'staging_dir': staging_collection.path / 'hparraga/xpcs_staging',
+        }
     }
 
     funcx_endpoints = {
@@ -110,18 +122,17 @@ class HannahTheta(BaseDeployment):
         'funcx_endpoint_compute': '3d9fde8a-1dfa-4ce7-93ab-5d524a59a4f6',
     }
 
-    flow_input = {
-        'input': {
-            'staging_dir': apsdataanalysis.path / 'hparraga/gladier_testing/',
-            'corr_loc': apsdataanalysis.path / 'xpcs-eigen/build/corr',
-        }
-    }
 
 class HannahPolaris(BaseDeployment):
+    
+    source_collection = xpcs_data
+    staging_collection = apsdataanalysis
+    pub_collection = xpcs_data
+
     globus_endpoints = {
         # Eagle -- XPCS Data 8-ID APS
-        'globus_endpoint_source': '74defd5b-5f61-42fc-bcc4-834c9f376a4f',
-        'globus_endpoint_proc': '08925f04-569f-11e7-bef8-22000b9a448b',
+        'globus_endpoint_source': xpcs_data.uuid,
+        'globus_endpoint_proc': apsdataanalysis.uuid, 
     }
 
     funcx_endpoints = {
@@ -131,10 +142,10 @@ class HannahPolaris(BaseDeployment):
 
     flow_input = {
         'input': {
-            'staging_dir': '/lus/eagle/projects/APSDataAnalysis/XPCS/hparraga/gladier_testing/',
-            'corr_loc': '/lus/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
+            'staging_dir': staging_collection.path / 'hparraga/xpcs_staging',
         }
     }
+
 
 class RyanPolaris(BaseDeployment):
 
