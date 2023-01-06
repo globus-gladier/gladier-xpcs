@@ -21,7 +21,7 @@ from gladier_xpcs.flows.container_flow_base import ContainerBaseClient
 class XPCSBoost(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
     gladier_tools = [
-        'gladier_xpcs.tools.TransferFromClutchToTheta',
+        'gladier_xpcs.tools.SourceTransfer',
         'gladier_xpcs.tools.AcquireNodes',
         'gladier_xpcs.tools.BoostCorr',
         'gladier_xpcs.tools.MakeCorrPlots',
