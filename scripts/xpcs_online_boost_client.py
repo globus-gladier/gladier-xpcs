@@ -100,6 +100,7 @@ if __name__ == '__main__':
                 # 'index': '2e72452f-e932-4da0-b43c-1c722716896e',
                 'project': 'xpcs-8id',
                 'source_globus_endpoint': depl_input['input']['globus_endpoint_proc'],
+                'source_collection_basepath': str(deployment.staging_collection.path),
                 # Extra groups can be specified here. The XPCS Admins group will always
                 # be provided automatically.
                 'groups': [args.group] if args.group else [],

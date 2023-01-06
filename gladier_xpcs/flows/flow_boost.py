@@ -26,5 +26,5 @@ class XPCSBoost(GladierBaseClient):
         'gladier_xpcs.tools.BoostCorr',
         'gladier_xpcs.tools.MakeCorrPlots',
         'gladier_xpcs.tools.gather_xpcs_metadata.GatherXPCSMetadata',
-        'gladier_xpcs.tools.Publish',
+        'gladier_tools.publish.Publish',
     ]
