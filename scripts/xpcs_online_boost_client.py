@@ -12,6 +12,24 @@ import pathlib
 from gladier_xpcs.flows import XPCSBoost
 from gladier_xpcs.deployments import deployment_map
 
+from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer
+from gladier.managers.login_manager import CallbackLoginManager
+
+from typing import List, Mapping, Union
+
+# Get client id/secret
+CLIENT_ID = os.getenv("GLADIER_CLIENT_ID")
+CLIENT_SECRET = os.getenv("GLADIER_CLIENT_SECRET")
+
+
+# Set custom auth handler
+def callback(scopes: List[str]) -> Mapping[str, Union[AccessTokenAuthorizer, AccessTokenAuthorizer]]:
+    caac = ConfidentialAppAuthClient(CLIENT_ID, CLIENT_SECRET)
+    response = caac.oauth2_client_credentials_tokens(requested_scopes=scopes)
+    return {
+        scope: AccessTokenAuthorizer(access_token=tokens["access_token"])
+        for scope, tokens in response.by_scopes.scope_map.items()
+    }
 
 def arg_parse():
     parser = argparse.ArgumentParser()
@@ -136,7 +154,12 @@ if __name__ == '__main__':
         }
     }
 
-    corr_flow = XPCSBoost()
+    callback_login_manager = None
+    if CLIENT_ID and CLIENT_SECRET:
+        callback_login_manager = CallbackLoginManager({}, callback=callback)
+        
+    corr_flow = XPCSBoost(login_manager=callback_login_manager)
+
     corr_run_label = pathlib.Path(hdf_name).name[:62]
     flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs'])
 
