@@ -9,7 +9,8 @@ xpcs_data = SharedCollection('74defd5b-5f61-42fc-bcc4-834c9f376a4f',
                              '/eagle/XPCS-DATA-DYS/', name='XPCS Data 8-ID APS')
 clutch = SharedCollection('fdc7e74a-fa78-11e8-9342-0e3d676669f4', '/', name='APS#Clutchsdmz')
 theta_ep = SharedCollection('08925f04-569f-11e7-bef8-22000b9a448b', '/', name='alcf#dtn_theta')
-
+apsdataprocessing = SharedCollection('98d26f35-e5d5-4edd-becf-a75520656c64', 
+                                     '/eagle/APSDataProcessing/aps8idi/', name='APS8IDI')
 
 class BaseDeployment:
     source_collection: SharedCollection = None
@@ -167,6 +168,30 @@ class RyanPolaris(BaseDeployment):
     }
 
 
+class APS8IDIPolaris(BaseDeployment):
+
+    source_collection = xpcs_data
+    staging_collection = apsdataprocessing
+    pub_collection = xpcs_data
+
+    globus_endpoints = {
+        # Eagle -- XPCS Data 8-ID APS
+        'globus_endpoint_source': xpcs_data.uuid,
+        'globus_endpoint_proc': apsdataprocessing.uuid,
+    }
+
+    funcx_endpoints = {
+        'funcx_endpoint_non_compute': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
+        'funcx_endpoint_compute': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
+    }
+
+    flow_input = {
+        'input': {
+            'staging_dir': staging_collection.path / 'xpcs_staging',
+        }
+    }
+
+
 class RafPolaris(BaseDeployment):
 
     globus_endpoints = {
@@ -192,4 +217,5 @@ deployment_map = {
     'hannah-polaris': HannahPolaris(),
     'ryan-polaris': RyanPolaris(),
     'nick-polaris-gpu': NickPolarisGPU(),
+    'aps8idi-polaris': APS8IDIPolaris(),
 }
