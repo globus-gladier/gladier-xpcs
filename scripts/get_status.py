@@ -3,12 +3,30 @@
 import argparse
 import time
 import sys
+import os
 import traceback
 import pprint
 from gladier.utils.flow_traversal import iter_flow
 from gladier_xpcs.flows import XPCSEigen
 from gladier_xpcs.flows import XPCSBoost
 
+from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer
+from gladier.managers.login_manager import CallbackLoginManager
+
+from typing import List, Mapping, Union
+
+# Get client id/secret
+CLIENT_ID = os.getenv("GLADIER_CLIENT_ID")
+CLIENT_SECRET = os.getenv("GLADIER_CLIENT_SECRET")
+
+# Set custom auth handler
+def callback(scopes: List[str]) -> Mapping[str, Union[AccessTokenAuthorizer, AccessTokenAuthorizer]]:
+    caac = ConfidentialAppAuthClient(CLIENT_ID, CLIENT_SECRET)
+    response = caac.oauth2_client_credentials_tokens(requested_scopes=scopes)
+    return {
+        scope: AccessTokenAuthorizer(access_token=tokens["access_token"])
+        for scope, tokens in response.by_scopes.scope_map.items()
+    }
 
 def arg_parse():
     parser = argparse.ArgumentParser()
@@ -86,10 +104,15 @@ def check_time(start_time, limit):
 
 if __name__ == '__main__':
     args = arg_parse()
+
+    callback_login_manager = None
+    if CLIENT_ID and CLIENT_SECRET:
+        callback_login_manager = CallbackLoginManager({}, callback=callback)
+
     if args.gpu:
-        main_flow = XPCSBoost()
+        main_flow = XPCSBoost(login_manager=callback_login_manager)
     else:
-        main_flow = XPCSEigen()
+        main_flow = XPCSEigen(login_manager=callback_login_manager)
 
     # Fetch state names in a loose ordering, depth first
     flow_states = [state_name for state_name, _ in iter_flow(main_flow.flow_definition)]
