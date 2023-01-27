@@ -20,7 +20,7 @@ def test_reprocessing_get_xpcs_input(reprocessing_deployment, reprocessing_input
     )
 
 
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_publish_preparation(mock_pathlib, reprocessing_runtime_input):
     from pprint import pprint
     pprint(reprocessing_runtime_input)
