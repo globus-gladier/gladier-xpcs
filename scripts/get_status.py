@@ -5,13 +5,7 @@ import time
 import sys
 import traceback
 import pprint
-# We depend on an internal module here for getting flow state information
-# This moved in Gladier v0.6.0, remove this after we update
-try:
-    from gladier.utils.flow_generation import get_ordered_flow_states
-except ImportError:
-    from gladier.utils.tool_chain import ToolChain
-    get_ordered_flow_states = ToolChain.get_ordered_flow_states
+from gladier.utils.flow_traversal import iter_flow
 from gladier_xpcs.flows import XPCSEigen
 from gladier_xpcs.flows import XPCSBoost
 
@@ -97,7 +91,8 @@ if __name__ == '__main__':
     else:
         main_flow = XPCSEigen()
 
-    flow_states = list(get_ordered_flow_states(main_flow.flow_definition).keys())
+    # Fetch state names in a loose ordering, depth first
+    flow_states = [state_name for state_name, _ in iter_flow(main_flow.flow_definition)]
     start_time = time.time()
 
     if args.step not in flow_states:
