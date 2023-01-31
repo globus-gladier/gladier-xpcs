@@ -47,7 +47,7 @@ def arg_parse():
     # Group MUST not be None in order for PublishTransferSetPermission to succeed. Group MAY
     # be specified even if the flow owner does not have a role to set ACLs, in which case PublishTransferSetPermission will be skipped.
     parser.add_argument('--group', help='Visibility in Search', default='368beb47-c9c5-11e9-b455-0efb3ba9a670')
-    parser.add_argument('--deployment','-d', default='hannah-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
+    parser.add_argument('--deployment','-d', default='aps8idi-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
     parser.add_argument('--batch_size', default='256', help=f'Size of gpu corr processing batch')
     parser.add_argument('--verbose', default=False, action='store_true', help=f'Verbose output')
 
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     callback_login_manager = None
     if CLIENT_ID and CLIENT_SECRET:
         callback_login_manager = CallbackLoginManager({}, callback=callback)
-        
+
     corr_flow = XPCSBoost(login_manager=callback_login_manager)
 
     corr_run_label = pathlib.Path(hdf_name).name[:62]
