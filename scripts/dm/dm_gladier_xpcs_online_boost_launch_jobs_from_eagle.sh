@@ -22,9 +22,10 @@ source $DM_GLOBUS_LOGIN_FILE 2> /dev/null
 source $DM_SETUP_FILE
 
 
-filelist=(`globus ls $EAGLE_ENDPOINT:$inputDir --filter $filter -r | grep -e ".*\(\.h5\|\.imm\|\.bin\)"`)
-for file in "${filelist[@]}"; do
-    baseDir=`echo "$file" | cut -d "/" -f1`
+filelist=(`globus ls $EAGLE_ENDPOINT:$inputDir --filter $filter`)
+for baseDir in "${filelist[@]}"; do
+    filename=`globus ls $EAGLE_ENDPOINT:$inputDir/$datasetDir | grep -e ".*\(\.h5\|\.imm\|\.bin\)"`
+    file="$datasetDir$filename"
     metadata=`globus ls $EAGLE_ENDPOINT:$inputDir$baseDir -r | grep .hdf`
     file=`echo "$file" | cut -d "/" -f2`
     dm-start-processing-job --workflow-name xpcs8-02-gladier-boost filePath:$inputDir$baseDir/$metadata qmapFile:$qmapFile atype:$atype experimentName:$experiment rawFile:$file
