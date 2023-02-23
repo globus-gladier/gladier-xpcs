@@ -1,6 +1,6 @@
 import os
 from urllib.parse import urlsplit, urlencode, urlunsplit
-from alcf_data_portal.templatetags.xpcs_filters import format_aps_cycle_v2
+from xpcs_portal.xpcs_index.templatetags.xpcs_filters import format_aps_cycle_v2
 
 LISTING_PREVIEW = 'scattering_pattern_log.png'
 
