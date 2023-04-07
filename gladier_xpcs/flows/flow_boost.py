@@ -16,7 +16,10 @@ from gladier_xpcs.flows.container_flow_base import ContainerBaseClient
 
 
 @generate_flow_definition(modifiers={
-   'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result[0]'}
+    'publish_gather_metadata': {
+        'payload': '$.GatherXpcsMetadata.details.result[0]',
+        'WaitTime': 600,
+    }
 })
 class XPCSBoost(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
