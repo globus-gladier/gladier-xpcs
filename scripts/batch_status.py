@@ -1,4 +1,8 @@
 import pprint
+import os
+import sys
+import datetime
+import zoneinfo
 import time
 import json
 import queue
@@ -8,13 +12,20 @@ import globus_sdk
 import pathlib
 from gladier_xpcs.flows import XPCSBoost
 from globus_automate_client.client_helpers import create_flows_client
+from gladier import CallbackLoginManager, FlowsManager
+from xpcs_online_boost_client import callback
 
+
+FILTER_AFTER = datetime.datetime(year=2023, month=4, day=5, tzinfo=zoneinfo.ZoneInfo('UTC'))
 FLOW_CLASS = XPCSBoost
+FLOW_ID = '193373a8-8040-4267-aea6-a41f171e7f96'
 RUNS_CACHE = f'/tmp/{FLOW_CLASS.__name__}RunsCache.json'
 # Keep cache for a week
 CACHE_TTL = 60 * 60 * 24 * 7
 USE_CACHE = False
 RUN_QUEUE = queue.Queue()
+
+__CACHED_CLIENT = None
 
 
 RUN_FIELDS = [
@@ -37,6 +48,17 @@ RUN_FIELDS = [
     # 'run_owner',
     # 'user_role'
 ]
+
+def get_client():
+    global __CACHED_CLIENT
+    if __CACHED_CLIENT:
+        return __CACHED_CLIENT
+    if os.getenv('GLADIER_CLIENT_ID') and os.getenv('GLADIER_CLIENT_SECRET'):
+        __CACHED_CLIENT = FLOW_CLASS(login_manager=CallbackLoginManager({}, callback=callback),
+                                     flows_manager=FlowsManager(flow_id=FLOW_ID))
+        return __CACHED_CLIENT
+    raise ValueError('Warning, only service clients are allowed. Define "GLADIER_CLIENT_ID" and "GLADIER_CLIENT_SECRET"')
+
 
 def is_cached(cache_ttl=CACHE_TTL) -> bool:
     return get_run_cache_age() < cache_ttl
@@ -66,12 +88,26 @@ def save_run_cache(runs):
 def get_runs(flow_id, cache_ttl=CACHE_TTL):
     if USE_CACHE and is_cached(cache_ttl):
         return get_run_cache(cache_ttl)
-    fc = create_flows_client()
-    resp = fc.list_flow_runs(flow_id)
+    client = get_client()
+    client.login()
+
+    fc = client.flows_manager.flows_client
+    resp = fc.list_flow_runs('193373a8-8040-4267-aea6-a41f171e7f96', orderings={'start_time': 'DESC'})
     runs = resp['runs']
+    pages = 0
     while resp['has_next_page']:
-        resp = fc.list_flow_runs(flow_id, marker=resp['marker'])
+        pages += 1
+        resp = fc.list_flow_runs('193373a8-8040-4267-aea6-a41f171e7f96', marker=resp['marker'])
         runs += resp['runs']
+
+        run_time = datetime.datetime.fromisoformat(resp['runs'][0]['start_time'])
+        if run_time < FILTER_AFTER:
+            print(f'Broke at page {pages}')
+            break
+
+        print('.', end='')
+        sys.stdout.flush()
+
     save_run_cache(runs)
     return runs
 
@@ -95,11 +131,11 @@ def retry_single(run_id, flow_id, scope=None, use_local=False):
         for k in list(run_input['input'].keys()):
             if k.endswith('_funcx_id'):
                 run_input['input'].pop(k)
-    return FLOW_CLASS().run_flow(flow_input=run_input, label=label)
+    return get_client().run_flow(flow_input=run_input, label=label)
 
 
 def run_worker():
-    flow_client_instance = FLOW_CLASS()
+    flow_client_instance = get_client()
     while True:
         run, flow_id, kwargs = RUN_QUEUE.get()
         try:
