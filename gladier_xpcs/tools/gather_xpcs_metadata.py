@@ -35,7 +35,7 @@ def gather_xpcs_metadata(**data):
         def decode_dtype(value, dtype):
             """Update a special numpy type to a python type"""
             dt = str(dtype)
-            if dt in ['uint32', 'uint64']:
+            if dt in ['uint32', 'uint64', 'int32', 'int64']:
                 return int(value)
             elif dt in ['ufloat32', 'ufloat64', 'float32', 'float64']:
                 return float(value)
