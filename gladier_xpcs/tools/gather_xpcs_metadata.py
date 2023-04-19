@@ -32,7 +32,7 @@ def gather_xpcs_metadata(**data):
     }
 
     def gather_items(hdf5_dataframe):
-        def decode_dtype(value, dtype):
+        def decode_dtype(key, value, dtype):
             """Update a special numpy type to a python type"""
             dt = str(dtype)
             if dt in ['uint32', 'uint64', 'int32', 'int64']:
@@ -40,7 +40,7 @@ def gather_xpcs_metadata(**data):
             elif dt in ['ufloat32', 'ufloat64', 'float32', 'float64']:
                 return float(value)
             else:
-                raise ValueError(f"I don't know what this is: {dt}")
+                raise ValueError(f"Field {key} returned unexpected type {dt} for value {value}.")
 
         def gather_item(name, node):
             if isinstance(node, h5py.Dataset):
@@ -54,7 +54,7 @@ def gather_xpcs_metadata(**data):
                         except Exception:
                             items[key] = node[()]
                 if node.shape == (1, 1):
-                    items[key] = decode_dtype(node[0][0], node.dtype)
+                    items[key] = decode_dtype(key, node[0][0], node.dtype)
                 if node.shape in [(1, 2), (1, 3)]:
                     items[key] = node[0].tolist()
         items = {}
