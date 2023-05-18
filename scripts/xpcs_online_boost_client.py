@@ -16,19 +16,33 @@ from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer
 from gladier.managers.login_manager import CallbackLoginManager
 
 from typing import List, Mapping, Union
+import traceback
+from fair_research_login import JSONTokenStorage, LoadError
 
 # Get client id/secret
 CLIENT_ID = os.getenv("GLADIER_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GLADIER_CLIENT_SECRET")
-
+token_storage = JSONTokenStorage('xpcs_confidential_client_token_storage.json')
 
 # Set custom auth handler
 def callback(scopes: List[str]) -> Mapping[str, Union[AccessTokenAuthorizer, AccessTokenAuthorizer]]:
-    caac = ConfidentialAppAuthClient(CLIENT_ID, CLIENT_SECRET)
-    response = caac.oauth2_client_credentials_tokens(requested_scopes=scopes)
+    try:
+        tokens = token_storage.read_tokens()
+        if not tokens:
+            raise LoadError('Token load failure, no tokens could be found!')
+    except LoadError:
+        print(f'Failed to load tokens, initiating Confidential Client app grant')
+        caac = ConfidentialAppAuthClient(CLIENT_ID, CLIENT_SECRET)
+        response = caac.oauth2_client_credentials_tokens(requested_scopes=scopes)
+        tokens = response.by_scopes.scope_map
+        try:
+            token_storage.write_tokens(tokens)
+        except Exception:
+            print(traceback.format_exc())
+            print(f'Token stoarge FAILED. Ignoring failure and continuing on...')
     return {
-        scope: AccessTokenAuthorizer(access_token=tokens["access_token"])
-        for scope, tokens in response.by_scopes.scope_map.items()
+        scope: AccessTokenAuthorizer(access_token=tdict["access_token"])
+        for scope, tdict in tokens.items()
     }
 
 def arg_parse():
