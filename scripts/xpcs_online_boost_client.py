@@ -17,7 +17,7 @@ from gladier.managers.login_manager import CallbackLoginManager
 
 from typing import List, Mapping, Union
 import traceback
-from fair_research_login import JSONTokenStorage, LoadError
+from fair_research_login import JSONTokenStorage
 
 # Get client id/secret
 CLIENT_ID = os.getenv("GLADIER_CLIENT_ID")
@@ -27,10 +27,13 @@ token_storage = JSONTokenStorage('xpcs_confidential_client_token_storage.json')
 # Set custom auth handler
 def callback(scopes: List[str]) -> Mapping[str, Union[AccessTokenAuthorizer, AccessTokenAuthorizer]]:
     try:
+        # May raise os-related errors if multiple processes attempt to write at
+        # the same time and corrupt the file. In that case ignore it and attempt
+        # to fetch more tokens.
         tokens = token_storage.read_tokens()
         if not tokens:
-            raise LoadError('Token load failure, no tokens could be found!')
-    except LoadError:
+            raise Exception('Token load failure, no tokens could be found!')
+    except Exception:
         print(f'Failed to load tokens, initiating Confidential Client app grant')
         caac = ConfidentialAppAuthClient(CLIENT_ID, CLIENT_SECRET)
         response = caac.oauth2_client_credentials_tokens(requested_scopes=scopes)
