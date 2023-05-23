@@ -8,6 +8,7 @@
 import argparse
 import os
 import pathlib
+import time
 
 from gladier_xpcs.flows import XPCSBoost
 from gladier_xpcs.deployments import deployment_map
@@ -33,8 +34,12 @@ def callback(scopes: List[str]) -> Mapping[str, Union[AccessTokenAuthorizer, Acc
         tokens = token_storage.read_tokens()
         if not tokens:
             raise Exception('Token load failure, no tokens could be found!')
-    except Exception:
-        print(f'Failed to load tokens, initiating Confidential Client app grant')
+        if tokens.keys() != scopes:
+            raise Exception('Token scopes mismatch!')
+        if any(time.time() > t['expires_at_seconds'] for t in tokens.values()):
+            raise Exception('Tokens expired, new tokens are required')
+    except Exception as e:
+        print(f'Failed to load tokens, initiating Confidential Client app grant: {e}')
         caac = ConfidentialAppAuthClient(CLIENT_ID, CLIENT_SECRET)
         response = caac.oauth2_client_credentials_tokens(requested_scopes=scopes)
         tokens = response.by_scopes.scope_map
