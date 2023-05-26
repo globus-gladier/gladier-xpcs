@@ -16,7 +16,7 @@ from gladier import CallbackLoginManager, FlowsManager
 from xpcs_online_boost_client import callback
 
 
-FILTER_AFTER = datetime.datetime(year=2023, month=4, day=5, tzinfo=zoneinfo.ZoneInfo('UTC'))
+FILTER_AFTER = datetime.datetime(year=2023, month=5, day=24, tzinfo=zoneinfo.ZoneInfo('UTC'))
 FLOW_CLASS = XPCSBoost
 FLOW_ID = '193373a8-8040-4267-aea6-a41f171e7f96'
 RUNS_CACHE = f'/tmp/{FLOW_CLASS.__name__}RunsCache.json'
@@ -50,14 +50,19 @@ RUN_FIELDS = [
 ]
 
 def get_client():
+    print(f'FETCHING CLIENT')
     global __CACHED_CLIENT
     if __CACHED_CLIENT:
         return __CACHED_CLIENT
     if os.getenv('GLADIER_CLIENT_ID') and os.getenv('GLADIER_CLIENT_SECRET'):
         __CACHED_CLIENT = FLOW_CLASS(login_manager=CallbackLoginManager({}, callback=callback),
                                      flows_manager=FlowsManager(flow_id=FLOW_ID))
+        __CACHED_CLIENT.login()
         return __CACHED_CLIENT
     raise ValueError('Warning, only service clients are allowed. Define "GLADIER_CLIENT_ID" and "GLADIER_CLIENT_SECRET"')
+
+def get_flows_client():
+    return get_client().flows_manager.flows_client
 
 
 def is_cached(cache_ttl=CACHE_TTL) -> bool:
@@ -92,12 +97,12 @@ def get_runs(flow_id, cache_ttl=CACHE_TTL):
     client.login()
 
     fc = client.flows_manager.flows_client
-    resp = fc.list_flow_runs('193373a8-8040-4267-aea6-a41f171e7f96', orderings={'start_time': 'DESC'})
+    resp = fc.list_flow_runs(FLOW_ID, orderings={'start_time': 'DESC'})
     runs = resp['runs']
     pages = 0
     while resp['has_next_page']:
         pages += 1
-        resp = fc.list_flow_runs('193373a8-8040-4267-aea6-a41f171e7f96', marker=resp['marker'])
+        resp = fc.list_flow_runs(FLOW_ID, marker=resp['marker'])
         runs += resp['runs']
 
         run_time = datetime.datetime.fromisoformat(resp['runs'][0]['start_time'])
@@ -113,6 +118,8 @@ def get_runs(flow_id, cache_ttl=CACHE_TTL):
 
 
 def get_run_input(run_id, flow_id, scope=None):
+    client = get_client()
+    fc = get_flows_client()
     fc = create_flows_client()
     if not scope:
         scope = fc.scope_for_flow(flow_id)
