@@ -173,6 +173,7 @@ if __name__ == '__main__':
             # funcX endpoints
             'funcx_endpoint_non_compute': depl_input['input']['funcx_endpoint_non_compute'],
             'funcx_endpoint_compute': depl_input['input']['funcx_endpoint_compute'],
+            'compute_endpoint': depl_input['input']['funcx_endpoint_non_compute'],
         }
     }
 

@@ -62,7 +62,7 @@ class EigenCorr(GladierBaseTool):
         'funcx_endpoint_compute',
     ]
 
-    funcx_functions = [
+    compute_functions = [
         eigen_corr
     ]
 
