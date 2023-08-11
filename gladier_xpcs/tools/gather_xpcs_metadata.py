@@ -180,7 +180,7 @@ class GatherXPCSMetadata(GladierBaseTool):
         'pilot',
     ]
 
-    funcx_functions = [
+    compute_functions = [
         gather_xpcs_metadata
     ]
 

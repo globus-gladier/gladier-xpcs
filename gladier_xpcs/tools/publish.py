@@ -126,6 +126,6 @@ class Publish(GladierBaseTool):
 
     }
 
-    funcx_functions = [
+    compute_functions = [
         publish_gather_metadata,
     ]

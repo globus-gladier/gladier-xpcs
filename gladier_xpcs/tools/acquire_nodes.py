@@ -12,5 +12,5 @@ class AcquireNodes(GladierBaseTool):
     """Acquire Nodes specifically does nothing, and is intended to be run before
     other compute tasks to ensure compute nodes are ready. This solves the problem
     of actual compute tasks timing out waiting for a node to spin up."""
-    funcx_functions = [acquire_nodes]
-    required_input = ['funcx_endpoint_compute']
+    compute_functions = [acquire_nodes]
+    required_input = ['compute_endpoint']
