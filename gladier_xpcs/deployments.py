@@ -19,6 +19,9 @@ class BaseDeployment:
     globus_endpoints = dict()
     funcx_endpoints = dict()
     flow_input = dict()
+    # Is this a "service account" that requires confidential client credentials?
+    # This means setting GLADIER_CLIENT_ID and GLADIER_CLIENT_SECRET
+    service_account = False
 
     def get_input(self):
         fi = self.flow_input.copy()
@@ -173,6 +176,7 @@ class APS8IDIPolaris(BaseDeployment):
     source_collection = xpcs_data
     staging_collection = apsdataprocessing
     pub_collection = xpcs_data
+    service_account = True
 
     globus_endpoints = {
         # Eagle -- XPCS Data 8-ID APS

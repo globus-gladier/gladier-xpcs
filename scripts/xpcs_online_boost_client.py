@@ -2,9 +2,6 @@
 
 ## /home/beams/8IDIUSER/.conda/envs/gladier/bin/python /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf '/data/xpcs8/2019-1/comm201901/cluster_results/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf' --imm /data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm --group 0bbe98ef-de8f-11eb-9e93-3db9c47b68ba
 
-# Enable Gladier Logging
-#import gladier.tests
-
 import argparse
 import os
 import pathlib
@@ -12,6 +9,7 @@ import time
 
 from gladier_xpcs.flows import XPCSBoost
 from gladier_xpcs.deployments import deployment_map
+from gladier_xpcs import log  # noqa Add INFO logging
 
 from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer
 from gladier.managers.login_manager import CallbackLoginManager
@@ -82,6 +80,8 @@ if __name__ == '__main__':
     deployment = deployment_map.get(args.deployment)
     if not deployment:
         raise ValueError(f'Invalid Deployment, deployments available: {list(deployment_map.keys())}')
+    elif deployment.service_account and not (os.getenv('GLADIER_CLIENT_ID') and os.getenv('GLADIER_CLIENT_SECRET')):
+        raise ValueError(f'Deployment requires setting GLADIER_CLIENT_ID and GLADIER_CLIENT_SECRET')
 
     atype_options = ['Multitau', 'Both'] # "Twotime" is currently not supported!
     if args.atype not in atype_options:
