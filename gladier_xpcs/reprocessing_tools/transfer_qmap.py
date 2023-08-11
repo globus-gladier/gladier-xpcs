@@ -38,4 +38,4 @@ class TransferQmap(GladierBaseTool):
         'qmap_file',
     ]
 
-    funcx_functions = []
+    compute_functions = []

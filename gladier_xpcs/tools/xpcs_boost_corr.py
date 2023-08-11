@@ -65,10 +65,10 @@ class BoostCorr(GladierBaseTool):
 
     required_input = [
         'proc_dir',
-        'funcx_endpoint_compute',
+        'compute_endpoint',
     ]
 
-    funcx_functions = [
+    compute_functions = [
         xpcs_boost_corr
     ]
 

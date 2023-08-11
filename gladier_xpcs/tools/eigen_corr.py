@@ -59,7 +59,7 @@ class EigenCorr(GladierBaseTool):
         'hdf_file',
         'flags',
         'corr_loc',
-        'funcx_endpoint_compute',
+        'compute_endpoint',
     ]
 
     compute_functions = [

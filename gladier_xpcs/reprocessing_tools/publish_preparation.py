@@ -95,6 +95,6 @@ class PublishPreparation(GladierBaseTool):
         'pilot',
     ]
 
-    funcx_functions = [
+    compute_functions = [
         publish_preparation
     ]
