@@ -1,4 +1,8 @@
 import pprint
+import os
+import sys
+import datetime
+import zoneinfo
 import time
 import json
 import queue
@@ -7,14 +11,20 @@ import click
 import globus_sdk
 import pathlib
 from gladier_xpcs.flows import XPCSBoost
-from globus_automate_client.client_helpers import create_flows_client
+from gladier import FlowsManager
 
+
+FILTER_RANGE_MIN = datetime.datetime.now(tz=zoneinfo.ZoneInfo('UTC')) - datetime.timedelta(days=3)
+FILTER_RANGE_MAX = datetime.datetime.now(tz=zoneinfo.ZoneInfo('UTC'))
 FLOW_CLASS = XPCSBoost
+FLOW_ID = '193373a8-8040-4267-aea6-a41f171e7f96'
 RUNS_CACHE = f'/tmp/{FLOW_CLASS.__name__}RunsCache.json'
 # Keep cache for a week
 CACHE_TTL = 60 * 60 * 24 * 7
 USE_CACHE = False
 RUN_QUEUE = queue.Queue()
+
+__CACHED_CLIENT = None
 
 
 RUN_FIELDS = [
@@ -37,6 +47,20 @@ RUN_FIELDS = [
     # 'run_owner',
     # 'user_role'
 ]
+
+def get_client():
+    global __CACHED_CLIENT
+    if __CACHED_CLIENT:
+        return __CACHED_CLIENT
+    if os.getenv('GLADIER_CLIENT_ID') and os.getenv('GLADIER_CLIENT_SECRET'):
+        __CACHED_CLIENT = FLOW_CLASS(flows_manager=FlowsManager(flow_id=FLOW_ID))
+        __CACHED_CLIENT.login()
+        return __CACHED_CLIENT
+    raise ValueError('Warning, only service clients are allowed. Define "GLADIER_CLIENT_ID" and "GLADIER_CLIENT_SECRET"')
+
+def get_flows_client():
+    return get_client().flows_manager.flows_client
+
 
 def is_cached(cache_ttl=CACHE_TTL) -> bool:
     return get_run_cache_age() < cache_ttl
@@ -66,23 +90,37 @@ def save_run_cache(runs):
 def get_runs(flow_id, cache_ttl=CACHE_TTL):
     if USE_CACHE and is_cached(cache_ttl):
         return get_run_cache(cache_ttl)
-    fc = create_flows_client()
-    resp = fc.list_flow_runs(flow_id)
+    client = get_client()
+    client.login()
+
+    fc = client.flows_manager.flows_client
+    rng = f'{FILTER_RANGE_MIN.isoformat(timespec="seconds")},{FILTER_RANGE_MAX.isoformat(timespec="seconds")}'
+    resp = fc.list_runs(filter_flow_id=FLOW_ID, query_params=dict(filter_start_time=rng))
     runs = resp['runs']
+    pages = 0
     while resp['has_next_page']:
-        resp = fc.list_flow_runs(flow_id, marker=resp['marker'])
+        pages += 1
+        resp = fc.list_runs(filter_flow_id=FLOW_ID, marker=resp['marker'])
         runs += resp['runs']
+
+        # For admins, desperate for continuous feedback
+        print('.', end='')
+        sys.stdout.flush()
+
+    print()
     save_run_cache(runs)
     return runs
 
 
 def get_run_input(run_id, flow_id, scope=None):
-    fc = create_flows_client()
-    if not scope:
-        scope = fc.scope_for_flow(flow_id)
+    resp = get_flows_client().get_run_logs(run_id)
+    input_payload = resp['entries'][0]['details']['input']
 
-    resp = fc.flow_action_log(flow_id, scope, run_id)
-    return resp['entries'][0]['details']['input']
+    # These should be removed, but needed for old runs pre Gladier v0.9
+    input_payload['input']['login_node_compute'] = input_payload['input'].get('login_node_compute', input_payload['input']['funcx_endpoint_non_compute'])
+    input_payload['input']['compute_endpoint'] = input_payload['input'].get('compute_endpoint', input_payload['input']['funcx_endpoint_compute'])
+
+    return input_payload
 
 
 
@@ -95,11 +133,11 @@ def retry_single(run_id, flow_id, scope=None, use_local=False):
         for k in list(run_input['input'].keys()):
             if k.endswith('_funcx_id'):
                 run_input['input'].pop(k)
-    return FLOW_CLASS().run_flow(flow_input=run_input, label=label)
+    return get_client().run_flow(flow_input=run_input, label=label)
 
 
 def run_worker():
-    flow_client_instance = FLOW_CLASS()
+    flow_client_instance = get_client()
     while True:
         run, flow_id, kwargs = RUN_QUEUE.get()
         try:
@@ -210,11 +248,10 @@ def retry_runs(flow, local_fx, status, preview, since, workers):
         click.echo(make_csv(runs))
         click.echo(f'{len(runs)} above will be restarted.')
         click.confirm('re-run the above flows?', abort=True)
-    fc = create_flows_client()
-    scope = fc.scope_for_flow(flow)
+    fc = get_client().flows_manager.flows_client
     # Build up the queue
     for run in runs:
-        args = (run, flow, dict(scope=scope, use_local=local_fx))
+        args = (run, flow, dict(scope=get_client().flows_manager.flow_scope, use_local=local_fx))
         RUN_QUEUE.put(args)
 
     # Start threads to consume the queue
