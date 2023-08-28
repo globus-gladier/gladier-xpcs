@@ -35,7 +35,7 @@ class MakeCorrPlots(GladierBaseTool):
         'hdf_file',
     ]
 
-    funcx_functions = [
+    compute_functions = [
         make_corr_plots
     ]
 

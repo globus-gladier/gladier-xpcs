@@ -68,13 +68,13 @@ class PrePublish(GladierBaseTool):
             'PrePublishGatherMetadata': {
                 'Comment': 'Say something to start the conversation',
                 'Type': 'Action',
-                'ActionUrl': 'https://automate.funcx.org',
+                'ActionUrl': 'https://compute.actions.globus.org',
                 'ActionScope': 'https://auth.globus.org/scopes/b3db7e59-a6f1-4947-95c2-59d6b7a70f8c/action_all',
                 'ExceptionOnActionFailure': True,
                 'Parameters': {
                     'tasks': [{
-                        'endpoint.$': '$.input.funcx_endpoint_non_compute',
-                        'function.$': '$.input.pre_publish_gather_metadata_funcx_id',
+                        'endpoint.$': '$.input.login_node_endpoint',
+                        'function.$': '$.input.pre_publish_gather_metadata_function_id',
                         'payload.$': '$.input.pilot',
                     }]
                 },
@@ -86,7 +86,7 @@ class PrePublish(GladierBaseTool):
                 'Comment': 'Transfer files for publication',
                 'Type': 'Action',
                 'ActionUrl': 'https://actions.automate.globus.org/transfer/transfer',
-                'InputPath': '$.PrePublishGatherMetadata.details.result[0].transfer',
+                'InputPath': '$.PrePublishGatherMetadata.details.results[0].output.transfer',
                 'ResultPath': '$.PrePublishTransfer',
                 'WaitTime': 1800,
                 'Next': 'PrePublishIngest',
@@ -96,7 +96,7 @@ class PrePublish(GladierBaseTool):
                 'Type': 'Action',
                 'ActionUrl': 'https://actions.globus.org/search/ingest',
                 'ExceptionOnActionFailure': False,
-                'InputPath': '$.PrePublishGatherMetadata.details.result[0].search',
+                'InputPath': '$.PrePublishGatherMetadata.details.results[0].output.search',
                 'ResultPath': '$.PrePublishIngest',
                 'WaitTime': 300,
                 'End': True
@@ -106,13 +106,13 @@ class PrePublish(GladierBaseTool):
 
     required_input = [
         'pilot',
-        'funcx_endpoint_non_compute',
+        'login_node_endpoint',
     ]
 
     flow_input = {
 
     }
 
-    funcx_functions = [
+    compute_functions = [
         pre_publish_gather_metadata,
     ]

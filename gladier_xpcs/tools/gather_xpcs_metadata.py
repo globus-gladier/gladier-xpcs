@@ -168,7 +168,7 @@ def gather_xpcs_metadata(**data):
 
 
 @generate_flow_definition(modifiers={
-    gather_xpcs_metadata: {'endpoint': 'funcx_endpoint_non_compute',
+    gather_xpcs_metadata: {'endpoint': 'login_node_endpoint',
                            'ExceptionOnActionFailure': True,
                            }
 })
@@ -180,7 +180,7 @@ class GatherXPCSMetadata(GladierBaseTool):
         'pilot',
     ]
 
-    funcx_functions = [
+    compute_functions = [
         gather_xpcs_metadata
     ]
 

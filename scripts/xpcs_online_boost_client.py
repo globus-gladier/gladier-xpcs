@@ -2,9 +2,6 @@
 
 ## /home/beams/8IDIUSER/.conda/envs/gladier/bin/python /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/raf/gladier-xpcs/scripts/xpcs_corr_client.py --hdf '/data/xpcs8/2019-1/comm201901/cluster_results/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf' --imm /data/xpcs8/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm --group 0bbe98ef-de8f-11eb-9e93-3db9c47b68ba
 
-# Enable Gladier Logging
-#import gladier.tests
-
 import argparse
 import os
 import pathlib
@@ -12,6 +9,7 @@ import time
 
 from gladier_xpcs.flows import XPCSBoost
 from gladier_xpcs.deployments import deployment_map
+from gladier_xpcs import log  # noqa Add INFO logging
 
 from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer
 from gladier.managers.login_manager import CallbackLoginManager
@@ -23,35 +21,7 @@ from fair_research_login import JSONTokenStorage
 # Get client id/secret
 CLIENT_ID = os.getenv("GLADIER_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GLADIER_CLIENT_SECRET")
-token_storage = JSONTokenStorage('xpcs_confidential_client_token_storage.json')
 
-# Set custom auth handler
-def callback(scopes: List[str]) -> Mapping[str, Union[AccessTokenAuthorizer, AccessTokenAuthorizer]]:
-    try:
-        # May raise os-related errors if multiple processes attempt to write at
-        # the same time and corrupt the file. In that case ignore it and attempt
-        # to fetch more tokens.
-        tokens = token_storage.read_tokens()
-        if not tokens:
-            raise Exception('Token load failure, no tokens could be found!')
-        if tokens.keys() != scopes:
-            raise Exception('Token scopes mismatch!')
-        if any(time.time() > t['expires_at_seconds'] for t in tokens.values()):
-            raise Exception('Tokens expired, new tokens are required')
-    except Exception as e:
-        print(f'Failed to load tokens, initiating Confidential Client app grant: {e}')
-        caac = ConfidentialAppAuthClient(CLIENT_ID, CLIENT_SECRET)
-        response = caac.oauth2_client_credentials_tokens(requested_scopes=scopes)
-        tokens = response.by_scopes.scope_map
-        try:
-            token_storage.write_tokens(tokens)
-        except Exception:
-            print(traceback.format_exc())
-            print(f'Token stoarge FAILED. Ignoring failure and continuing on...')
-    return {
-        scope: AccessTokenAuthorizer(access_token=tdict["access_token"])
-        for scope, tdict in tokens.items()
-    }
 
 def arg_parse():
     parser = argparse.ArgumentParser()
@@ -82,6 +52,8 @@ if __name__ == '__main__':
     deployment = deployment_map.get(args.deployment)
     if not deployment:
         raise ValueError(f'Invalid Deployment, deployments available: {list(deployment_map.keys())}')
+    elif deployment.service_account and not (os.getenv('GLADIER_CLIENT_ID') and os.getenv('GLADIER_CLIENT_SECRET')):
+        raise ValueError(f'Deployment requires setting GLADIER_CLIENT_ID and GLADIER_CLIENT_SECRET')
 
     atype_options = ['Multitau', 'Both'] # "Twotime" is currently not supported!
     if args.atype not in atype_options:
@@ -171,16 +143,12 @@ if __name__ == '__main__':
             'execution_metadata_file': execution_metadata_file,
 
             # funcX endpoints
-            'funcx_endpoint_non_compute': depl_input['input']['funcx_endpoint_non_compute'],
-            'funcx_endpoint_compute': depl_input['input']['funcx_endpoint_compute'],
+            'login_node_endpoint': depl_input['input']['login_node_endpoint'],
+            'compute_endpoint': depl_input['input']['compute_endpoint'],
         }
     }
 
-    callback_login_manager = None
-    if CLIENT_ID and CLIENT_SECRET:
-        callback_login_manager = CallbackLoginManager({}, callback=callback)
-
-    corr_flow = XPCSBoost(login_manager=callback_login_manager)
+    corr_flow = XPCSBoost()
 
     corr_run_label = pathlib.Path(hdf_name).name[:62]
     flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs'])

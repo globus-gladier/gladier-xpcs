@@ -17,12 +17,15 @@ class BaseDeployment:
     staging_collection: SharedCollection = None
     pub_collection: SharedCollection = None
     globus_endpoints = dict()
-    funcx_endpoints = dict()
+    compute_endpoints = dict()
     flow_input = dict()
+    # Is this a "service account" that requires confidential client credentials?
+    # This means setting GLADIER_CLIENT_ID and GLADIER_CLIENT_SECRET
+    service_account = False
 
     def get_input(self):
         fi = self.flow_input.copy()
-        fi['input'].update(self.funcx_endpoints)
+        fi['input'].update(self.compute_endpoints)
         fi['input'].update(self.globus_endpoints)
         return fi
 
@@ -33,9 +36,9 @@ class Talc(BaseDeployment):
         'globus_endpoint_proc': theta_ep.uuid,
     }
 
-    funcx_endpoints = {
-        'funcx_endpoint_non_compute': 'e449e8b8-e114-4659-99af-a7de06feb847',
-        'funcx_endpoint_compute': '4c676cea-8382-4d5d-bc63-d6342bdb00ca',
+    compute_endpoints = {
+        'login_node_endpoint': 'e449e8b8-e114-4659-99af-a7de06feb847',
+        'compute_endpoint': '4c676cea-8382-4d5d-bc63-d6342bdb00ca',
     }
 
     flow_input = {
@@ -57,11 +60,11 @@ class NickPolarisGPU(BaseDeployment):
         'globus_endpoint_proc': apsdataanalysis.uuid,
     }
 
-    funcx_endpoints = {
+    compute_endpoints = {
         # Theta login
-        'funcx_endpoint_non_compute': '553e7b64-0480-473c-beef-be762ba979a9',
+        'login_node_endpoint': '553e7b64-0480-473c-beef-be762ba979a9',
         # Containers
-        'funcx_endpoint_compute': '4a6f2b52-d392-4a57-ad77-ae6e86daf503',
+        'compute_endpoint': '4a6f2b52-d392-4a57-ad77-ae6e86daf503',
     }
 
     flow_input = {
@@ -70,35 +73,6 @@ class NickPolarisGPU(BaseDeployment):
         }
     }
 
-
-class NickPortalDeployment(BaseDeployment):
-
-    def get_input(self):
-        """Separate portal runs by current datetime/second. This prevents run collisions
-        of mulitple people running flows at the same time"""
-        now = datetime.datetime.now()
-        now = now - datetime.timedelta(microseconds=now.microsecond)
-        now = now.isoformat().replace(':', '')
-
-        finput = copy.deepcopy(super().get_input())
-        finput['input']['staging_dir'] = finput['input']['staging_dir'].format(now=now)
-        return finput
-
-    flow_input = {
-        'input': {
-            'staging_dir': '/projects/APSDataAnalysis/XPCS/portal/{now}/',
-            'corr_loc': '/eagle/APSDataAnalysis/XPCS/xpcs-eigen/build/corr',
-            # We don't have a way to store authorization data within a database yet.
-            # FuncX ids on the portal need to be specified manually
-            'apply_qmap_funcx_id': '4d15c42d-a982-46ed-a548-497ac5977b70',
-            'eigen_corr_funcx_id': 'df859253-1113-4cbc-820c-8cf4afbf5764',
-            'gather_xpcs_metadata_funcx_id': '348e7fe6-7d64-4ccf-84b0-502294a087e9',
-            'make_corr_plots_funcx_id': 'dba85394-eae5-4651-827e-1cf03f536a75',
-            'publish_gather_metadata_funcx_id': '9a36d48b-b072-4e7d-a2dc-8f4a31ef9b45',
-            'publish_preparation_funcx_id': '4b39dbd5-1954-4923-89e3-9abbb39c0375',
-            'warm_nodes_funcx_id': 'f369eb60-9a4c-49cb-a078-abb1a81a7c66'
-        }
-    }
 
 class HannahTheta(BaseDeployment):
 
@@ -118,9 +92,9 @@ class HannahTheta(BaseDeployment):
         }
     }
 
-    funcx_endpoints = {
-        'funcx_endpoint_non_compute': 'e3e1aef6-0a6f-4ef1-b9c6-a14b0efb1dfa',
-        'funcx_endpoint_compute': '3d9fde8a-1dfa-4ce7-93ab-5d524a59a4f6',
+    compute_endpoints = {
+        'login_node_endpoint': 'e3e1aef6-0a6f-4ef1-b9c6-a14b0efb1dfa',
+        'compute_endpoint': '3d9fde8a-1dfa-4ce7-93ab-5d524a59a4f6',
     }
 
 
@@ -136,9 +110,9 @@ class HannahPolaris(BaseDeployment):
         'globus_endpoint_proc': apsdataanalysis.uuid, 
     }
 
-    funcx_endpoints = {
-        'funcx_endpoint_non_compute': 'e3e1aef6-0a6f-4ef1-b9c6-a14b0efb1dfa',
-        'funcx_endpoint_compute': '0676a1f2-b92f-41f7-8e4f-6cc93eb6f929',
+    compute_endpoints = {
+        'login_node_endpoint': 'e3e1aef6-0a6f-4ef1-b9c6-a14b0efb1dfa',
+        'compute_endpoint': '0676a1f2-b92f-41f7-8e4f-6cc93eb6f929',
     }
 
     flow_input = {
@@ -155,9 +129,9 @@ class RyanPolaris(BaseDeployment):
         'globus_endpoint_proc': theta_ep.uuid,
     }
 
-    funcx_endpoints = {
-        'funcx_endpoint_non_compute': '6c4323f4-a062-4551-a883-146a352a43f5',
-        'funcx_endpoint_compute': 'dc2a0cdb-2aee-44f7-a422-c4e28d9f7617',
+    compute_endpoints = {
+        'login_node_endpoint': '6c4323f4-a062-4551-a883-146a352a43f5',
+        'compute_endpoint': 'dc2a0cdb-2aee-44f7-a422-c4e28d9f7617',
     }
 
     flow_input = {
@@ -173,6 +147,7 @@ class APS8IDIPolaris(BaseDeployment):
     source_collection = xpcs_data
     staging_collection = apsdataprocessing
     pub_collection = xpcs_data
+    service_account = True
 
     globus_endpoints = {
         # Eagle -- XPCS Data 8-ID APS
@@ -180,9 +155,9 @@ class APS8IDIPolaris(BaseDeployment):
         'globus_endpoint_proc': apsdataprocessing.uuid,
     }
 
-    funcx_endpoints = {
-        'funcx_endpoint_non_compute': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
-        'funcx_endpoint_compute': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
+    compute_endpoints = {
+        'login_node_endpoint': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
+        'compute_endpoint': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
     }
 
     flow_input = {
@@ -199,9 +174,9 @@ class RafPolaris(BaseDeployment):
         'globus_endpoint_proc': theta_ep.uuid,
     }
 
-    funcx_endpoints = {
-        'funcx_endpoint_non_compute': 'e449e8b8-e114-4659-99af-a7de06feb847',
-        'funcx_endpoint_compute': 'a93b6438-6ff7-422e-a1a2-9a4c6d9c1ea5',
+    compute_endpoints = {
+        'login_node_endpoint': 'e449e8b8-e114-4659-99af-a7de06feb847',
+        'compute_endpoint': 'a93b6438-6ff7-422e-a1a2-9a4c6d9c1ea5',
     }
 
     flow_input = {

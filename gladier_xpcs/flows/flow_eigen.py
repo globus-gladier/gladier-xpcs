@@ -21,13 +21,16 @@ from gladier_xpcs.tools.eigen_corr import eigen_corr
     'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result[0]'}
 })
 class XPCSEigen(ContainerBaseClient):
+    """XPCS Eigan is the older corr flow, and is deprecated and should be removed in a future version"""
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
-    containers = {
-        utils.name_generation.get_funcx_function_name(eigen_corr): {
-            'container_type': 'singularity',
-            'location': '/eagle/APSDataAnalysis/XPCS/containers/eigen_v2.simg',
-        }
-    }
+    # # The utils.name_generation module has changed in Gladier v0.9.0 and needs to be updated before the
+    # # Following will work.
+    # containers = {
+    #     utils.name_generation.get_compute_function_name(eigen_corr): {
+    #         'container_type': 'singularity',
+    #         'location': '/eagle/APSDataAnalysis/XPCS/containers/eigen_v2.simg',
+    #     }
+    # }
 
     gladier_tools = [
         'gladier_xpcs.tools.TransferFromClutchToTheta',
