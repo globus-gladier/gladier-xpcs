@@ -34,20 +34,12 @@ def arg_parse():
                         default=None)
     parser.add_argument("--step", help="The inside the flow execution to check",
                         default=None)
-    parser.add_argument("--timeout", help="How long to wait before exiting. Defaults to "
-                                          "the original flow state or 300.",
-                        default=0)
     parser.add_argument("--interval", help="Interval between checking statuses", type=int,
                         default=90)
     parser.add_argument("--gpu", help="Whether the flow is the GPU flow rather than online flow.",
                         action='store_true', default=False)
     args = parser.parse_args()
     return args
-
-
-class TimedOut(Exception):
-    pass
-
 
 class RunSucceeded(Exception):
     pass
@@ -97,11 +89,6 @@ def check_run_status(run_status):
         raise RunSucceeded(f'Run Succeeded: {url}')
 
 
-def check_time(start_time, limit):
-    if time.time() - start_time >= float(limit):
-        raise TimedOut(f'Wait time has exceeded its limit of {limit} seconds.')
-
-
 if __name__ == '__main__':
     args = arg_parse()
 
@@ -116,19 +103,14 @@ if __name__ == '__main__':
 
     # Fetch state names in a loose ordering, depth first
     flow_states = [state_name for state_name, _ in iter_flow(main_flow.flow_definition)]
-    start_time = time.time()
 
     if args.step not in flow_states:
         print(f'"{args.step}" is not valid, please choose from: {", ".join(flow_states)}')
         sys.exit(-1)
 
-    state_wait_time = main_flow.flow_definition['States'][args.step].get('WaitTime')
-    timeout = args.timeout or state_wait_time or 300
-
     try:
         while True:
             status = main_flow.get_status(args.run_id)
-            check_time(start_time, timeout)
             check_run_status(status)
             if state_has_completed(args.step, flow_states, status):
                 print(f'Step {args.step}: Completed')
@@ -137,6 +119,6 @@ if __name__ == '__main__':
     except RunSucceeded as rs:
         print(str(rs))
         sys.exit(0)
-    except (TimedOut, RunFailed) as e:
+    except (RunFailed) as e:
         print(f'{e.__class__.__name__}: {str(e)}', file=sys.stderr)
         sys.exit(1)

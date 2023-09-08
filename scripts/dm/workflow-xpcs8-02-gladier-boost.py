@@ -38,9 +38,9 @@
             ],
         },
         '03-MonitorAutomate' : {'command': '/bin/echo https://app.globus.org/runs/$AutomateId'},
-        '04-Automate_TransferOut': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step SourceTransfer --timeout 900 --gpu'},
-        '05-Automate_Corr': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step XpcsBoostCorr --timeout 7200 --gpu'},
-        '06-Automate_Plots': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step MakeCorrPlots --timeout 7200 --gpu'},
-        '07-Automate_TransferBack': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step GatherXpcsMetadata --timeout 600 --gpu'},
+        '04-Automate_TransferOut': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step SourceTransfer --gpu'},
+        '05-Automate_Corr': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step XpcsBoostCorr --gpu'},
+        '06-Automate_Plots': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step MakeCorrPlots --gpu'},
+        '07-Automate_TransferBack': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step GatherXpcsMetadata --gpu'},
 	}
 }
