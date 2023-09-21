@@ -39,7 +39,8 @@ class XPCSReprocessingFlow(GladierBaseClient):
         'gladier_xpcs.tools.Publish',
     ]
 
-    def get_xpcs_input(self, deployment, hdf_source, imm_source, qmap_source):
+    @staticmethod
+    def get_xpcs_input(deployment, hdf_source, imm_source, qmap_source):
         """
         This is a special method which builds runtime input for files that should
         be computed on theta from the source files and the deployment locations.

@@ -59,98 +59,14 @@ if __name__ == '__main__':
     if args.atype not in atype_options:
         raise ValueError(f'Invalid --atype, must be one of: {", ".join(atype_options)}')
 
-    depl_input = deployment.get_input()
-
-    raw_name = os.path.basename(args.raw)
-    hdf_name = os.path.basename(args.hdf)
-    qmap_name = os.path.basename(args.qmap)
-    dataset_name = hdf_name[:hdf_name.rindex('.')] #remove file extension
-
-    dataset_dir = os.path.join(depl_input['input']['staging_dir'], dataset_name)
-
-    #Processing type
-    atype = args.atype
-
-    # Generate Destination Pathnames.
-    raw_file = os.path.join(dataset_dir, 'input', raw_name)
-    qmap_file = os.path.join(dataset_dir, 'qmap', qmap_name)
-    #do need to transfer the metadata file because corr will look for it
-    #internally even though it is not specified as an argument
-    input_hdf_file = os.path.join(dataset_dir, 'input', hdf_name)
-    output_hdf_file = os.path.join(dataset_dir, 'output', hdf_name)
-    # Required by boost_corr to know where to stick the output HDF
-    output_dir = os.path.join(dataset_dir, 'output')
-    # This tells the corr state where to place version specific info
-    execution_metadata_file = os.path.join(dataset_dir, 'execution_metadata.json')
-
-    flow_input = {
-        'input': {
-
-            'boost_corr': {
-                    'atype': atype,
-                    "qmap": qmap_file,
-                    "raw": raw_file,
-                    "output": output_dir,
-                    "batch_size": 8,
-                    "gpu_id": args.gpu_flag,
-                    "verbose": args.verbose,
-                    "masked_ratio_threshold": 0.75,
-                    "use_loader": True,
-                    "begin_frame": 1,
-                    "end_frame": -1,
-                    "avg_frame": 1,
-                    "stride_frame": 1,
-                    "overwrite": True,
-            },
-
-            'pilot': {
-                # This is the directory which will be published
-                'dataset': dataset_dir,
-                # Old index, switch back to this when we want to publish to the main index
-                'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
-                # Test Index, use this for testing
-                # 'index': '2e72452f-e932-4da0-b43c-1c722716896e',
-                'project': 'xpcs-8id',
-                'source_globus_endpoint': depl_input['input']['globus_endpoint_proc'],
-                'source_collection_basepath': str(deployment.staging_collection.path),
-                # Extra groups can be specified here. The XPCS Admins group will always
-                # be provided automatically.
-                'groups': [args.group] if args.group else [],
-            },
-
-            'source_transfer': {
-                'source_endpoint_id': deployment.source_collection.uuid,
-                'destination_endpoint_id': deployment.staging_collection.uuid,
-                'transfer_items': [
-                    {
-                        'source_path': args.raw,
-                        'destination_path': deployment.staging_collection.to_globus(raw_file),
-                    },
-                    {
-                        'source_path': args.hdf,
-                        'destination_path': deployment.staging_collection.to_globus(input_hdf_file),
-                    },
-                    {
-                        'source_path': args.qmap,
-                        'destination_path': deployment.staging_collection.to_globus(qmap_file),
-                    }
-                ],
-            },
-
-            'proc_dir': dataset_dir,
-            'metadata_file': input_hdf_file,
-            'hdf_file': output_hdf_file,
-            'execution_metadata_file': execution_metadata_file,
-
-            # funcX endpoints
-            'login_node_endpoint': depl_input['input']['login_node_endpoint'],
-            'compute_endpoint': depl_input['input']['compute_endpoint'],
-        }
-    }
-
     corr_flow = XPCSBoost()
 
-    corr_run_label = pathlib.Path(hdf_name).name[:62]
+    flow_input = corr_flow.get_xpcs_input(
+        deployment, args.raw, args.hdf, args.qmap,
+        gpu_flag=args.gpu_flag, verbose=args.verbose, batch_size=args.batch_size, atype=args.atype, group=args.group,
+    )
+
+    corr_run_label = pathlib.Path(args.hdf).name[:62]
     flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs'])
 
     print('run_id : ' + flow_run['action_id'])

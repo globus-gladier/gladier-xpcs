@@ -32,11 +32,11 @@ class ReprocessDatasetsCheckoutForm(SubjectSelectManifestCheckoutForm):
         valid_gmetas = []
         for result in sc.search_data['gmeta']:
             hdfs = len(list(filter(lambda f: f['url'].endswith('.hdf'),
-                              result['content'][0].get('files', []))))
+                              result['entries'][0]['content'].get('files', []))))
             imm = len(list(filter(lambda f: f['url'].endswith('.imm'),
-                             result['content'][0].get('files', []))))
+                             result['entries'][0]['content'].get('files', []))))
             bin = len(list(filter(lambda f: f['url'].endswith('.bin'),
-                             result['content'][0].get('files', []))))
+                             result['entries'][0]['content'].get('files', []))))
             all_hdf = hdfs == 2
             rigaku = hdfs == 1 and bin == 1
             xpcs_lambda = hdfs == 1 and imm == 1

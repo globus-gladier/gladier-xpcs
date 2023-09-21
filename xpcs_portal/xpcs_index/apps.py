@@ -2,7 +2,7 @@ import os
 # from django.conf import settings
 from django.apps import AppConfig
 from xpcs_portal.xpcs_index import fields
-from gladier_xpcs.deployments import NickPortalDeployment
+from gladier_xpcs.deployments import APS8IDIPolaris
 
 APP_DIR = os.path.join(os.path.dirname(__file__))
 
@@ -14,7 +14,7 @@ class XPCSIndexConfig(AppConfig):
 GLADIER_CFG = os.path.abspath(os.path.join(APP_DIR, 'gladier.cfg'))
 RESOURCE_SERVER = '74defd5b-5f61-42fc-bcc4-834c9f376a4f'
 # RESOURCE_SERVER = 'c7683485-3c3f-454a-94c0-74310c80b32a'
-REPROCESSING_FLOW_DEPLOYMENT = NickPortalDeployment()
+REPROCESSING_FLOW_DEPLOYMENT = APS8IDIPolaris()
 
 SEARCH_INDEXES = {
     'xpcs': {
@@ -25,7 +25,12 @@ SEARCH_INDEXES = {
         'group': '',
         'base_templates': 'globus-portal-framework/v2/',
         'tabbed_project': False,
-        'reprocessing_enabled': False,
+        'reprocessing': {
+            'flow_id': '60940744-b155-4250-a6a0-8679480dee76',
+            'flow_scope': 'https://auth.globus.org/scopes/60940744-b155-4250-a6a0-8679480dee76/flow_60940744_b155_4250_a6a0_8679480dee76_user',
+            'group': '368beb47-c9c5-11e9-b455-0efb3ba9a670',
+        },
+        'reprocessing_enabled': True,
         'access': 'private',
         'template_override_dir': 'xpcs',
         # Automatically append these filters to all searches

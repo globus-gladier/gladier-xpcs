@@ -127,10 +127,16 @@ DATABASES = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    "formatters": {
+        "basic": {
+            "format": "[%(levelname)s] " "%(name)s::%(funcName)s() %(message)s"
+        }
+    },
     'handlers': {
         'stream': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
+            'formatter': 'basic',
         },
     },
     'loggers': {
@@ -139,6 +145,7 @@ LOGGING = {
         'globus_portal_framework': {'handlers': ['stream'], 'level': 'DEBUG'},
         'xpcs_portal': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
         'automate_app': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
+        'concierge_app': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
     },
 }
 
