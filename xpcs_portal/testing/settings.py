@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     # This contains general Globus portal tools
+    'crispy_forms',
+    'crispy_bootstrap4',
     'globus_portal_framework',
     'social_django',
     'automate_app',
@@ -98,6 +100,8 @@ TEMPLATES = [
         },
     },
 ]
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
+CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 
 SOCIAL_AUTH_GLOBUS_SCOPE = [
