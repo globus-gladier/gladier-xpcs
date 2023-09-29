@@ -63,6 +63,18 @@ class XPCSReprocessingCheckoutView(ManifestCheckoutView):
     form_class = ReprocessDatasetsCheckoutForm
     template_name = 'xpcs/reprocess-datasets-checkout.html'
 
+    @property
+    def reprocessing_data(self):
+        return get_index(self.kwargs['index'])['reprocessing']
+
+    def ensure_authorized(self):
+        user_groups = get_user_groups(self.request.user)
+        try:
+            az_group = next(filter(lambda g: g['id'] == self.reprocessing_data['group'], user_groups))
+            assert any(m['status'] == 'active' for m in az_group['my_memberships'])
+        except (StopIteration, AssertionError):
+            raise ValueError(f'User {self.request.user} is not authorized to run this flow!')
+
     def get_search_reference_url(self):
         return self.get_success_url()
 
@@ -75,9 +87,11 @@ class XPCSReprocessingCheckoutView(ManifestCheckoutView):
         user = self.request.user
         sc = form.get_search_collector()
 
-        reprocessing = get_index(self.kwargs['index'])['reprocessing']
+        reprocessing = self.reprocessing_data
         flow = reprocessing['flow_id']
         try:
+            self.ensure_authorized()
+            rdata = self.reprocessing_data
             run_inputs = sc.get_input_files(REPROCESSING_FLOW_DEPLOYMENT, form.cleaned_data)
             log.debug(f'Attempting to start {len(run_inputs)} flow runs.')
             batch_flow(reprocessing, run_inputs)
