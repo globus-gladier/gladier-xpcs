@@ -9,6 +9,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from globus_portal_framework.views.generic import SearchView, DetailView
 from globus_portal_framework.gsearch import get_pagination, get_index
+from globus_portal_framework.gclients import get_user_groups
 from concierge_app.views.generic import ManifestCheckoutView
 from automate_app.models import Action, Flow
 from gladier_xpcs.flows import XPCSReprocessingFlow

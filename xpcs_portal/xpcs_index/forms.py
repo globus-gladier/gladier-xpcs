@@ -3,7 +3,7 @@ import json
 import logging
 import os
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, Submit
+from crispy_forms.layout import Layout, Fieldset, Submit, HTML
 from xpcs_portal.xpcs_index import models
 from concierge_app.forms import SubjectSelectManifestCheckoutForm
 
@@ -92,11 +92,20 @@ class ReprocessDatasetsCheckoutForm(SubjectSelectManifestCheckoutForm):
         "winey201903_qmap_S270_D54.h5",
         "zjiang201902_qmap_Generic_FullImage_Lambda.h5",
     ]]
+    HIDDEN_FIELDS = [
+        'index',
+        'name',
+        'project',
+        'query',
+        'filters',
+        'search_url',
+        'qmap_ep',
+    ]
     
 
     facility = forms.ChoiceField(choices=CHOICES)
     options_cache = forms.CharField(label='Options', required=False)
-    # qmap_ep = forms.CharField(initial="74defd5b-5f61-42fc-bcc4-834c9f376a4f", widget=forms.TextInput(attrs={"readonly": True}))
+    qmap_ep = forms.CharField(initial="74defd5b-5f61-42fc-bcc4-834c9f376a4f", widget=forms.TextInput(attrs={"readonly": True}))
     qmap_parameter_file = forms.ChoiceField(choices=QMAP_CHOICES)
     reprocessing_suffix = forms.CharField(required=False)
 
@@ -111,11 +120,51 @@ class ReprocessDatasetsCheckoutForm(SubjectSelectManifestCheckoutForm):
             Fieldset(
                 'Settings for reprocessing data at the selected facility',
                 'facility',
-                'qmap_ep',
                 'qmap_parameter_file',
+                *self.HIDDEN_FIELDS,
+                HTML("""
+                    <div class="alert alert-secondary" role="alert">
+                    {% for result in form.get_search_collector.process_search_data.search_results %}
+                        <div class="form-check my-1">
+                        <div class="input-group">
+                            <input class="form-check-input subject-checkbox" type="checkbox" name="subjects"
+                                id="form-input-search-record-{{forloop.counter}}" value="{{result.subject}}"
+                                aria-describedby="publishHelpBlock"
+                                {% if not form.subjects.value or result.subject in form.subjects.value %} checked{% endif %}
+                            >
+                            <label class="form-check-label" style="min-width: 30%" for="form-input-search-record-{{forloop.counter}}">{{result.title|truncatechars:100}}</label>
+                            <div>
+                            <button type="button" class="btn btn-primary btn-sm ml-1 py-0" data-toggle="collapse" data-target="#collapse-search-record-{{forloop.counter}}" aria-expanded="true" aria-controls="collapse-search-record-{{forloop.counter}}">
+                                <i class="fas fa-info-circle"></i><span class="pl-2">Info</span>
+                            </button>
+                            </div>
+                        </div>
+                        <div id="collapse-search-record-{{forloop.counter}}" class="collapse" aria-labelledby="heading-search-record-{{forloop.counter}}" data-parent="#accordion-main-checkout">
+                            <div class="card-body">
+                            {% include 'xpcs/globus-portal-framework/v2/components/search-result.html' %}
+                            </div>
+                        </div>
+                        </div>
+                        <hr class="my-0">
+                        {% empty %}
+                        {% block checkout_form_no_search_results %}
+                        <div class="alert alert-info" role="alert">
+                        <h5>No Search Results</h5>
+
+                        <p>
+                            No valid search results could be found.
+                        </p>
+
+                        </div>
+                        {% endblock %}
+                    {% endfor %}
+                    </div>
+                """)
             ),
-            # Submit('submit', 'Submit', css_class='button white'),
+            Submit('submit', 'Submit', css_class='button white'),
         )
+        for field in self.HIDDEN_FIELDS:
+            self.fields[field].widget = forms.HiddenInput()
     #
     # def clean(self):
     #     self.cleaned_data['options_cache'] = json.dumps({

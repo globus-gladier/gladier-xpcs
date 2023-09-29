@@ -74,13 +74,13 @@ class XPCSReprocessingSearchCollector(SearchCollector):
                 self.get_dataset_directory(dataset),
                 self.get_hdf(dataset),
                 self.get_imm(dataset),
-                pathlib.Path(data['qmap_path']),
+                pathlib.Path(data['qmap_parameter_file']),
             )
             datasets.append(flow_input)
         return datasets
 
     @staticmethod
     def get_xpcs_input(deployment, dataset_dir, hdf_source, imm_source, qmap_source):
-        flow_input = XPCSBoost().get_xpcs_input(deployment, str(imm_source), str(hdf_source), str(qmap_source))
+        flow_input = XPCSBoost(login_manager=None).get_xpcs_input(deployment, str(imm_source), str(hdf_source), str(qmap_source))
         flow_input['input'].update(deployment.function_ids)
         return flow_input

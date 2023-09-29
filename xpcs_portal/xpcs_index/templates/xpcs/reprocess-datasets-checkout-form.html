@@ -14,42 +14,13 @@
 </div>
 {% csrf_token %}
 {% crispy form %}
-<div class="alert alert-secondary" role="alert">
-  {% for result in form.get_search_collector.process_search_data.search_results %}
-    <div class="form-check my-1">
-      <div class="input-group">
-        <input class="form-check-input subject-checkbox" type="checkbox" name="subjects"
-              id="form-input-search-record-{{forloop.counter}}" value="{{result.subject}}"
-              aria-describedby="publishHelpBlock"
-              {% if not form.subjects.value or result.subject in form.subjects.value %} checked{% endif %}
-        >
-        <label class="form-check-label" style="min-width: 30%" for="form-input-search-record-{{forloop.counter}}">{{result.title|truncatechars:100}}</label>
-        <div>
-          <button type="button" class="btn btn-primary btn-sm ml-1 py-0" data-toggle="collapse" data-target="#collapse-search-record-{{forloop.counter}}" aria-expanded="true" aria-controls="collapse-search-record-{{forloop.counter}}">
-            <i class="fas fa-info-circle"></i><span class="pl-2">Info</span>
-          </button>
-        </div>
-      </div>
-      <div id="collapse-search-record-{{forloop.counter}}" class="collapse" aria-labelledby="heading-search-record-{{forloop.counter}}" data-parent="#accordion-main-checkout">
-        <div class="card-body">
-          {% include 'xpcs/globus-portal-framework/v2/components/search-result.html' %}
-        </div>
-      </div>
-    </div>
-    <hr class="my-0">
-    {% empty %}
-    {% block checkout_form_no_search_results %}
-    <div class="alert alert-info" role="alert">
-      <h5>No Search Results</h5>
 
-      <p>
-        No valid search results could be found.
-      </p>
+{% if form.errors %}
+<div class="alert alert-danger" role="alert">
 
-    </div>
-    {% endblock %}
-  {% endfor %}
+  {{form.errors}}
+
 </div>
-<button type="submit" class="btn mb-2 btn-primary">Start Flow</button>
+{% endif %}
 </form>
 {% endblock %}
