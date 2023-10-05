@@ -34,10 +34,6 @@ function selectAllCheckboxes(classID, source) {
             {% index_template 'xpcs/reprocess-datasets-checkout-form.html' as checkout_form %}
             {% include checkout_form %}
           {% endblock %}
-
-          {% if form.is_bound and form.errors %}
-          <div class="alert alert-danger my-3" role="alert">{{form.errors}}</div>
-          {% endif %}
         </div>
       </div>
     </div>
