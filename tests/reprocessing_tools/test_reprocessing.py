@@ -3,6 +3,10 @@ from gladier_xpcs.flows.flow_reprocess import XPCSReprocessingFlow
 from gladier_xpcs.reprocessing_tools.publish_preparation import publish_preparation
 
 
+# This test is old, and no longer accounts for the way we currently run deployments
+# via service accounts. We should revisit these and make them work, but there currently
+# isn't time, and we will likely throw out this current way of doing things soon for a
+# simpler client that will work better across beamlines.
 @pytest.mark.skip
 def test_reprocessing_get_xpcs_input(reprocessing_deployment, reprocessing_input):
     """Make sure input is being built correctly from deployments"""
