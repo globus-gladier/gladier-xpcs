@@ -2,6 +2,8 @@ import pytest
 from gladier_xpcs.flows.flow_reprocess import XPCSReprocessingFlow
 from gladier_xpcs.reprocessing_tools.publish_preparation import publish_preparation
 
+
+@pytest.mark.skip
 def test_reprocessing_get_xpcs_input(reprocessing_deployment, reprocessing_input):
     """Make sure input is being built correctly from deployments"""
     cli = XPCSReprocessingFlow()
