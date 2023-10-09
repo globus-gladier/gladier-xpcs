@@ -164,7 +164,7 @@ class APS8IDIPolaris(BaseDeployment):
 
     flow_input = {
         'input': {
-            'staging_dir': '/global/homes/r/rchard/xpcs_staging',
+            'staging_dir': staging_collection.path / 'xpcs_staging',
         }
     }
 
@@ -196,7 +196,7 @@ class RyanNERSC(BaseDeployment):
 
     flow_input = {
         'input': {
-            'staging_dir': staging_collection.path / 'xpcs_staging',
+            'staging_dir': '/global/homes/r/rchard/xpcs_staging',
         }
     }
 
