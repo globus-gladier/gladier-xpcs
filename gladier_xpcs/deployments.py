@@ -12,7 +12,7 @@ theta_ep = SharedCollection('08925f04-569f-11e7-bef8-22000b9a448b', '/', name='a
 apsdataprocessing = SharedCollection('98d26f35-e5d5-4edd-becf-a75520656c64', 
                                      '/eagle/APSDataProcessing/aps8idi/', name='APS8IDI')
 nersc_permutter = SharedCollection('6bdc7956-fc0f-4ad2-989c-7aa5ee643a79', 
-                                     '/global/homes/r/rchard/', name='NERSC#Perlmutter')
+                                     '/', name='NERSC#Perlmutter')
 
 class BaseDeployment:
     source_collection: SharedCollection = None
@@ -164,7 +164,7 @@ class APS8IDIPolaris(BaseDeployment):
 
     flow_input = {
         'input': {
-            'staging_dir': staging_collection.path / 'xpcs_staging',
+            'staging_dir': '/global/homes/r/rchard/xpcs_staging',
         }
     }
 
