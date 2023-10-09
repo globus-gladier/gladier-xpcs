@@ -191,7 +191,7 @@ class RyanNERSC(BaseDeployment):
 
     compute_endpoints = {
         'login_node_endpoint': '398d7225-0015-4270-b40c-5e9f9044127e',
-        'compute_endpoint': '',
+        'compute_endpoint': '398d7225-0015-4270-b40c-5e9f9044127e',
     }
 
     flow_input = {
