@@ -13,6 +13,7 @@ from gladier_xpcs import log  # noqa Add INFO logging
 
 from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer
 from gladier.managers.login_manager import CallbackLoginManager
+from gladier import FlowsManager
 
 from typing import List, Mapping, Union
 import traceback
@@ -59,7 +60,8 @@ if __name__ == '__main__':
     if args.atype not in atype_options:
         raise ValueError(f'Invalid --atype, must be one of: {", ".join(atype_options)}')
 
-    corr_flow = XPCSBoost()
+    fm = FlowsManager(flow_id="72e6469a-cf30-46bc-bff4-94dca46f2459", on_change=None)
+    corr_flow = XPCSBoost(flows_manager=fm)
 
     flow_input = corr_flow.get_xpcs_input(
         deployment, args.raw, args.hdf, args.qmap,
