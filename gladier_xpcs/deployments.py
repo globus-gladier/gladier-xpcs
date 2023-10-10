@@ -11,6 +11,8 @@ clutch = SharedCollection('fdc7e74a-fa78-11e8-9342-0e3d676669f4', '/', name='APS
 theta_ep = SharedCollection('08925f04-569f-11e7-bef8-22000b9a448b', '/', name='alcf#dtn_theta')
 apsdataprocessing = SharedCollection('98d26f35-e5d5-4edd-becf-a75520656c64', 
                                      '/eagle/APSDataProcessing/aps8idi/', name='APS8IDI')
+nersc_permutter = SharedCollection('6bdc7956-fc0f-4ad2-989c-7aa5ee643a79', 
+                                     '/', name='NERSC#Perlmutter')
 
 class BaseDeployment:
     source_collection: SharedCollection = None
@@ -174,6 +176,38 @@ class APS8IDIPolaris(BaseDeployment):
         'publish_gather_metadata_function_id': '35f120b3-ccf3-4bc2-89fb-002e173a8f2f',
     }
 
+class RyanNERSC(BaseDeployment):
+
+    source_collection = xpcs_data
+    staging_collection = nersc_permutter
+    pub_collection = xpcs_data
+    service_account = False
+
+    globus_endpoints = {
+        # Eagle -- XPCS Data 8-ID APS
+        'globus_endpoint_source': xpcs_data.uuid,
+        'globus_endpoint_proc': nersc_permutter.uuid,
+    }
+
+    compute_endpoints = {
+        'login_node_endpoint': '398d7225-0015-4270-b40c-5e9f9044127e',
+        'compute_endpoint': '398d7225-0015-4270-b40c-5e9f9044127e',
+    }
+
+    flow_input = {
+        'input': {
+            'staging_dir': '/global/homes/r/rchard/xpcs_staging',
+        }
+    }
+
+    function_ids = {
+        'acquire_nodes_function_id': 'dc9496aa-51b4-4e7b-98d9-62208204acff',
+        'xpcs_boost_corr_function_id': '28ca0dc6-624d-4403-8d99-54c0e130624f',
+        'make_corr_plots_function_id': '4d14f282-9e2c-44cb-9b90-91804c88cdfc',
+        'gather_xpcs_metadata_function_id': '9bbd0c81-6f4c-4666-aab8-1a0ed5cc80b5',
+        'publish_gather_metadata_function_id': 'c57f91a8-56e4-432c-871c-efb4d20fc87f',
+    }
+
 
 class RafPolaris(BaseDeployment):
 
@@ -201,4 +235,5 @@ deployment_map = {
     'ryan-polaris': RyanPolaris(),
     'nick-polaris-gpu': NickPolarisGPU(),
     'aps8idi-polaris': APS8IDIPolaris(),
+    'ryan-nersc': RyanNERSC(),
 }
