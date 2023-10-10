@@ -14,13 +14,13 @@ class SearchCollector(object):
     index has over another."""
     DEFAULT_SEARCH_KWARGS = {'limit': 10000,
                              'filters': []}
-    PROJECT_FILTER = {
-        'field_name': 'project_metadata.project-slug',
-        'type': 'match_all',
-        'values': []
-    }
+    # PROJECT_FILTER = {
+    #     'field_name': 'project_metadata.project-slug',
+    #     'type': 'match_all',
+    #     'values': []
+    # }
     # Supported algorithms in the remote file manifest.
-    EXPECTED_ALGORITHMS = ['md5', 'sha256']
+    EXPECTED_ALGORITHMS = ['sha256']
     # For each search record, where is the file manifest? Used by
     # get_manifest() for indices that natively support Remote File Manifests
     MANIFEST_KEY = 'files'

@@ -18,7 +18,8 @@ class XPCSReprocessingSearchCollector(SearchCollector):
     }
     XPCS_DATA_EXTENSIONS = ('.hdf', '.imm', '.bin')
 
-    def filter_xpcs_data_files(manifest, allowed_extensions=XPCS_DATA_EXTENSIONS):
+    @classmethod
+    def filter_xpcs_data_files(cls, manifest, allowed_extensions=XPCS_DATA_EXTENSIONS):
         return [m for m in manifest if any(
             m['filename'].endswith(extension) for extension in allowed_extensions
         )]
@@ -49,7 +50,12 @@ class XPCSReprocessingSearchCollector(SearchCollector):
 
     @classmethod
     def get_hdf(cls, manifest):
-        return cls.get_manifest_url_path(cls.get_single_file_with_extension(manifest, ['.hdf'])['url'])
+        for f in manifest:
+            if f['url'].endswith('.hdf') and 'input' in f['url']:
+                path = cls.get_manifest_url_path(f['url'])
+                log.debug(f'USING HDF: {path}')
+                return path
+        raise ValueError(f'Failed to find an HDF file with the given manifestq')
 
     
     @classmethod

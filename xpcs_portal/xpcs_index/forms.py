@@ -1,10 +1,11 @@
-from django import forms
 import json
 import logging
 import os
+from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit, HTML
 from xpcs_portal.xpcs_index import models
+from xpcs_portal.xpcs_index.apps import AVAILABLE_DEPLOYMENTS
 from concierge_app.forms import SubjectSelectManifestCheckoutForm
 
 from xpcs_portal.xpcs_index.search_collector import XPCSReprocessingSearchCollector
@@ -14,7 +15,6 @@ log = logging.getLogger(__name__)
 
 class ReprocessDatasetsCheckoutForm(SubjectSelectManifestCheckoutForm):
     SEARCH_COLLECTOR_CLASS = XPCSReprocessingSearchCollector
-    CHOICES = [("alcf", "ALCF"), ("nersc", "NERSC")]
     QMAP_CHOICES = [(os.path.join("/XPCSDATA/partitionMapLibrary/2019-1/", p), p) for p in [
         "Rigaku_test.h5",
         "Rigaku_test_2.h5",
@@ -103,7 +103,7 @@ class ReprocessDatasetsCheckoutForm(SubjectSelectManifestCheckoutForm):
     ]
     
 
-    facility = forms.ChoiceField(choices=CHOICES)
+    facility = forms.ChoiceField(choices=[(k, k.upper()) for k in AVAILABLE_DEPLOYMENTS])
     options_cache = forms.CharField(label='Options', required=False)
     qmap_ep = forms.CharField(initial="74defd5b-5f61-42fc-bcc4-834c9f376a4f", widget=forms.TextInput(attrs={"readonly": True}))
     qmap_parameter_file = forms.ChoiceField(choices=QMAP_CHOICES)
