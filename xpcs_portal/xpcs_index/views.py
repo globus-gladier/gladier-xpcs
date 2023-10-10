@@ -16,7 +16,7 @@ from gladier_xpcs.flows import XPCSReprocessingFlow
 
 from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm
 from xpcs_portal.xpcs_index.models import ReprocessingTask, FilenameFilter
-from xpcs_portal.xpcs_index.apps import REPROCESSING_FLOW_DEPLOYMENT
+from gladier_xpcs.deployments import deployment_map
 from xpcs_portal.xpcs_index.flows import batch_flow
 from xpcs_portal.xpcs_index.mixins import PaginatedSearchView
 
@@ -64,13 +64,13 @@ class XPCSReprocessingCheckoutView(ManifestCheckoutView):
     template_name = 'xpcs/reprocess-datasets-checkout.html'
 
     @property
-    def reprocessing_data(self):
-        return get_index(self.kwargs['index'])['reprocessing']
+    def reprocessing_flow(self):
+        return get_index(self.kwargs['index'])['reprocessing_flow']
 
     def ensure_authorized(self):
         user_groups = get_user_groups(self.request.user)
         try:
-            az_group = next(filter(lambda g: g['id'] == self.reprocessing_data['group'], user_groups))
+            az_group = next(filter(lambda g: g['id'] == self.reprocessing_flow['group'], user_groups))
             assert any(m['status'] == 'active' for m in az_group['my_memberships'])
         except (StopIteration, AssertionError):
             raise ValueError(f'User {self.request.user} is not authorized to run this flow!')
@@ -87,14 +87,17 @@ class XPCSReprocessingCheckoutView(ManifestCheckoutView):
         user = self.request.user
         sc = form.get_search_collector()
 
-        reprocessing = self.reprocessing_data
+
+        reprocessing = self.reprocessing_flow
+        deployment = deployment_map[form.cleaned_data['facility']]
+
         flow = reprocessing['flow_id']
         try:
             self.ensure_authorized()
-            rdata = self.reprocessing_data
-            run_inputs = sc.get_input_files(REPROCESSING_FLOW_DEPLOYMENT, form.cleaned_data)
+            rdata = self.reprocessing_flow
+            run_inputs = sc.get_input_files(deployment, form.cleaned_data)
             log.debug(f'Attempting to start {len(run_inputs)} flow runs.')
-            batch_flow(reprocessing, run_inputs)
+            batch_flow(reprocessing, form.cleaned_data['facility'], run_inputs)
             messages.success(self.request, f'Processing data in {len(run_inputs)} flow runs')
         except Exception as e:
             raise
