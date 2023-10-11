@@ -235,5 +235,5 @@ deployment_map = {
     'ryan-polaris': RyanPolaris(),
     'nick-polaris-gpu': NickPolarisGPU(),
     'aps8idi-polaris': APS8IDIPolaris(),
-    'ryan-nersc': RyanNERSC(),
+    'nersc': RyanNERSC(),
 }
