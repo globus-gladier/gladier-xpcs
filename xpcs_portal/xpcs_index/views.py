@@ -89,15 +89,16 @@ class XPCSReprocessingCheckoutView(ManifestCheckoutView):
 
 
         reprocessing = self.reprocessing_flow
-        deployment = deployment_map[form.cleaned_data['facility']]
+        facility = form.cleaned_data['facility']
+        deployment = deployment_map[facility]
 
         flow = reprocessing['flow_id']
         try:
             self.ensure_authorized()
             rdata = self.reprocessing_flow
             run_inputs = sc.get_input_files(deployment, form.cleaned_data)
-            log.debug(f'Attempting to start {len(run_inputs)} flow runs.')
-            batch_flow(reprocessing, form.cleaned_data['facility'], run_inputs)
+            log.info(f'User {user} attempting to start {len(run_inputs)} flow runs at facility {facility}')
+            batch_flow(reprocessing, facility, run_inputs)
             messages.success(self.request, f'Processing data in {len(run_inputs)} flow runs')
         except Exception as e:
             raise
