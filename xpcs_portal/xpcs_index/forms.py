@@ -6,15 +6,12 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit, HTML
 from xpcs_portal.xpcs_index import models
 from xpcs_portal.xpcs_index.apps import AVAILABLE_DEPLOYMENTS
-from concierge_app.forms import SubjectSelectManifestCheckoutForm
 
-from xpcs_portal.xpcs_index.search_collector import XPCSReprocessingSearchCollector
 
 log = logging.getLogger(__name__)
 
 
-class ReprocessDatasetsCheckoutForm(SubjectSelectManifestCheckoutForm):
-    SEARCH_COLLECTOR_CLASS = XPCSReprocessingSearchCollector
+class ReprocessDatasetsCheckoutForm(forms.Form):
     QMAP_CHOICES = [(os.path.join("/XPCSDATA/partitionMapLibrary/2019-1/", p), p) for p in [
         "Rigaku_test.h5",
         "Rigaku_test_2.h5",
@@ -93,12 +90,6 @@ class ReprocessDatasetsCheckoutForm(SubjectSelectManifestCheckoutForm):
         "zjiang201902_qmap_Generic_FullImage_Lambda.h5",
     ]]
     HIDDEN_FIELDS = [
-        'index',
-        'name',
-        'project',
-        'query',
-        'filters',
-        'search_url',
         'qmap_ep',
     ]
     
@@ -165,28 +156,3 @@ class ReprocessDatasetsCheckoutForm(SubjectSelectManifestCheckoutForm):
         )
         for field in self.HIDDEN_FIELDS:
             self.fields[field].widget = forms.HiddenInput()
-    #
-    # def clean(self):
-    #     self.cleaned_data['options_cache'] = json.dumps({
-    #         'rigaku': self.data.get('rigaku', False)
-    #     }, indent=2)
-    #     return self.cleaned_data
-
-    def get_search_collector(self):
-        sc = super().get_search_collector()
-        valid_gmetas = []
-        for result in sc.search_data['gmeta']:
-            hdfs = len(list(filter(lambda f: f['url'].endswith('.hdf'),
-                              result['entries'][0]['content'].get('files', []))))
-            imm = len(list(filter(lambda f: f['url'].endswith('.imm'),
-                             result['entries'][0]['content'].get('files', []))))
-            bin = len(list(filter(lambda f: f['url'].endswith('.bin'),
-                             result['entries'][0]['content'].get('files', []))))
-            all_hdf = hdfs == 2
-            rigaku = hdfs == 1 and bin == 1
-            xpcs_lambda = hdfs == 1 and imm == 1
-            if all_hdf or rigaku or xpcs_lambda:
-                valid_gmetas.append(result)
-        log.debug(f'Loading form with {len(valid_gmetas)}/{len(sc.search_data["gmeta"])} valid results')
-        sc.search_data['gmeta'] = valid_gmetas
-        return sc
