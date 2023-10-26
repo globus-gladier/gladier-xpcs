@@ -6,7 +6,7 @@ from globus_portal_framework.views.generic import SearchView, DetailView
 from globus_app_flows.views import BatchCreateView
 from globus_app_flows.models import FlowAuthorization
 
-from xpcs_portal.xpcs_index.collectors import XPCSSearchCollector
+from xpcs_portal.xpcs_index.collectors import XPCSSearchCollector, XPCSTransferCollector
 from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm
 from xpcs_portal.xpcs_index.models import FilenameFilter
 from xpcs_portal.xpcs_index.mixins import PaginatedSearchView
