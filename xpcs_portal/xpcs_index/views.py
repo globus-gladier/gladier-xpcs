@@ -53,13 +53,17 @@ class XPCSReprocessing(object):
     form_class = ReprocessDatasetsCheckoutForm
     template_name = 'xpcs/reprocess-datasets-checkout.html'
     flow = '72e6469a-cf30-46bc-bff4-94dca46f2459'
-    authorization_type = "CONFIDENTIAL_CLIENT"
+    authorization_type = "CUSTOM"
     group = "368beb47-c9c5-11e9-b455-0efb3ba9a670"
     # The auth key is set dynamically through the form by get_flow_authorization instead
     # authorization_key = "aps8idi-polaris"
 
     def get_flow_authorization(self, authorization_type: str, authorization_key: str, form: forms.Form = None) -> FlowAuthorization:
-        return super().get_flow_authorization(authorization_type, form.cleaned_data['facility'], form)
+        akey = {
+            'aps8idi-polaris': 'CONFIDENTIAL_CLIENT',
+            'aps8idi-polaris-backup': 'USER'
+        }
+        return super().get_flow_authorization(akey[form.cleaned_data['facility']], form.cleaned_data['facility'], form)
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)

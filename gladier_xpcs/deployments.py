@@ -64,9 +64,19 @@ class NickPolarisGPU(BaseDeployment):
 
     compute_endpoints = {
         # Theta login
-        'login_node_endpoint': '553e7b64-0480-473c-beef-be762ba979a9',
-        # Containers
-        'compute_endpoint': '4a6f2b52-d392-4a57-ad77-ae6e86daf503',
+        # 'login_node_endpoint': '553e7b64-0480-473c-beef-be762ba979a9',
+        # # Containers
+        # 'compute_endpoint': '4a6f2b52-d392-4a57-ad77-ae6e86daf503',
+        'login_node_endpoint': '2fe84982-1c50-45bf-8d68-e4b659c128cb',
+        'compute_endpoint': '2fe84982-1c50-45bf-8d68-e4b659c128cb',
+    }
+
+    function_ids = {
+        "acquire_nodes_function_id": "1f937cb4-7276-4867-bb9f-6c42031be090",
+        "xpcs_boost_corr_function_id": "d95600d7-2f5c-4453-8d25-655b8429e839",
+        "make_corr_plots_function_id": "7245d81b-4530-4ee8-b246-4ad043a71da2",
+        "gather_xpcs_metadata_function_id": "a6570e9f-69a3-470a-bc3d-39f87d794f82",
+        "publish_gather_metadata_function_id": "5756975d-0b08-4f5f-8314-1417c6e3db54"
     }
 
     flow_input = {
@@ -235,5 +245,7 @@ deployment_map = {
     'ryan-polaris': RyanPolaris(),
     'nick-polaris-gpu': NickPolarisGPU(),
     'aps8idi-polaris': APS8IDIPolaris(),
+    # This is a hack for the SC demo in case we can't get nodes. You can remove this after Nov 16th, 2023.
+    'aps8idi-polaris-backup': NickPolarisGPU(),
     'nersc': RyanNERSC(),
 }

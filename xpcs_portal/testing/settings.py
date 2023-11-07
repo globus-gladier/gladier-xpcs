@@ -152,6 +152,7 @@ LOGGING = {
         'automate_app': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
         'concierge_app': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
         'globus_app_flows': {'handlers': ['stream'], 'level': 'INFO', 'propagate': True},
+        'alcf_data_portal': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
     },
 }
 

@@ -122,8 +122,12 @@ class XPCSSearchCollector(SearchCollector):
         return run_input
 
     def generate_run_input(self, deployment, imm_file, hdf_file, qmap_file) -> dict:
+        gpu_flag = 0
+        if deployment.service_account is False:
+            gpu_flag = -1
+        log.info(f"GPU Flag set to {gpu_flag} for service account {deployment.__class__.__name__}")
         return XPCSBoost(login_manager=None).get_xpcs_input(
-            deployment, imm_file, hdf_file, qmap_file
+            deployment, imm_file, hdf_file, qmap_file, gpu_flag=gpu_flag
         )
 
     def get_run_start_kwargs(self, collector_data, form_data):

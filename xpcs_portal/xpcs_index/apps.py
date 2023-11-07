@@ -18,6 +18,7 @@ RESOURCE_SERVER = '74defd5b-5f61-42fc-bcc4-834c9f376a4f'
 AVAILABLE_DEPLOYMENTS = {
     'aps8idi-polaris',
     # 'nersc'
+    'aps8idi-polaris-backup',
 }
 
 SEARCH_INDEXES = {
