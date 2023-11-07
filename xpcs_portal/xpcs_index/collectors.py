@@ -102,10 +102,10 @@ class XPCSSearchCollector(SearchCollector):
 
     @staticmethod
     def get_dataset_directory(hdf_file: str) -> pathlib.Path:
-        dataset_name = pathlib.Path(hdf).name
+        hdf_file_path = pathlib.Path(hdf_file)
+        index = list(reversed(hdf_file_path.parts)).index(hdf_file_path.name)
 
-        index = list(reversed(hdf.parts)).index(dataset_name)
-        path = pathlib.Path(str(hdf))
+        path = hdf_file_path
         for _ in range(index):
             path = path.parent
         return path
@@ -117,11 +117,14 @@ class XPCSSearchCollector(SearchCollector):
         imm_file = self.get_file_by_extension(input_files, ".imm")
         deployment = deployment_map[form_data["facility"]]
 
-        run_input = XPCSBoost(login_manager=None).get_xpcs_input(
-            deployment, imm_file, hdf_file, form_data["qmap_parameter_file"]
-        )
+        run_input = self.generate_run_input(deployment, imm_file, hdf_file, form_data["qmap_parameter_file"])
         run_input["input"].update(deployment.function_ids)
         return run_input
+
+    def generate_run_input(self, deployment, imm_file, hdf_file, qmap_file) -> dict:
+        return XPCSBoost(login_manager=None).get_xpcs_input(
+            deployment, imm_file, hdf_file, qmap_file
+        )
 
     def get_run_start_kwargs(self, collector_data, form_data):
         files = collector_data["entries"][0]["content"]["files"]
@@ -137,3 +140,28 @@ class XPCSSearchCollector(SearchCollector):
                 "urn:globus:groups:id:368beb47-c9c5-11e9-b455-0efb3ba9a670"
             ],
         }
+
+class XPCSSuffixSearchCollector(XPCSSearchCollector):
+
+    import_string = "xpcs_portal.xpcs_index.collectors.XPCSSuffixSearchCollector"
+
+    def get_run_input(self, collector_data, form_data):
+        files = collector_data["entries"][0]["content"]["files"]
+        input_files = self.get_files_based_on_parent(files, "input")
+        hdf_file = self.get_file_by_extension(input_files, ".hdf")
+        imm_file = self.get_file_by_extension(input_files, ".imm")
+
+        dataset_dir = pathlib.Path(hdf_file).stem
+        new_dataset_dir = f"{dataset_dir}_new_suffix"
+
+        deployment = deployment_map[form_data["facility"]]
+
+        run_input = self.generate_run_input(deployment, imm_file.replace(dataset_dir, new_dataset_dir), hdf_file.replace(dataset_dir, new_dataset_dir), form_data["qmap_parameter_file"])
+        # Replace the suffix name with the "old" name, which is the only thing that should be "normal"
+        for item in run_input["input"]["source_transfer"]["transfer_items"]:
+            from pprint import pprint
+            pprint(item)
+            item["source_path"] = item["source_path"].replace(new_dataset_dir, dataset_dir)
+
+        run_input["input"].update(deployment.function_ids)
+        return run_input

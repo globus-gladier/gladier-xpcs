@@ -17,6 +17,7 @@ urlpatterns = [
     path('', include('social_django.urls', namespace='social')),
     path('', include('globus_portal_framework.urls')),
     path('admin/', admin.site.urls),
+    path('', include('globus_app_flows.urls')),
     # path('automate/', include('automate_app.urls', namespace='automate-app'))
 ]
 

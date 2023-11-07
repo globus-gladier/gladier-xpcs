@@ -6,7 +6,7 @@ from globus_portal_framework.views.generic import SearchView, DetailView
 from globus_app_flows.views import BatchCreateView
 from globus_app_flows.models import FlowAuthorization
 
-from xpcs_portal.xpcs_index.collectors import XPCSSearchCollector, XPCSTransferCollector
+from xpcs_portal.xpcs_index.collectors import XPCSSearchCollector, XPCSTransferCollector, XPCSSuffixSearchCollector
 from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm
 from xpcs_portal.xpcs_index.models import FilenameFilter
 from xpcs_portal.xpcs_index.mixins import PaginatedSearchView
@@ -47,14 +47,14 @@ class XPCSDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class XPCSReprocessingCheckoutView(BatchCreateView):
+class XPCSReprocessing(object):
     """Reprocessing Checkout starts the flow immediately on verifying
     each of the subject it can process are valid"""
     form_class = ReprocessDatasetsCheckoutForm
     template_name = 'xpcs/reprocess-datasets-checkout.html'
-    collector = XPCSSearchCollector
     flow = '72e6469a-cf30-46bc-bff4-94dca46f2459'
     authorization_type = "CONFIDENTIAL_CLIENT"
+    group = "368beb47-c9c5-11e9-b455-0efb3ba9a670"
     # The auth key is set dynamically through the form by get_flow_authorization instead
     # authorization_key = "aps8idi-polaris"
 
@@ -69,3 +69,12 @@ class XPCSReprocessingCheckoutView(BatchCreateView):
     def get_success_url(self):
         return reverse_lazy('search',
                             kwargs={'index': 'xpcs'})
+
+
+class XPCSReprocessingSearchReprocessing(XPCSReprocessing, BatchCreateView):
+    # collector = XPCSSearchCollector
+    collector = XPCSSuffixSearchCollector
+
+
+class XPCSReprocessingTransferReprocessing(XPCSReprocessing, BatchCreateView):
+    collector = XPCSTransferCollector
