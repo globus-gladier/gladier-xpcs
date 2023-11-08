@@ -54,6 +54,7 @@ class XPCSTransferCollector(TransferCollector):
 
         hdf_file = XPCSSearchCollector.get_file_by_extension(files, ".hdf")
         imm_file = XPCSSearchCollector.get_file_by_extension(files, ".imm")
+        # Fetch qmap from the cluster_results folder in the same dir as the dataset
         qmap_file = self.get_qmap_file(hdf_file)
         deployment = deployment_map[form_data["facility"]]
 
@@ -161,7 +162,7 @@ class XPCSSuffixSearchCollector(XPCSSearchCollector):
         imm_file = self.get_file_by_extension(input_files, ".imm")
 
         dataset_dir = pathlib.Path(hdf_file).stem
-        new_dataset_dir = f"{dataset_dir}_new_suffix"
+        new_dataset_dir = f"{dataset_dir}_{form_data['reprocessing_suffix']}"
 
         deployment = deployment_map[form_data["facility"]]
 

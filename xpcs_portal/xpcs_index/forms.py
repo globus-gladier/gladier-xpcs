@@ -112,6 +112,7 @@ class ReprocessDatasetsCheckoutForm(forms.Form):
                 'Settings for reprocessing data at the selected facility',
                 'facility',
                 'qmap_parameter_file',
+                'reprocessing_suffix',
                 *self.HIDDEN_FIELDS,
             #     HTML("""
             #         <div class="alert alert-secondary" role="alert">

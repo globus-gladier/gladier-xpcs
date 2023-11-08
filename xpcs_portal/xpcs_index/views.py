@@ -71,8 +71,8 @@ class XPCSReprocessing(object):
         return context
 
     def get_success_url(self):
-        return reverse_lazy('search',
-                            kwargs={'index': 'xpcs'})
+        url = reverse_lazy('search', kwargs={'index': 'xpcs'})
+        return f'{url}?flow={self.flow}'
 
 
 class XPCSReprocessingSearchReprocessing(XPCSReprocessing, BatchCreateView):
