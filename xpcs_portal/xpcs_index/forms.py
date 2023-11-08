@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from django import forms
+from django.utils import timezone
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit, HTML
 from xpcs_portal.xpcs_index import models
@@ -98,7 +99,7 @@ class ReprocessDatasetsCheckoutForm(forms.Form):
     options_cache = forms.CharField(label='Options', required=False)
     qmap_ep = forms.CharField(initial="74defd5b-5f61-42fc-bcc4-834c9f376a4f", widget=forms.TextInput(attrs={"readonly": True}))
     qmap_parameter_file = forms.ChoiceField(choices=QMAP_CHOICES)
-    reprocessing_suffix = forms.CharField(required=False)
+    reprocessing_suffix = forms.CharField(initial=timezone.now().isoformat().split('T')[0].replace('-', '_'))
 
     class Meta:
         model = models.ReprocessingTask
