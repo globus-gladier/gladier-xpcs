@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'globus_portal_framework',
     'social_django',
     'automate_app',
+    'globus_app_flows',
     'concierge_app',
     'xpcs_portal.xpcs_index',
     'alcf_data_portal',
@@ -150,6 +151,8 @@ LOGGING = {
         'xpcs_portal': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
         'automate_app': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
         'concierge_app': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
+        'globus_app_flows': {'handlers': ['stream'], 'level': 'INFO', 'propagate': True},
+        'alcf_data_portal': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
     },
 }
 

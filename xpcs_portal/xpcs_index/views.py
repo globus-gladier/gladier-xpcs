@@ -1,23 +1,14 @@
 import logging
-import pathlib
-import urllib
-import typing as t
-import copy
-from django.urls import reverse, reverse_lazy
-from django.contrib import messages
-from django.shortcuts import redirect
+from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django import forms
 from globus_portal_framework.views.generic import SearchView, DetailView
-from globus_portal_framework.gsearch import get_pagination, get_index
-from globus_portal_framework.gclients import get_user_groups
-from concierge_app.views.generic import ManifestCheckoutView
-from automate_app.models import Action, Flow
-from gladier_xpcs.flows import XPCSReprocessingFlow
+from globus_app_flows.views import BatchCreateView
+from globus_app_flows.models import FlowAuthorization
 
+from xpcs_portal.xpcs_index.collectors import XPCSSearchCollector, XPCSTransferCollector, XPCSSuffixSearchCollector
 from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm
-from xpcs_portal.xpcs_index.models import ReprocessingTask, FilenameFilter
-from gladier_xpcs.deployments import deployment_map
-from xpcs_portal.xpcs_index.flows import batch_flow
+from xpcs_portal.xpcs_index.models import FilenameFilter
 from xpcs_portal.xpcs_index.mixins import PaginatedSearchView
 
 log = logging.getLogger(__name__)
@@ -56,62 +47,38 @@ class XPCSDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class XPCSReprocessingCheckoutView(ManifestCheckoutView):
+class XPCSReprocessing(object):
     """Reprocessing Checkout starts the flow immediately on verifying
     each of the subject it can process are valid"""
-    model = ReprocessingTask
     form_class = ReprocessDatasetsCheckoutForm
     template_name = 'xpcs/reprocess-datasets-checkout.html'
+    flow = '72e6469a-cf30-46bc-bff4-94dca46f2459'
+    authorization_type = "CUSTOM"
+    group = "368beb47-c9c5-11e9-b455-0efb3ba9a670"
+    # The auth key is set dynamically through the form by get_flow_authorization instead
+    # authorization_key = "aps8idi-polaris"
 
-    @property
-    def reprocessing_flow(self):
-        return get_index(self.kwargs['index'])['reprocessing_flow']
+    def get_flow_authorization(self, authorization_type: str, authorization_key: str, form: forms.Form = None) -> FlowAuthorization:
+        akey = {
+            'aps8idi-polaris': 'CONFIDENTIAL_CLIENT',
+            'aps8idi-polaris-backup': 'USER'
+        }
+        return super().get_flow_authorization(akey[form.cleaned_data['facility']], form.cleaned_data['facility'], form)
 
-    def ensure_authorized(self):
-        user_groups = get_user_groups(self.request.user)
-        try:
-            az_group = next(filter(lambda g: g['id'] == self.reprocessing_flow['group'], user_groups))
-            assert any(m['status'] == 'active' for m in az_group['my_memberships'])
-        except (StopIteration, AssertionError):
-            raise ValueError(f'User {self.request.user} is not authorized to run this flow!')
-
-    def get_search_reference_url(self):
-        return self.get_success_url()
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['index'] = self.kwargs['index']
+        return context
 
     def get_success_url(self):
         return reverse_lazy('search',
                             kwargs={'index': 'xpcs'})
 
-    def form_valid(self, form):
-        log.debug(f'Form valid for {form.__class__}')
-        user = self.request.user
-        sc = form.get_search_collector()
+
+class XPCSReprocessingSearchReprocessing(XPCSReprocessing, BatchCreateView):
+    # collector = XPCSSearchCollector
+    collector = XPCSSuffixSearchCollector
 
 
-        reprocessing = self.reprocessing_flow
-        facility = form.cleaned_data['facility']
-        deployment = deployment_map[facility]
-
-        flow = reprocessing['flow_id']
-        try:
-            self.ensure_authorized()
-            rdata = self.reprocessing_flow
-            run_inputs = sc.get_input_files(deployment, form.cleaned_data)
-            log.info(f'User {user} attempting to start {len(run_inputs)} flow runs at facility {facility}')
-            batch_flow(reprocessing, facility, run_inputs)
-            messages.success(self.request, f'Processing data in {len(run_inputs)} flow runs')
-        except Exception as e:
-            raise
-            log.exception(e)
-            messages.error(self.request, f'Failed to start runs: {str(e)}')
-
-        orig_q = urllib.parse.urlparse(self.request.POST.get('search_url')).query
-        new_q = f'{orig_q}&{urllib.parse.urlencode({"flow": flow})}'
-        return redirect(f'{self.get_success_url()}?{new_q}')
-
-    def get_parameters(self, flow_input):
-        return {
-            'label': str(pathlib.Path(flow_input['input']['hdf_file']).parent.name)[:62],
-            'manage_by': '368beb47-c9c5-11e9-b455-0efb3ba9a670',
-            'monitor_by': '368beb47-c9c5-11e9-b455-0efb3ba9a670',
-        }
+class XPCSReprocessingTransferReprocessing(XPCSReprocessing, BatchCreateView):
+    collector = XPCSTransferCollector
