@@ -146,6 +146,11 @@ class XPCSSearchCollector(SearchCollector):
         }
 
 class XPCSSuffixSearchCollector(XPCSSearchCollector):
+    """
+    This is for demoing stuff at SC. This should probably be removed at some point.
+
+    Basically, re-run a record and ingest it with a new suffix
+    """
 
     import_string = "xpcs_portal.xpcs_index.collectors.XPCSSuffixSearchCollector"
 
@@ -163,8 +168,6 @@ class XPCSSuffixSearchCollector(XPCSSearchCollector):
         run_input = self.generate_run_input(deployment, imm_file.replace(dataset_dir, new_dataset_dir), hdf_file.replace(dataset_dir, new_dataset_dir), form_data["qmap_parameter_file"])
         # Replace the suffix name with the "old" name, which is the only thing that should be "normal"
         for item in run_input["input"]["source_transfer"]["transfer_items"]:
-            from pprint import pprint
-            pprint(item)
             item["source_path"] = item["source_path"].replace(new_dataset_dir, dataset_dir)
 
         run_input["input"].update(deployment.function_ids)
