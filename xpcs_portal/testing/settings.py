@@ -50,8 +50,10 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'globus_portal_framework',
     'social_django',
+    # automate_app can be removed once "0001_new_2023_11_16_initial_xpcs_migration.py" is applied
     'automate_app',
     'globus_app_flows',
+    # concierge_app can be removed once "0001_new_2023_11_16_initial_xpcs_migration.py" is applied
     'concierge_app',
     'xpcs_portal.xpcs_index',
     'alcf_data_portal',
