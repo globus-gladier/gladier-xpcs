@@ -16,10 +16,10 @@ class XPCSTransferCollector(TransferCollector):
     import_string = "xpcs_portal.xpcs_index.collectors.XPCSTransferCollector"
     SKIP_FOLDERS = ["ALCF_results", "cluster_results", "logs"]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, collection=None, path=None, *args, **kwargs):
         self.cluster_results = None
         # super().__init__(collection="74defd5b-5f61-42fc-bcc4-834c9f376a4f", path="/XPCSDATA/2019-1/comm201901/", user=kwargs["user"])
-        super().__init__(*args, **kwargs)
+        super().__init__(collection, path, *args, **kwargs)
 
     def get_files(self, globus_dir: str):
         tc = self.get_transfer_client()

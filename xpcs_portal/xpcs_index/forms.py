@@ -4,12 +4,35 @@ import os
 from django import forms
 from django.utils import timezone
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, Submit, HTML
+from crispy_forms.layout import Layout, Fieldset, Submit, HTML, Field
 from xpcs_portal.xpcs_index import models
 from xpcs_portal.xpcs_index.apps import AVAILABLE_DEPLOYMENTS
 
 
 log = logging.getLogger(__name__)
+
+class CollectionSelectionForm(forms.Form):
+
+    facility = forms.ChoiceField(choices=[(k, k.upper()) for k in AVAILABLE_DEPLOYMENTS], initial="APS-8IDI-POLARIS")
+    cycle = forms.ChoiceField()
+    parent = forms.ChoiceField()
+    qmap = forms.ChoiceField(help_text="If blank, the default qmap in cluster_results/ will be used for each dataset")
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                "Select a path below",
+                "facility",
+                Field("cycle", onchange="getParent()"),
+                "parent",
+                # "qmap",
+            ),
+            Submit('submit', 'Submit', css_class='button white'),
+        )
+
 
 
 class ReprocessDatasetsCheckoutForm(forms.Form):

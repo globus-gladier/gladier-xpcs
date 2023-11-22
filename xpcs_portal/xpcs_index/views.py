@@ -7,7 +7,7 @@ from globus_app_flows.views import BatchCreateView
 from globus_app_flows.models import FlowAuthorization
 
 from xpcs_portal.xpcs_index.collectors import XPCSSearchCollector, XPCSTransferCollector, XPCSSuffixSearchCollector
-from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm
+from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm, CollectionSelectionForm
 from xpcs_portal.xpcs_index.models import FilenameFilter
 from xpcs_portal.xpcs_index.mixins import PaginatedSearchView
 
@@ -80,5 +80,42 @@ class XPCSReprocessingSearchReprocessing(XPCSReprocessing, BatchCreateView):
     collector = XPCSSuffixSearchCollector
 
 
-class XPCSReprocessingTransferReprocessing(XPCSReprocessing, BatchCreateView):
+# class XPCSComputeTransfer(XPCSReprocessing, BatchCreateView):
+#     collector = XPCSTransferCollector
+
+
+class XPCSComputeTransfer(XPCSReprocessing, BatchCreateView):
+    template_name = 'xpcs/transfer-selection-form.html'
+    form_class = CollectionSelectionForm
     collector = XPCSTransferCollector
+    collection = "74defd5b-5f61-42fc-bcc4-834c9f376a4f"
+    path = "/XPCSDATA/"
+    cycle_exclude = ["spec_data", "partitionMapLibrary", "MDF", "AutomateTesting", "Automate"]
+    dataset_exclude = ["ALCF_results", "cluster_results", "logs"]
+
+    # def get(self, request, index, *args, **kwargs):
+    #     request = super().get(request, *args, **kwargs)
+    #     return request
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['index'] = self.kwargs['index']
+        context.update({
+            'collection': self.collection,
+            'path': self.path,
+            'cycle_exclude': self.cycle_exclude,
+            'dataset_exclude': self.dataset_exclude,
+        })
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        messages.success(self.request, "Started processing for new flow runs.")
+        return response
+
+    # def load_collector(self):
+    #     return {
+    #         "collection": self.collection,
+    #         "path": self.path,
+    #     }

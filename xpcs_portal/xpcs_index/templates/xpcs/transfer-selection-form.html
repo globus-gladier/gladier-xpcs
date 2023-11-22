@@ -1,0 +1,87 @@
+{%extends "globus-portal-framework/v2/detail-base.html"%}
+{% load static index_template crispy_forms_tags %}
+
+{%block headextras%}
+<link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+<script>
+
+    var collection = "{{collection}}";
+    var path = "{{path}}";
+    var cycle_exclude = {% autoescape off %}{{cycle_exclude}}{% endautoescape %};
+
+    function updateOptions(response, selector, exclude=[]) {
+        $(selector).empty();
+        return $.each(response.DATA, function(i, p) {
+            if(p.type == "dir" && !exclude.includes(p.name)) {
+                $(selector).append($('<option></option>').val(p.name).html(p.name));
+            }
+        });
+    }
+
+    function getParent() {
+        var cycle = $('#id_cycle').find(":selected").val();
+        var cycle_path = path + '/' + cycle
+        $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + cycle_path,
+              dataType: "json",
+              success: function(data) {updateOptions(data, "#id_parent")}
+        });
+    }
+
+    $( document ).ready(function() {
+        $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + path,
+            dataType: "json",
+            success: function(data) {data.DATA = data.DATA.reverse(); updateOptions(data, "#id_cycle", exclude=cycle_exclude)}}).then(getParent)
+        });
+</script>
+{{block.super}}
+{% endblock %}
+
+
+{% block body %}
+
+<div class="row">
+  <div class="col">
+    <h2 class="text-center">{{project_title}}</h2>
+  </div>
+</div>
+
+<div class="row mb-5">
+  <div class="col"></div>
+  <div class="col-10">
+    <div>
+      <h1 class="text-center">{%block checkout_title%}Reprocess Datasets{%endblock%}</h1>
+      <div class="card">
+        <div class="card-body">
+          {% block manifest_create_form %}
+
+          {% block flow_form %}
+          <form method="post" action="{% block checkout_form_action_url %}{% url 'xpcs-index:reprocessing' index %}{% endblock %}">
+          <div class="alert alert-info" role="alert">
+            <h5>Dataset Reprocessing</h5>
+          
+            <p>
+                TEST TES TTEST
+            </p>
+          
+          </div>
+          {% csrf_token %}
+          {% crispy form %}
+          
+          {% if form.errors %}
+          <div class="alert alert-danger" role="alert">
+          
+            {{form.errors}}
+          
+          </div>
+          {% endif %}
+          </form>
+          {% endblock %}
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col"></div>
+</div>
+
+{% endblock %}
