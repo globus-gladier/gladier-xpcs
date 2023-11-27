@@ -6,16 +6,25 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
+    """
+    This replaces all of the following old migrations present on xpcs. These included references to the
+    old automate app and concierge service. 
 
-    replaces = [('xpcs_index', '0001_initial'), ('xpcs_index', '0002_auto_20200626_1852'), ('xpcs_index', '0003_concierge_app_v2'), ('xpcs_index', '0004_filenamefilter'), ('xpcs_index', '0005_remove_reprocessingtask_options_cache')]
+    NOTE: THIS SHOULD BE REMOVED ONCE "0001_new_2023_11_16_initial_xpcs_migration.py" IS APPLIED ACROSS ALL
+    DEPLOYMENTS.
+    """
+
+    # Only use these migrations if you have reset history to a time when they exist.
+    # replaces = [('xpcs_index', '0001_initial'), ('xpcs_index', '0002_auto_20200626_1852'), ('xpcs_index', '0003_concierge_app_v2'), ('xpcs_index', '0004_filenamefilter'), ('xpcs_index', '0005_remove_reprocessingtask_options_cache')]
 
     initial = True
 
     dependencies = [
-        ('concierge_app', '0003_concierge_app_v2'),
-        ('concierge_app', '0002_mdf_publish_and_search_collections'),
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('automate_app', '0001_initial'),
+        # See "replaces" comment above.
+        # ('concierge_app', '0003_concierge_app_v2'),
+        # ('concierge_app', '0002_mdf_publish_and_search_collections'),
+        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        # ('automate_app', '0001_initial'),
     ]
 
     operations = [

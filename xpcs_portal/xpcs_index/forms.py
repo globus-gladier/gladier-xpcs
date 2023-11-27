@@ -102,7 +102,6 @@ class ReprocessDatasetsCheckoutForm(forms.Form):
     reprocessing_suffix = forms.CharField(initial=timezone.now().isoformat().split('T')[0].replace('-', '_'))
 
     class Meta:
-        model = models.ReprocessingTask
         fields = ['query', 'options_cache', 'qmap_ep', 'qmap_path', 'reprocessing_suffix']
 
     def __init__(self, *args, **kwargs):
