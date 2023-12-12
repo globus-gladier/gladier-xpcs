@@ -30,7 +30,15 @@
     $( document ).ready(function() {
         $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + path,
             dataType: "json",
-            success: function(data) {data.DATA = data.DATA.reverse(); updateOptions(data, "#id_cycle", exclude=cycle_exclude)}}).then(getParent)
+            success: function(data) {data.DATA = data.DATA.reverse(); updateOptions(data, "#id_cycle", exclude=cycle_exclude)},
+            error: function(data) {
+              console.log("Could not query data location")
+              console.log(data)
+              $('#eagle-down').removeAttr("hidden");
+              $('#reprocessing-block').attr("hidden", true);
+              $('#error-text').text(data.responseText)
+            }
+          }).then(getParent)
         });
 </script>
 {{block.super}}
@@ -50,7 +58,7 @@
   <div class="col-10">
     <div>
       <h1 class="text-center">{%block checkout_title%}Reprocess Datasets{%endblock%}</h1>
-      <div class="card">
+      <div class="card" id="reprocessing-block">
         <div class="card-body">
           {% block manifest_create_form %}
 
@@ -77,6 +85,15 @@
           </form>
           {% endblock %}
           {% endblock %}
+        </div>
+      </div>
+      <div class="card" id="eagle-down" hidden>
+        <div class="alert alert-danger" role="alert">
+          Eagle is curently unavailable, new processing jobs cannot be started.
+
+          <pre id="error-text" style="white-space: pre-wrap;">
+
+          </pre>
         </div>
       </div>
     </div>
