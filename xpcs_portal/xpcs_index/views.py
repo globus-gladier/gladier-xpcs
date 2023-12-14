@@ -1,13 +1,25 @@
 import logging
-from django.urls import reverse_lazy
+import urllib
+import pathlib
+from django.urls import reverse_lazy, reverse
+from django.views.generic.edit import FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 from django import forms
 from globus_portal_framework.views.generic import SearchView, DetailView
 from globus_app_flows.views import BatchCreateView
 from globus_app_flows.models import FlowAuthorization
+from globus_app_flows.models import Batch, Collector, Flow, FlowAuthorization
 
-from xpcs_portal.xpcs_index.collectors import XPCSSearchCollector, XPCSTransferCollector, XPCSSuffixSearchCollector
-from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm, CollectionSelectionForm
+from xpcs_portal.xpcs_index.collectors import (
+    XPCSSearchCollector,
+    XPCSTransferCollector,
+    XPCSSuffixSearchCollector,
+)
+from xpcs_portal.xpcs_index.forms import (
+    ReprocessDatasetsCheckoutForm,
+    CollectionSelectionForm,
+)
 from xpcs_portal.xpcs_index.models import FilenameFilter
 from xpcs_portal.xpcs_index.mixins import PaginatedSearchView
 
@@ -93,10 +105,6 @@ class XPCSComputeTransfer(XPCSReprocessing, BatchCreateView):
     cycle_exclude = ["spec_data", "partitionMapLibrary", "MDF", "AutomateTesting", "Automate"]
     dataset_exclude = ["ALCF_results", "cluster_results", "logs"]
 
-    # def get(self, request, index, *args, **kwargs):
-    #     request = super().get(request, *args, **kwargs)
-    #     return request
-
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         context['index'] = self.kwargs['index']
@@ -108,14 +116,25 @@ class XPCSComputeTransfer(XPCSReprocessing, BatchCreateView):
         })
         return context
 
+    def get_collector(self, collection: str, path: str) -> XPCSTransferCollector:
+        ctype = self.get_collector_class().get_import_string()
+        collector = Collector(
+            data=dict(collection=collection, path=path),
+            user=self.request.user,
+            collector_type=ctype,
+        )
+        return collector
+
     def form_valid(self, form):
-        response = super().form_valid(form)
+        response = FormView.form_valid(self, form)
+        authorization = self.get_flow_authorization(
+            self.authorization_type, self.authorization_key, form=form
+        )
+        path = pathlib.Path(self.path) / form.cleaned_data['cycle'] / form.cleaned_data['parent']
+        collector = self.get_collector(self.collection, str(path))
+        collector.save()
+        batch = self.get_batch(authorization, collector, form)
+        batch.save()
 
         messages.success(self.request, "Started processing for new flow runs.")
         return response
-
-    # def load_collector(self):
-    #     return {
-    #         "collection": self.collection,
-    #         "path": self.path,
-    #     }
