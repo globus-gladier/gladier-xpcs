@@ -14,9 +14,9 @@ log = logging.getLogger(__name__)
 class CollectionSelectionForm(forms.Form):
 
     facility = forms.ChoiceField(choices=[(k, k.upper()) for k in AVAILABLE_DEPLOYMENTS], initial="APS-8IDI-POLARIS")
-    cycle = forms.ChoiceField()
-    parent = forms.ChoiceField()
-    qmap = forms.ChoiceField(help_text="If blank, the default qmap in cluster_results/ will be used for each dataset")
+    cycle = forms.CharField(widget=forms.Select)
+    parent = forms.CharField(widget=forms.Select)
+    qmap = forms.CharField(widget=forms.Select, help_text="If blank, the default qmap in cluster_results/ will be used for each dataset", required=False)
 
 
     def __init__(self, *args, **kwargs):
