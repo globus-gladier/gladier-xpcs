@@ -63,7 +63,7 @@
           {% block manifest_create_form %}
 
           {% block flow_form %}
-          <form method="post" action="{% block checkout_form_action_url %}{% url 'xpcs-index:reprocessing' index %}{% endblock %}">
+          <form method="post" action="{% block checkout_form_action_url %}{% url 'xpcs-index:compute-transfer' index %}{% endblock %}">
           <div class="alert alert-info" role="alert">
             <h5>Dataset Reprocessing</h5>
           
