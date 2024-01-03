@@ -8,15 +8,21 @@ from crispy_forms.layout import Layout, Fieldset, Submit, HTML, Field
 from xpcs_portal.xpcs_index import models
 from xpcs_portal.xpcs_index.apps import AVAILABLE_DEPLOYMENTS
 
+XPCS_ANALYSIS_TYPES = ["multitau", "twotime"]
 
 log = logging.getLogger(__name__)
 
 class CollectionSelectionForm(forms.Form):
 
-    facility = forms.ChoiceField(choices=[(k, k.upper()) for k in AVAILABLE_DEPLOYMENTS], initial="APS-8IDI-POLARIS")
-    cycle = forms.CharField(widget=forms.Select)
+    facility = forms.ChoiceField(choices=[(k, k.upper()) for k in AVAILABLE_DEPLOYMENTS], initial="APS8IDI-POLARIS")
+    cycle = forms.CharField(widget=forms.Select, initial="2019-1")
     parent = forms.CharField(widget=forms.Select)
     qmap = forms.CharField(widget=forms.Select, help_text="If blank, the default qmap in cluster_results/ will be used for each dataset", required=False)
+    multitau = forms.BooleanField(required=False, initial=True, help_text="The simpler version of the Corr analysis type")
+    twotime = forms.BooleanField(required=False, initial=False, help_text="The more process-intensive Corr analysis type")
+    computation = forms.ChoiceField(choices=(('gpu', 'GPU'), ('cpu', 'CPU')), initial="GPU", help_text="Method Corr will use to compute data, GPU preferred if supported by the Globus Endpoint")
+    batch_size = forms.IntegerField(initial=256, help_text="Size of gpu corr processing batch")
+    verbose = forms.BooleanField(required=False, initial=False, help_text="Add extra output to logs")
 
 
     def __init__(self, *args, **kwargs):
@@ -28,7 +34,14 @@ class CollectionSelectionForm(forms.Form):
                 "facility",
                 Field("cycle", onchange="getParent()"),
                 "parent",
+                HTML("""{% include 'xpcs/compute-selection-stats.html' %}"""),
+                HTML("""<hr><h3>Compute Options</h3>"""),
                 # "qmap",
+                "multitau",
+                "twotime",
+                "computation",
+                "batch_size",
+                "verbose",
             ),
             Submit('submit', 'Submit', css_class='button white'),
         )
