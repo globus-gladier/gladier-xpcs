@@ -59,7 +59,13 @@ class XPCSTransferCollector(TransferCollector):
         deployment = deployment_map[form_data["facility"]]
 
         run_input = XPCSBoost(login_manager=None).get_xpcs_input(
-            deployment, imm_file, hdf_file, qmap_file
+            deployment,
+            imm_file,
+            hdf_file,
+            form_data["qmap_parameter_file"],
+            gpu_flag=form_data["gpu_flag"],
+            atype=from_data["analysis_type"],
+            verbose=form_data["verbose"]
         )
         run_input["input"].update(deployment.function_ids)
         return run_input
@@ -117,18 +123,30 @@ class XPCSSearchCollector(SearchCollector):
         hdf_file = self.get_file_by_extension(input_files, ".hdf")
         imm_file = self.get_file_by_extension(input_files, ".imm")
         deployment = deployment_map[form_data["facility"]]
+        gpu_flag = 0 if from_data["computation"] == "gpu" else -1
 
-        run_input = self.generate_run_input(deployment, imm_file, hdf_file, form_data["qmap_parameter_file"])
+        run_input = self.generate_run_input(
+            deployment,
+            imm_file,
+            hdf_file,
+            form_data["qmap_parameter_file"],
+            gpu_flag=gpu_flag,
+            atype=from_data["analysis_type"],
+            verbose=form_data["verbose"]
+        )
         run_input["input"].update(deployment.function_ids)
         return run_input
 
-    def generate_run_input(self, deployment, imm_file, hdf_file, qmap_file) -> dict:
-        gpu_flag = 0
-        if deployment.service_account is False:
-            gpu_flag = -1
-        log.info(f"GPU Flag set to {gpu_flag} for service account {deployment.__class__.__name__}")
+    def generate_run_input(self,
+            deployment: BaseDeployment,
+            imm_file: str,
+            hdf_file: str,
+            qmap_file: str,
+            gpu_flag: int = 0,
+            atype: str = "Both",
+            verbose: bool = False) -> dict:
         return XPCSBoost(login_manager=None).get_xpcs_input(
-            deployment, imm_file, hdf_file, qmap_file, gpu_flag=gpu_flag
+            deployment, imm_file, hdf_file, qmap_file, gpu_flag=gpu_flag, atype=atype
         )
 
     def get_run_start_kwargs(self, collector_data, form_data):
