@@ -8,11 +8,12 @@
     var collection = "{{collection}}";
     var path = "{{path}}";
     var cycle_exclude = {% autoescape off %}{{cycle_exclude}}{% endautoescape %};
+    var qmap_basepath = "/XPCSDATA/partitionMapLibrary/";
 
-    function updateOptions(response, selector, exclude=[]) {
+    function updateOptions(response, selector, exclude=[], type="dir") {
         $(selector).empty();
         return $.each(response.DATA, function(i, p) {
-            if(p.type == "dir" && !exclude.includes(p.name)) {
+            if(p.type == type && !exclude.includes(p.name)) {
                 $(selector).append($('<option></option>').val(p.name).html(p.name));
             }
         });
@@ -27,7 +28,35 @@
         });
     }
 
+    function toggleQMAP() {
+        if ($("#div_id_qmap").is(":visible")) {
+          $("#div_id_qmap").hide()
+        } else {
+          $("#div_id_qmap").show()
+          var cycle = $('#id_cycle').find(":selected").val();
+          var qmap_path = qmap_basepath + cycle + '/';
+          var include_only = $('#id_parent').find(":selected").val();
+          $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + qmap_path,
+              dataType: "json",
+              success: function(data) {
+                var includes = []
+                data.DATA.forEach(item => {
+                  console.log(item.name + " checking " + include_only)
+                  if (item.name.includes(include_only)) {
+                    includes.push(item)
+                  }
+                });
+                console.log(includes)
+                updateOptions({"DATA": includes}, "#id_qmap", [], "file")
+                $('#hint_id_qmap').text("Source: " + qmap_path)
+              }
+          });
+        }
+    }
+
     $( document ).ready(function() {
+        $("#div_id_qmap").hide()
+
         $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + path,
             dataType: "json",
             success: function(data) {data.DATA = data.DATA.reverse(); updateOptions(data, "#id_cycle", exclude=cycle_exclude)},

@@ -17,6 +17,7 @@ class CollectionSelectionForm(forms.Form):
     facility = forms.ChoiceField(choices=[(k, k.upper()) for k in AVAILABLE_DEPLOYMENTS], initial="APS8IDI-POLARIS")
     cycle = forms.CharField(widget=forms.Select, initial="2019-1")
     parent = forms.CharField(widget=forms.Select)
+    custom_qmap = forms.BooleanField(required=False, initial=False, help_text="Use a custom QMAP file")
     qmap = forms.CharField(widget=forms.Select, help_text="If blank, the default qmap in cluster_results/ will be used for each dataset", required=False)
     # multitau = forms.BooleanField(required=False, initial=True, help_text="The simpler version of the Corr analysis type")
     # twotime = forms.BooleanField(required=False, initial=False, help_text="The more process-intensive Corr analysis type")
@@ -38,7 +39,8 @@ class CollectionSelectionForm(forms.Form):
                 "parent",
                 HTML("""{% include 'xpcs/compute-selection-stats.html' %}"""),
                 HTML("""<hr><h3>Compute Options</h3>"""),
-                # "qmap",
+                Field("custom_qmap", onchange="toggleQMAP()"),
+                "qmap",
                 "analysis_type",
                 "computation",
                 "batch_size",
