@@ -12,25 +12,6 @@ def gather_xpcs_metadata(**data):
     import copy
     import numpy
 
-    GENERAL_METADATA = {
-        "creators": [
-            {
-                "creatorName": "Suresh Narayanan"
-            }
-        ],
-        "publicationYear": "2019",
-        "publisher": "Argonne National Lab",
-        "resourceType": {
-            "resourceType": "Dataset",
-            "resourceTypeGeneral": "Dataset"
-        },
-        "subjects": [
-            {
-                "subject": "beamline"
-            }
-        ],
-    }
-
     def gather_items(hdf5_dataframe):
         def decode_dtype(key, value, dtype):
             """Update a special numpy type to a python type"""
@@ -109,7 +90,7 @@ def gather_xpcs_metadata(**data):
 
         metafilename, _ = os.path.splitext(os.path.basename(dataframe))
         metafilename += '.json'
-        metadata = GENERAL_METADATA.copy()
+        metadata = dict()
         metadata.update(gather_items(hframe))
 
         # Extra stuff we added in later
@@ -125,51 +106,58 @@ def gather_xpcs_metadata(**data):
     # Generate metadata
     hdf_file = data['hdf_file']
     exp_name = pathlib.Path(hdf_file).name.replace(".hdf", "")
-    metadata = gather(hdf_file)
-    metadata.update({
-            'description': f'{exp_name}: Automated data processing.',
-            'creators': [{'creatorName': '8-ID'}],
-            'publisher': 'Automate',
-            'title': exp_name,
-            'subjects': [{'subject': s} for s in exp_name.split('_')],
-            'publicationYear': f'{datetime.datetime.now().year}',
-            'resourceType': {
-                'resourceType': 'Dataset',
-                'resourceTypeGeneral': 'Dataset'
-            }
-        })
+    project_metadata = gather(hdf_file)
+    dc_metadata = {
+        'descriptions': [{
+            "description": f"{exp_name}: Automated data processing.",
+            "descriptionType": "Other"
+        }],
+        'creators': [{'creatorName': '8-ID'}],
+        'publisher': 'Automate',
+        'titles': exp_name,
+        'subjects': [{'subject': s} for s in exp_name.split('_')],
+        'publicationYear': f'{datetime.datetime.now().year}',
+        'resourceType': {
+            'resourceType': 'Dataset',
+            'resourceTypeGeneral': 'Dataset'
+        },
+        'dates': [],
+        'formats': [],
+        'version': "2",
+    }
     extra_metadata = data.get('metadata', {}) or {}
-    metadata.update(extra_metadata)
+    project_metadata.update(extra_metadata)
     # Create metadata file
     # Some types have changed between search ingests, and they cause the search ingest
     # to fail. Pop them so we don't get the search error.
     for evil_key in ['exchange.partition_norm_factor']:
-        if evil_key in metadata.keys():
-            metadata.pop(evil_key)
-
-    pilot = data['pilot']
+        if evil_key in project_metadata.keys():
+            project_metadata.pop(evil_key)
 
     # Get root_folder, ex: "/data/2020-1/sanat202002/"
     # All datasets need this info to publish correctly, not having it will raise an exception.
-    root_folder = metadata.get('measurement.instrument.acquisition.root_folder')
-    if root_folder:
-        root_folder = pathlib.Path(root_folder)
-        # Cycle: 2021-1
-        metadata['cycle'] = root_folder.parent.name
-        # Parent: sanat
-        metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
-        pilot['destination'] = f'/{metadata["cycle"]}/{root_folder.name}'
+    root_folder = pathlib.Path(project_metadata['measurement.instrument.acquisition.root_folder'])
+    # Cycle: 2021-1
+    project_metadata['cycle'] = root_folder.parent.name
+    # Parent: sanat
+    project_metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
+
     # metadata passed through from the top level takes precedence. This allows for
     # overriding fields through $.input
-    metadata.update(pilot.get('metadata', {}))
-    execution_metadata_file = data.get('execution_metadata_file')
-    if execution_metadata_file and os.path.exists(execution_metadata_file):
+    publishv2 = data['publishv2']
+    project_metadata.update(publishv2.get('metadata', {}))
+    if os.path.exists(data['execution_metadata_file']):
         with open(data['execution_metadata_file']) as f:
-            metadata.update(json.load(f))
+            project_metadata.update(json.load(f))
         os.unlink(data['execution_metadata_file'])
-    pilot['metadata'] = metadata
-    pilot['groups'] = pilot.get('groups', [])
-    return pilot
+    publishv2['metadata'] = {
+        "dc": dc_metadata,
+        "project_metadata": project_metadata,
+    }
+    publishv2['groups'] = publishv2.get('groups', [])
+    publishv2['destination'] = f'/{project_metadata["cycle"]}/{root_folder.name}'
+    # return_value = data['publishv2']
+    return publishv2
 
 
 @generate_flow_definition(modifiers={
@@ -182,7 +170,7 @@ class GatherXPCSMetadata(GladierBaseTool):
     required_input = [
         'proc_dir',
         'hdf_file',
-        'pilot',
+        'publishv2',
     ]
 
     compute_functions = [
@@ -192,12 +180,14 @@ class GatherXPCSMetadata(GladierBaseTool):
 
 if __name__ == '__main__':
     data = {
-        'proc_dir':'/eagle/APSDataAnalysis/nick/xpcs_gpu',
-        'hdf_file': '/eagle/APSDataAnalysis/nick/xpcs_gpu/C032_B315_A200_150C_att01_001_0001-1000/output/C032_B315_A200_150C_att01_001_0001-1000.hdf',
+        'proc_dir': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000',
+        # 'proc_dir':'/eagle/APSDataAnalysis/nick/xpcs_gpu',
+        'hdf_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/output/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
+        'execution_metadata_file': 'foo/bar',
         'boost_corr': {
             'gpu_flag': 0
         },
-        'pilot': {
+        'publishv2': {
             'metadata': {},
             'groups': []
         },
