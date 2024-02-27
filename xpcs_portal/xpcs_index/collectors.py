@@ -67,7 +67,7 @@ class XPCSTransferCollector(TransferCollector):
     def get_run_start_kwargs(self, collector_data, form_data):
         return {
             "label": pathlib.Path(collector_data["name"]).name,
-            "tags": ["DGA Testing", "XPCS", "APS"],
+            "tags": ["ACDC", "XPCS", "APS"],
             "run_monitors": [
                 "urn:globus:groups:id:368beb47-c9c5-11e9-b455-0efb3ba9a670"
             ],
@@ -137,7 +137,7 @@ class XPCSSearchCollector(SearchCollector):
         hdf_file = self.get_file_by_extension(input_files, ".hdf")
         return {
             "label": pathlib.Path(hdf_file).name,
-            "tags": ["DGA Testing", "XPCS", "APS"],
+            "tags": ["ACDC", "XPCS", "APS"],
             "run_monitors": [
                 "urn:globus:groups:id:368beb47-c9c5-11e9-b455-0efb3ba9a670"
             ],
