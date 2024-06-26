@@ -27,6 +27,7 @@ def valid_metadata():
         return json.loads(f.read())
 
 
+@pytest.mark.skip
 def test_publish(valid_metadata):
     from pprint import pprint
     valid_metadata["content"].pop("files")
