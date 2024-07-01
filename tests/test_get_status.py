@@ -1,3 +1,7 @@
+"""Test get status"""
+
+# flake8: noqa
+
 from unittest.mock import patch
 
 import pytest
