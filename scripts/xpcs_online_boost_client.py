@@ -28,13 +28,11 @@ def arg_parse():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--hdf', help='Path to the hdf (metadata) file',
-                        default='/XPCSDATA/2019-1/comm201901/cluster_results/'
-                                'A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf')
+                        default='/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.hdf')
     parser.add_argument('--raw', help='Path to the raw data file. Multiple formats (.imm, .bin, etc) supported',
-                        default='/XPCSDATA/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001'
-                                '/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
+                        default='/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.h5')
     parser.add_argument('--qmap', help='Path to the qmap file',
-                        default='/XPCSDATA/partitionMapLibrary/2019-1/comm201901_qmap_aerogel_Lq0.h5')
+                        default='/2024-1/zhang202402_2/data/standard_qmaps/eiger4M_qmap_d36_s360.h5')
     parser.add_argument('--atype', default='Both', help='Analysis type to be performed. Available: Multitau, Twotime')
     parser.add_argument('--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     # Group MUST not be None in order for PublishTransferSetPermission to succeed. Group MAY

@@ -7,6 +7,7 @@ apsdataanalysis = SharedCollection('f3305466-c63d-4a54-8bfc-624402c970bc',
                                            '/eagle/APSDataAnalysis/XPCS/', name='Gladier XPCS')
 xpcs_data = SharedCollection('74defd5b-5f61-42fc-bcc4-834c9f376a4f',
                              '/eagle/XPCS-DATA-DYS/', name='XPCS Data 8-ID APS')
+voyager = SharedCollection('dc86d51b-81d1-4827-81be-2b5e64ba7dc1', '/', name='APS Voyager')
 clutch = SharedCollection('fdc7e74a-fa78-11e8-9342-0e3d676669f4', '/', name='APS#Clutchsdmz')
 theta_ep = SharedCollection('08925f04-569f-11e7-bef8-22000b9a448b', '/', name='alcf#dtn_theta')
 apsdataprocessing = SharedCollection('98d26f35-e5d5-4edd-becf-a75520656c64', 
@@ -156,7 +157,7 @@ class RyanPolaris(BaseDeployment):
 
 class APS8IDIPolaris(BaseDeployment):
 
-    source_collection = xpcs_data
+    source_collection = voyager
     staging_collection = apsdataprocessing
     pub_collection = xpcs_data
     service_account = True
