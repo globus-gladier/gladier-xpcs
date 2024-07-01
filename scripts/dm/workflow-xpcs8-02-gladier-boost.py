@@ -7,40 +7,51 @@
 # experimentName:test-xpcs-boost-workflow
 
 {
-    'owner': '8idiuser',
-    'name': 'xpcs8-02-gladier-boost',
-    'description': 'XPCS8-02 workflow to run online boost processing using gladier',
-    'stages': {
-        '00-name'  : {'command': 'echo xpcs8-02-gladier-boost', 'outputVariableRegexList' : ['(?P<name>.*)']},
-        '01-Staging' : {
-            'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/dm/dm_gladier_xpcs_online_boost_pre_01.sh \
-                $filePath $experimentName $qmapFile $rawFile',
-            'outputVariableRegexList' : [
-                'Cluster Data Directory: (?P<clusterDataDir>.*)',
-                'SGE Job Name: (?P<sgeJobName>.*)',
-                'Input HDF5 File: (?P<inputHdf5File>.*)',
-                'Raw Data File: (?P<rawFile>.*)',
-                'QMap File: (?P<qmapFile>.*)',
-                'Globus Group ID: (?P<globusID>.*)'
+    "owner": "8idiuser",
+    "name": "xpcs8-02-gladier-boost",
+    "description": "XPCS8-02 workflow to run online boost processing using gladier",
+    "stages": {
+        "00-name": {
+            "command": "echo xpcs8-02-gladier-boost",
+            "outputVariableRegexList": ["(?P<name>.*)"],
+        },
+        "01-Staging": {
+            "command": "/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/dm/dm_gladier_xpcs_online_boost_pre_01.sh \
+                $filePath $experimentName $qmapFile $rawFile",
+            "outputVariableRegexList": [
+                "Cluster Data Directory: (?P<clusterDataDir>.*)",
+                "SGE Job Name: (?P<sgeJobName>.*)",
+                "Input HDF5 File: (?P<inputHdf5File>.*)",
+                "Raw Data File: (?P<rawFile>.*)",
+                "QMap File: (?P<qmapFile>.*)",
+                "Globus Group ID: (?P<globusID>.*)",
             ],
         },
-        '02-Automate' : {
-            'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/xpcs_online_boost_client.py \
+        "02-Automate": {
+            "command": "source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/xpcs_online_boost_client.py \
                     --hdf $clusterDataDir/$inputHdf5File \
                     --raw $clusterDataDir/$rawFile \
                     --qmap $qmapFile \
                     --atype $atype \
                     --group $globusID \
                     --verbose \
-                    -d aps8idi-polaris',
-            'outputVariableRegexList' : [
-                'run_id : (?P<AutomateId>.*)'
-            ],
+                    -d aps8idi-polaris",
+            "outputVariableRegexList": ["run_id : (?P<AutomateId>.*)"],
         },
-        '03-MonitorAutomate' : {'command': '/bin/echo https://app.globus.org/runs/$AutomateId'},
-        '04-Automate_TransferOut': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step SourceTransfer --gpu'},
-        '05-Automate_Corr': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step XpcsBoostCorr --gpu'},
-        '06-Automate_Plots': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step MakeCorrPlots --gpu'},
-        '07-Automate_TransferBack': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step GatherXpcsMetadata --gpu'},
-	}
+        "03-MonitorAutomate": {
+            "command": "/bin/echo https://app.globus.org/runs/$AutomateId"
+        },
+        "04-Automate_TransferOut": {
+            "command": "source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step SourceTransfer --gpu"
+        },
+        "05-Automate_Corr": {
+            "command": "source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step XpcsBoostCorr --gpu"
+        },
+        "06-Automate_Plots": {
+            "command": "source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step MakeCorrPlots --gpu"
+        },
+        "07-Automate_TransferBack": {
+            "command": "source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step GatherXpcsMetadata --gpu"
+        },
+    },
 }

@@ -1,7 +1,7 @@
 [project]
 name = "gladier_xpcs"
 version = "0.0.6"
-description='The XPCS Gladier',
+description="The XPCS Gladier"
 authors = [
     {name = "Rafael Vescovi", email = "ravescovi@anl.gov"},
     {name = "Ryan Chard", email = "rchard@anl.gov"},
@@ -147,10 +147,9 @@ filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::pottery.exceptions.InefficientAccessWarning",
 ]
+testpaths = [
+    "tests/"]
 
-[tool:pytest]
-testpaths =
-    tests/
 
 [tool.mypy]
 # https://mypy.readthedocs.io/en/stable/config_file.html#using-a-pyproject-toml
