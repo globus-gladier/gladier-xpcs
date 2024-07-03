@@ -129,7 +129,10 @@ def gather_xpcs_metadata(**data):
         # Parent: zhang
         'parent': re.search(r'([a-z]+)*', aps_parts[1]).group(),
         # Raw Cycle/Parent: 2021-1/sanat012345
-        'aps_cycle_v2': f'{aps_parts[0]}/{aps_parts[1]}'
+        'aps_cycle_v2': f'{aps_parts[0]}/{aps_parts[1]}',
+        # This is an old pilot-era publish v1 fixture which should be removed once the portal filters are
+        # removed.
+        "project-slug": "xpcs-8id",
     }
 
     # TODO: Check the new v2 project metadata and make sure it's really all the stuff we want to add.
@@ -156,7 +159,7 @@ def gather_xpcs_metadata(**data):
     # Update the publish data with a couple extra key pieces of info
     new_data = {
         # Add nested folders to destination
-        "destination": pathlib.Path(data["publishv2"]["destination"]) / project_metadata["aps_cycle_v2"],
+        "destination": str(pathlib.Path(data["publishv2"]["destination"]) / project_metadata["aps_cycle_v2"]),
         "metadata_file": str(metadata_file),
     }
     publish_data = data['publishv2']

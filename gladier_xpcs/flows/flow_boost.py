@@ -92,9 +92,10 @@ class XPCSBoost(GladierBaseClient):
                     'source_collection': deployment.staging_collection.uuid,
                     'source_collection_basepath': str(deployment.staging_collection.path),
                     'destination_collection': str(deployment.pub_collection.uuid),
-                    'index': '2ec9cf61-c0c9-4213-8f1c-452c072c4ccc',
-                    # 'visible_to': groups,
-                    'visible_to': ["public"],
+                    'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
+                    # Test index
+                    # 'index': '2ec9cf61-c0c9-4213-8f1c-452c072c4ccc',
+                    'visible_to': groups,
 
                     # Ingest and Transfer can be disabled for dry-run testing.
                     'enable_publish': True,
