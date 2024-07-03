@@ -101,6 +101,7 @@ class XPCSBoost(GladierBaseClient):
                     # Requires 'datacite' package
                     # 'metadata_dc_validation_schema': 'schema43',
                     # Custom metadata can be added here.
+                    'metadata_file': '/eagle/APSDataProcessing/aps8idi/xpcs_staging/H001_27445_QZ_XPCS_test-01000/output/xpcs_metadata.json',
                 },
                 'source_transfer': {
                     'source_endpoint_id': deployment.source_collection.uuid,

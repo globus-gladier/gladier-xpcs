@@ -43,23 +43,21 @@ def gather_xpcs_metadata(**data):
         return items
 
 
-    def get_extra_metadata(metadata):
-        meta = metadata.copy()
+    # def get_extra_metadata(metadata):
+    #     meta = metadata.copy()
 
-        # Add the aps_cycle_v2 key, based on another key below.
-        aps_cycle_key = 'aps_cycle_v2'
-        root_key = 'measurement.instrument.acquisition.root_folder'
-        root = meta.get(root_key)
-        if root:
-            root = root.lstrip('/').rstrip('/')
-            #_, aps_cycle, user_str = root.split('/')
-            if root[-1] == '/':
-                root = root[:-1]
-            aps_cycle, user_str = root.split('/')[-2:]
-            meta[aps_cycle_key] = '/'.join((aps_cycle, user_str))
+    #     # Add the aps_cycle_v2 key, based on another key below.
+    #     aps_cycle_key = 'aps_cycle_v2'
+    #     root_key = 'measurement.instrument.acquisition.root_folder'
+    #     root = meta[root_key].lstrip('/').rstrip('/')
+    #     #_, aps_cycle, user_str = root.split('/')
+    #     if root[-1] == '/':
+    #         root = root[:-1]
+    #     aps_cycle, user_str = root.split('/')[-2:]
+    #     meta[aps_cycle_key] = '/'.join((aps_cycle, user_str))
 
-        # Return the new metadata
-        return meta
+    #     # Return the new metadata
+    #     return meta
 
 
     def clean_metadata(metadata, spoiled_keys):
@@ -94,7 +92,7 @@ def gather_xpcs_metadata(**data):
         metadata.update(gather_items(hframe))
 
         # Extra stuff we added in later
-        extra_metadata = get_extra_metadata(metadata)
+        extra_metadata = dict() # get_extra_metadata(metadata)
         metadata.update(extra_metadata)
         # Keys that cause ingest into Globus Search to fail. This is likely due to
         # another key of the same name being ingested previously, causing the types
@@ -114,7 +112,7 @@ def gather_xpcs_metadata(**data):
         }],
         'creators': [{'creatorName': '8-ID'}],
         'publisher': 'Automate',
-        'titles': exp_name,
+        'titles': [{'title': exp_name}],
         'subjects': [{'subject': s} for s in exp_name.split('_')],
         'publicationYear': f'{datetime.datetime.now().year}',
         'resourceType': {
@@ -136,11 +134,13 @@ def gather_xpcs_metadata(**data):
 
     # Get root_folder, ex: "/data/2020-1/sanat202002/"
     # All datasets need this info to publish correctly, not having it will raise an exception.
-    root_folder = pathlib.Path(project_metadata['measurement.instrument.acquisition.root_folder'])
-    # Cycle: 2021-1
-    project_metadata['cycle'] = root_folder.parent.name
-    # Parent: sanat
-    project_metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
+    # root_folder = pathlib.Path(project_metadata['measurement.instrument.acquisition.root_folder'])
+    # # Cycle: 2021-1
+    # project_metadata['cycle'] = root_folder.parent.name
+    # # Parent: sanat
+    # project_metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
+    project_metadata['cycle'] = '2024-02'
+    project_metadata['parent'] = 'alcf-testing'
 
     if os.path.exists(data['execution_metadata_file']):
         with open(data['execution_metadata_file']) as f:
@@ -157,10 +157,10 @@ def gather_xpcs_metadata(**data):
         json.dump(metadata, f, indent=2)
 
     return {
-        "destination": f'{project_metadata["cycle"]}/{root_folder.name}',
+        "destination": f'{project_metadata["cycle"]}/{project_metadata["parent"]}',
         "metadata_file": str(metadata_file),
         "cycle": project_metadata["cycle"],
-        "parent": root_folder.name,
+        "parent": project_metadata["parent"],
         "dataset": hdf_file
     }
 
@@ -185,9 +185,11 @@ class GatherXPCSMetadata(GladierBaseTool):
 
 if __name__ == '__main__':
     data = {
-        'proc_dir': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000',
+        #'proc_dir': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000',
+        'proc_dir': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/H001_27445_QZ_XPCS_test-01000',
         # 'proc_dir':'/eagle/APSDataAnalysis/nick/xpcs_gpu',
-        'hdf_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/output/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
+        #'hdf_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/output/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
+        'hdf_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/H001_27445_QZ_XPCS_test-01000/output/H001_27445_QZ_XPCS_test-01000.hdf',
         'execution_metadata_file': 'foo/bar',
         'boost_corr': {
             'gpu_flag': 0
