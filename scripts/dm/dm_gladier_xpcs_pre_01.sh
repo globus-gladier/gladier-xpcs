@@ -86,7 +86,7 @@ source $DM_SETUP_FILE
 #make sure a group exists
 createGroup=`dm-create-globus-group --experiment=$experimentName`
 getGroup=`dm-get-globus-group --experiment=$experimentName --display-keys id`
-#remove 'id=' 
+#remove 'id='
 globusID=`cut -c 4- <<< $getGroup`
 
 inputHdf5File=`basename $inputFile`

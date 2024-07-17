@@ -47,10 +47,10 @@ userInputRawFile=$4
 if [ ! -z $userInputRawFile ]; then
     rawFile=$userInputRawFile
 
-else   
+else
     # Fetch any .imm, .bin, or .h5. Redirect errors to null
     rawFile=`ls -c1 $inputDir/*.{imm,bin,h5} 2> /dev/null | head -1`
-    rawFile=`basename $rawFile 2> /dev/null` 
+    rawFile=`basename $rawFile 2> /dev/null`
     if [ -z $rawFile ]; then
         echo "Raw data file not found for input file $inputFile. Expected .imm, .bin, or .h5 raw data file in input directory."
     fi
@@ -58,7 +58,7 @@ else
         echo "Data file $inputDir/$rawFile does not exist or it is not a file"
     fi
     clusterDataDir=$EAGLE_DATA_ROOT$clusterDataDir
-    ORTHROS_NFS_ROOT=`echo $ORTHROS_NFS_ROOT | tr -d '\' 2> /dev/null` 
+    ORTHROS_NFS_ROOT=`echo $ORTHROS_NFS_ROOT | tr -d '\' 2> /dev/null`
     if [ ! -f $ORTHROS_NFS_ROOT/partitionMapLibrary/$cycleDataDir/$qmapName ]; then
         echo "Qmap file $qmapFile does not exist or it is not a file"
     fi

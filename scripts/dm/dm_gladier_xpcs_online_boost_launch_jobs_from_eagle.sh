@@ -1,4 +1,4 @@
-# Uses globus cli to get a list of files before starting processing jobs 
+# Uses globus cli to get a list of files before starting processing jobs
 # for gladier boost workflow in the case when data is already on eagle
 
 EAGLE_ENDPOINT=74defd5b-5f61-42fc-bcc4-834c9f376a4f
@@ -17,7 +17,7 @@ if [ -z $inputDir ] || [ -z $filter ] || [ -z $qmapFile ] || [ -z $experiment ] 
 fi
 
 #running as dmadmin this will give globus client credentials
-#running as 8idiuser will already have credentials 
+#running as 8idiuser will already have credentials
 source $DM_GLOBUS_LOGIN_FILE 2> /dev/null
 source $DM_SETUP_FILE
 
@@ -29,4 +29,3 @@ for baseDir in "${filelist[@]}"; do
     metadata=`globus ls $EAGLE_ENDPOINT:$inputDir$baseDir -r | grep .hdf`
     dm-start-processing-job --workflow-name xpcs8-02-gladier-boost filePath:$inputDir$baseDir/$metadata qmapFile:$qmapFile atype:$atype experimentName:$experiment rawFile:$file
 done
-

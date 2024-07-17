@@ -1,4 +1,0 @@
-matplotlib
-globus-pilot
-numpy
-h5py
