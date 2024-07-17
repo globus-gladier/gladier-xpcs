@@ -8,7 +8,7 @@ from funcx.sdk.client import FuncXClient
 
 
 class Command(BaseCommand):
-    help = 'Registers a FuncX Function for an Automate Flow'
+    help = 'Registers a globus compute Function for an Automate Flow'
 
     def add_arguments(self, parser):
         parser.add_argument('--register', action='store_true', required=False)

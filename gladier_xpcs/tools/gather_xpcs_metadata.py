@@ -68,12 +68,14 @@ def gather_xpcs_metadata(**data):
         # Add the aps_cycle_v2 key, based on another key below.
         aps_cycle_key = 'aps_cycle_v2'
         root_key = 'measurement.instrument.acquisition.root_folder'
-        root = meta[root_key].lstrip('/').rstrip('/')
-        #_, aps_cycle, user_str = root.split('/')
-        if root[-1] == '/':
-            root = root[:-1]
-        aps_cycle, user_str = root.split('/')[-2:]
-        meta[aps_cycle_key] = '/'.join((aps_cycle, user_str))
+        root = meta.get(root_key)
+        if root:
+            root = root.lstrip('/').rstrip('/')
+            #_, aps_cycle, user_str = root.split('/')
+            if root[-1] == '/':
+                root = root[:-1]
+            aps_cycle, user_str = root.split('/')[-2:]
+            meta[aps_cycle_key] = '/'.join((aps_cycle, user_str))
 
         # Return the new metadata
         return meta
@@ -145,25 +147,28 @@ def gather_xpcs_metadata(**data):
         if evil_key in metadata.keys():
             metadata.pop(evil_key)
 
+    pilot = data['pilot']
+
     # Get root_folder, ex: "/data/2020-1/sanat202002/"
     # All datasets need this info to publish correctly, not having it will raise an exception.
-    root_folder = pathlib.Path(metadata['measurement.instrument.acquisition.root_folder'])
-    # Cycle: 2021-1
-    metadata['cycle'] = root_folder.parent.name
-    # Parent: sanat
-    metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
-
-    pilot = data['pilot']
+    root_folder = metadata.get('measurement.instrument.acquisition.root_folder')
+    if root_folder:
+        root_folder = pathlib.Path(root_folder)
+        # Cycle: 2021-1
+        metadata['cycle'] = root_folder.parent.name
+        # Parent: sanat
+        metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
+        pilot['destination'] = f'/{metadata["cycle"]}/{root_folder.name}'
     # metadata passed through from the top level takes precedence. This allows for
     # overriding fields through $.input
     metadata.update(pilot.get('metadata', {}))
-    if os.path.exists(data['execution_metadata_file']):
+    execution_metadata_file = data.get('execution_metadata_file')
+    if execution_metadata_file and os.path.exists(execution_metadata_file):
         with open(data['execution_metadata_file']) as f:
             metadata.update(json.load(f))
         os.unlink(data['execution_metadata_file'])
     pilot['metadata'] = metadata
     pilot['groups'] = pilot.get('groups', [])
-    pilot['destination'] = f'/{metadata["cycle"]}/{root_folder.name}'
     return pilot
 
 

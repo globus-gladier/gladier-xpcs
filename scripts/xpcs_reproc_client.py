@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 """
 Convenience script to test XPCS reprocessing.
 """
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     flow_input['input'].update({
         'qmap_source_endpoint': args.qmap_source_globus_ep,
         'qmap_source_path': args.qmap_source_globus_path,
-        'eigin_corr_funcx_id': register_container(),
+        'eigin_corr_function_id': register_container(),
     })
 
     # print for context

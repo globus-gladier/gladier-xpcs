@@ -86,10 +86,10 @@ if __name__ == '__main__':
             'corr_loc': 'corr',
             'flags': '',
 
-            # funcX endpoints
+            # globus compute endpoints
             # Should think of moving those to a cfg with better naming
-            'funcx_endpoint_non_compute': depl_input['input']['funcx_endpoint_non_compute'],
-            'funcx_endpoint_compute': depl_input['input']['funcx_endpoint_compute'],
+            'compute_endpoint_non_compute': depl_input['input']['compute_endpoint_non_compute'],
+            'compute_endpoint_compute': depl_input['input']['compute_endpoint_compute'],
 
 
             # globus endpoints

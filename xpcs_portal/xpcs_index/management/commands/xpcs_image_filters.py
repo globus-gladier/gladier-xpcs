@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 
 class Command(BaseCommand):
-    help = 'Registers a FuncX Function for an Automate Flow'
+    help = 'Registers a globus compute Function for an Automate Flow'
 
     def add_arguments(self, parser):
         parser.add_argument('--purge', action='store_true', required=False)

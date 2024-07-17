@@ -11,6 +11,10 @@ clutch = SharedCollection('fdc7e74a-fa78-11e8-9342-0e3d676669f4', '/', name='APS
 theta_ep = SharedCollection('08925f04-569f-11e7-bef8-22000b9a448b', '/', name='alcf#dtn_theta')
 apsdataprocessing = SharedCollection('98d26f35-e5d5-4edd-becf-a75520656c64', 
                                      '/eagle/APSDataProcessing/aps8idi/', name='APS8IDI')
+voyagerXPCS8 = SharedCollection('d2dce3ad-0550-4c90-a2a9-6c6812b7d845', 
+                                     '/gdata/dm/XPCS8/', name='APS:DM-TEST:XPCS8 Guest')
+voyager8IDI = SharedCollection('dc86d51b-81d1-4827-81be-2b5e64ba7dc1', 
+                                     '/gdata/dm/8IDI/', name='APS:DM:8IDI Guest')
 nersc_permutter = SharedCollection('6bdc7956-fc0f-4ad2-989c-7aa5ee643a79', 
                                      '/', name='NERSC#Perlmutter')
 
@@ -219,6 +223,57 @@ class RyanNERSC(BaseDeployment):
     }
 
 
+class VoyagerXPCS8Polaris(BaseDeployment):
+
+    source_collection = voyagerXPCS8
+    staging_collection = apsdataprocessing
+    pub_collection = xpcs_data
+    service_account = True
+
+    globus_endpoints = {
+        # Voyager -- APS:DM:XPCS8
+        'globus_endpoint_source': voyagerXPCS8.uuid,
+        # Eagle -- XPCS Data 8-ID APS
+        'globus_endpoint_proc': apsdataprocessing.uuid,
+    }
+
+    compute_endpoints = {
+        'login_node_endpoint': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
+        'compute_endpoint': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
+    }
+
+    flow_input = {
+        'input': {
+            'staging_dir': staging_collection.path / 'xpcs_staging',
+        }
+    }
+
+
+class Voyager8IDIPolaris(BaseDeployment):
+
+    source_collection = voyager8IDI
+    staging_collection = apsdataprocessing
+    pub_collection = xpcs_data
+    service_account = True
+
+    globus_endpoints = {
+        # Voyager -- APS:DM:8IDI
+        'globus_endpoint_source': voyager8IDI.uuid,
+        # Eagle -- XPCS Data 8-ID APS
+        'globus_endpoint_proc': apsdataprocessing.uuid,
+    }
+
+    compute_endpoints = {
+        'login_node_endpoint': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
+        'compute_endpoint': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
+    }
+
+    flow_input = {
+        'input': {
+            'staging_dir': staging_collection.path / 'xpcs_staging',
+        }
+    }
+
 class RafPolaris(BaseDeployment):
 
     globus_endpoints = {
@@ -245,6 +300,8 @@ deployment_map = {
     'ryan-polaris': RyanPolaris(),
     'nick-polaris-gpu': NickPolarisGPU(),
     'aps8idi-polaris': APS8IDIPolaris(),
+    'voyager-8idi-polaris': Voyager8IDIPolaris(),
+    'voyager-xpcs8-polaris': VoyagerXPCS8Polaris(),
     # This is a hack for the SC demo in case we can't get nodes. You can remove this after Nov 16th, 2023.
     'aps8idi-polaris-backup': NickPolarisGPU(),
     'nersc': RyanNERSC(),

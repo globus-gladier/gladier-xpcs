@@ -206,11 +206,11 @@ def apply_qmap(**data):
 
 
 @generate_flow_definition(modifiers={
-    apply_qmap: {'endpoint': 'funcx_endpoint_non_compute'}
+    apply_qmap: {'endpoint': 'compute_endpoint_non_compute'}
 })
 class ApplyQmap(GladierBaseTool):
     required_input = [
-        'funcx_endpoint_non_compute',
+        'compute_endpoint_non_compute',
         'proc_dir',
         'qmap_file',
     ]
