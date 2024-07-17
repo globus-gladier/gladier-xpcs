@@ -35,15 +35,15 @@ def reprocessing_deployment():
             'globus_endpoint_source': 'pertel_or_eagle_endpoint_uuid',
             'globus_endpoint_proc': 'theta_endpoint_uuid',
         }
-        funcx_endpoints = {
-            'funcx_endpoint_non_compute': '553e7b64-0480-473c-beef-be762ba979a9',
-            'funcx_endpoint_compute': '2272d362-c13b-46c6-aa2d-bfb22255f1ba',
+        compute_endpoints = {
+            'compute_endpoint_non_compute': '553e7b64-0480-473c-beef-be762ba979a9',
+            'compute_endpoint_compute': '2272d362-c13b-46c6-aa2d-bfb22255f1ba',
         }
         flow_input = {
             'input': {
                 'staging_dir': '/projects/APSDataAnalysis/xpcs/mock_staging_dir',
-                'funcx_endpoint_non_compute': 'funcx_endpoint_non_compute_mock',
-                'funcx_endpoint_compute': 'funcx_endpoint_compute_mock',
+                'compute_endpoint_non_compute': 'compute_endpoint_non_compute_mock',
+                'compute_endpoint_compute': 'compute_endpoint_compute_mock',
             }
         }
     return MockDeployment()

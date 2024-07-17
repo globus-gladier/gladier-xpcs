@@ -36,9 +36,9 @@ def get_time(**data):
 
 @gladier.generate_flow_definition
 class GetTime(gladier.GladierBaseTool):
-    funcx_functions = [get_time]
-    required_input = ['funcx_endpoint_compute']
-    flow_input = {'funcx_endpoint_compute': '553e7b64-0480-473c-beef-be762ba979a9'}
+    compute_functions = [get_time]
+    required_input = ['compute_endpointnt_compute']
+    flow_input = {'compute_endpoint_compute': '553e7b64-0480-473c-beef-be762ba979a9'}
 
 
 @gladier.generate_flow_definition
@@ -107,7 +107,7 @@ def run_test():
     cfg.save()
 
     for tool in test.tools:
-        tool.funcx_functions = []
+        tool.compute_functions = []
 
     result = test.run_flow()
     test.progress(result['run_id'])

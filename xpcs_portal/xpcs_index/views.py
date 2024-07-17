@@ -1,20 +1,14 @@
 import logging
-import pathlib
-import urllib
-import copy
-from django.urls import reverse, reverse_lazy
-from django.contrib import messages
-from django.shortcuts import redirect
+from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django import forms
 from globus_portal_framework.views.generic import SearchView, DetailView
-from globus_portal_framework.gsearch import get_pagination
-from concierge_app.views.generic import ManifestCheckoutView
-from automate_app.models import Action, Flow
-from gladier_xpcs.flows import XPCSReprocessingFlow
+from globus_app_flows.views import BatchCreateView
+from globus_app_flows.models import FlowAuthorization
 
+from xpcs_portal.xpcs_index.collectors import XPCSSearchCollector, XPCSTransferCollector, XPCSSuffixSearchCollector
 from xpcs_portal.xpcs_index.forms import ReprocessDatasetsCheckoutForm
-from xpcs_portal.xpcs_index.models import ReprocessingTask, FilenameFilter
-from xpcs_portal.xpcs_index.apps import REPROCESSING_FLOW_DEPLOYMENT
+from xpcs_portal.xpcs_index.models import FilenameFilter
 from xpcs_portal.xpcs_index.mixins import PaginatedSearchView
 
 log = logging.getLogger(__name__)
@@ -53,62 +47,38 @@ class XPCSDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class XPCSReprocessingCheckoutView(ManifestCheckoutView):
+class XPCSReprocessing(object):
     """Reprocessing Checkout starts the flow immediately on verifying
     each of the subject it can process are valid"""
-    model = ReprocessingTask
     form_class = ReprocessDatasetsCheckoutForm
     template_name = 'xpcs/reprocess-datasets-checkout.html'
+    flow = '72e6469a-cf30-46bc-bff4-94dca46f2459'
+    authorization_type = "CUSTOM"
+    group = "368beb47-c9c5-11e9-b455-0efb3ba9a670"
+    # The auth key is set dynamically through the form by get_flow_authorization instead
+    # authorization_key = "aps8idi-polaris"
 
-    def get_search_reference_url(self):
-        return self.get_success_url()
+    def get_flow_authorization(self, authorization_type: str, authorization_key: str, form: forms.Form = None) -> FlowAuthorization:
+        akey = {
+            'aps8idi-polaris': 'CONFIDENTIAL_CLIENT',
+            'aps8idi-polaris-backup': 'USER'
+        }
+        return super().get_flow_authorization(akey[form.cleaned_data['facility']], form.cleaned_data['facility'], form)
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['index'] = self.kwargs['index']
+        return context
 
     def get_success_url(self):
-        return reverse_lazy('search',
-                            kwargs={'index': 'xpcs'})
+        url = reverse_lazy('search', kwargs={'index': 'xpcs'})
+        return f'{url}?flow={self.flow}'
 
-    def form_valid(self, form):
-        log.debug(f'Form valid for {form.__class__}')
-        user = self.request.user
-        sc = form.get_search_collector()
-        run_inputs = [self.get_input(form.cleaned_data, REPROCESSING_FLOW_DEPLOYMENT, m)
-                      for m in sc.get_manifest()]
-        # HACK -- We need this to smartly choose the correct Flow, not
-        # the one that was used last. This will fail for multiple deployed
-        # flows.
-        flow = Flow.objects.all().order_by('date_created').last()
-        if not flow:
-            raise Exception('No flow found, you probably need to run '
-                            '"python manage.py authorize_gladier"')
-        flow.batch(user, run_inputs)
-        messages.success(self.request, f'Processing data in {len(run_inputs)} flow runs')
 
-        orig_q = urllib.parse.urlparse(self.request.POST.get('search_url')).query
-        new_q = f'{orig_q}&{urllib.parse.urlencode({"flow": flow.flow_id})}'
-        return redirect(f'{self.get_success_url()}?{new_q}')
+class XPCSReprocessingSearchReprocessing(XPCSReprocessing, BatchCreateView):
+    # collector = XPCSSearchCollector
+    collector = XPCSSuffixSearchCollector
 
-    def get_parameters(self, flow_input):
-        return {
-            'label': str(pathlib.Path(flow_input['input']['hdf_file']).parent.name)[:62],
-            'manage_by': '368beb47-c9c5-11e9-b455-0efb3ba9a670',
-            'monitor_by': '368beb47-c9c5-11e9-b455-0efb3ba9a670',
-        }
 
-    def get_input(self, cleaned_data, deployment, dataset):
-        # Get filename src/dest for .hdf
-        flow_input = copy.deepcopy(deployment.get_input())
-        source_hdf = pathlib.Path(next(d for d in dataset if str(d).endswith('.hdf')))
-        # Get filename src/dest for .imm/.bin
-        source_data = pathlib.Path(next(d for d in dataset if
-                                   any(str(d).endswith(s) for s in ['.imm', '.bin'])))
-        source_qmap = cleaned_data['qmap_path']
-
-        xpcs_input = XPCSReprocessingFlow().get_xpcs_input(
-            deployment, source_hdf, source_data, source_qmap)
-        flow_input['input'].update(xpcs_input['input'])
-        flow_input['input'].update({
-            'reprocessing_suffix': cleaned_data['reprocessing_suffix'],
-            'qmap_source_endpoint': cleaned_data['qmap_ep'],
-            'qmap_source_path': source_qmap,
-        })
-        return flow_input, self.get_parameters(flow_input)
+class XPCSReprocessingTransferReprocessing(XPCSReprocessing, BatchCreateView):
+    collector = XPCSTransferCollector

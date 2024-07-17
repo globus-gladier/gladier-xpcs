@@ -10,7 +10,7 @@ from django.utils.timezone import now
 
 
 class Command(BaseCommand):
-    help = 'Registers a FuncX Function for an Automate Flow'
+    help = 'Registers a globus compute Function for an Automate Flow'
 
     def add_arguments(self, parser):
         parser.add_argument('--user', required=False)
@@ -20,8 +20,8 @@ class Command(BaseCommand):
         gcli.login()
         # Check register a new flow
         gcli.register_flow()
-        # Check register new funcx function ids
-        funcx_functions = gcli.get_funcx_function_ids()
+        # Check register new globus compute function ids
+        compute_functions = gcli.get_compute_function_ids()
         # Login with the new flow id, if one was deployed
         scopes = gcli.scopes + ['openid', 'profile', 'email']
         nc = gcli.get_native_client()
@@ -71,9 +71,9 @@ class Command(BaseCommand):
                                      refresh_token=flow_info['refresh_token'],
                                      expires_at_seconds=float(flow_info['expires_at_seconds']))
         fia.save()
-        print(f'You should save these funcx ids to a deployment')
+        print(f'You should save these globus compute ids to a deployment')
         from pprint import pprint
-        pprint(funcx_functions)
+        pprint(compute_functions)
 
     def get_user(self, username):
         try:

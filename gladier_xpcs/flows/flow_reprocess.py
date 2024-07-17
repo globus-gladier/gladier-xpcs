@@ -15,8 +15,8 @@ from gladier import GladierBaseClient, generate_flow_definition
 
 
 @generate_flow_definition(modifiers={
-    'gather_xpcs_metadata': {'payload': '$.PublishPreparation.details.result[0]'},
-    'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result[0]'}
+    'gather_xpcs_metadata': {'payload': '$.PublishPreparation.details.results[0].output'},
+    'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.results[0].output'}
 })
 class XPCSReprocessingFlow(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
@@ -39,12 +39,13 @@ class XPCSReprocessingFlow(GladierBaseClient):
         'gladier_xpcs.tools.Publish',
     ]
 
-    def get_xpcs_input(self, deployment, hdf_source, imm_source, qmap_source):
+    @staticmethod
+    def get_xpcs_input(deployment, hdf_source, imm_source, qmap_source):
         """
         This is a special method which builds runtime input for files that should
         be computed on theta from the source files and the deployment locations.
         The deployment locations (primarily proc_dir), dictates the path on the
-        compute endpoint which most funcx functions will use when opening the actual
+        compute endpoint which most globus compute functions will use when opening the actual
         files.
         """
         dep_input = deployment.get_input()['input']

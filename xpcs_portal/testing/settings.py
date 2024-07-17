@@ -46,9 +46,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     # This contains general Globus portal tools
+    'crispy_forms',
+    'crispy_bootstrap4',
     'globus_portal_framework',
     'social_django',
+    # automate_app can be removed once "0001_new_2023_11_16_initial_xpcs_migration.py" is applied
     'automate_app',
+    'globus_app_flows',
+    # concierge_app can be removed once "0001_new_2023_11_16_initial_xpcs_migration.py" is applied
     'concierge_app',
     'xpcs_portal.xpcs_index',
     'alcf_data_portal',
@@ -98,6 +103,8 @@ TEMPLATES = [
         },
     },
 ]
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
+CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 
 SOCIAL_AUTH_GLOBUS_SCOPE = [
@@ -127,10 +134,16 @@ DATABASES = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    "formatters": {
+        "basic": {
+            "format": "[%(levelname)s] " "%(name)s::%(funcName)s() %(message)s"
+        }
+    },
     'handlers': {
         'stream': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
+            'formatter': 'basic',
         },
     },
     'loggers': {
@@ -139,6 +152,9 @@ LOGGING = {
         'globus_portal_framework': {'handlers': ['stream'], 'level': 'DEBUG'},
         'xpcs_portal': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
         'automate_app': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
+        'concierge_app': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
+        'globus_app_flows': {'handlers': ['stream'], 'level': 'INFO', 'propagate': True},
+        'alcf_data_portal': {'handlers': ['stream'], 'level': 'DEBUG', 'propagate': True},
     },
 }
 

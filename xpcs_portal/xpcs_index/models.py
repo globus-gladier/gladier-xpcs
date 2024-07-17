@@ -5,7 +5,6 @@ import datetime
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
-from automate_app.models import Action, Flow
 from xpcs_portal.xpcs_index import filter_regexes
 try:
     from gladier_xpcs.client_reprocess import XPCSReprocessingClient
@@ -34,8 +33,8 @@ class ReprocessingTask(models.Model):
             'manifest_destination': 'globus://08925f04-569f-11e7-bef8-22000b9a448b/'
                                     'projects/APSDataAnalysis/nick/portal_reprocessing/'
                                     f'{now}',
-            'funcx_endpoint_non_compute': 'f9b73c9e-aab4-4ee2-90b4-1ac77ecf3435',
-            'funcx_endpoint_compute': '1a786878-a2c3-4398-9cb1-5583f437da60',
+            'compute_endpoint_non_compute': 'f9b73c9e-aab4-4ee2-90b4-1ac77ecf3435',
+            'compute_endpoint_compute': '1a786878-a2c3-4398-9cb1-5583f437da60',
             'qmap_source_endpoint': user_flow_input['qmap_ep'],
             'qmap_source_path': user_flow_input['qmap_path'],
             'qmap_destination_endpoint': '08925f04-569f-11e7-bef8-22000b9a448b',

@@ -18,7 +18,7 @@ from gladier_xpcs.tools.eigen_corr import eigen_corr
 
 
 @generate_flow_definition(modifiers={
-    'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.result[0]'}
+    'publish_gather_metadata': {'payload': '$.GatherXpcsMetadata.details.results[0].output'}
 })
 class XPCSEigen(ContainerBaseClient):
     """XPCS Eigan is the older corr flow, and is deprecated and should be removed in a future version"""

@@ -64,13 +64,13 @@ class Publish(GladierBaseTool):
             'PublishGatherMetadata': {
                 'Comment': 'Say something to start the conversation',
                 'Type': 'Action',
-                'ActionUrl': 'https://automate.funcx.org',
+                'ActionUrl': 'https://compute.actions.globus.org',
                 'ActionScope': 'https://auth.globus.org/scopes/b3db7e59-a6f1-4947-95c2-59d6b7a70f8c/action_all',
                 'ExceptionOnActionFailure': True,
                 'Parameters': {
                     'tasks': [{
-                        'endpoint.$': '$.input.funcx_endpoint_non_compute',
-                        'function.$': '$.input.publish_gather_metadata_funcx_id',
+                        'endpoint.$': '$.input.compute_endpoint_non_compute',
+                        'function.$': '$.input.publish_gather_metadata_function_id',
                         'payload.$': '$.input.pilot',
                     }]
                 },
@@ -82,7 +82,7 @@ class Publish(GladierBaseTool):
                 'Comment': 'Transfer files for publication',
                 'Type': 'Action',
                 'ActionUrl': 'https://actions.automate.globus.org/transfer/transfer',
-                'InputPath': '$.PublishGatherMetadata.details.result[0].transfer',
+                'InputPath': '$.PublishGatherMetadata.details.results[0].output.transfer',
                 'ResultPath': '$.PublishTransfer',
                 'WaitTime': 1800,
                 'Next': 'PublishTransferSetPermission',
@@ -93,11 +93,11 @@ class Publish(GladierBaseTool):
                 # https://globus-automate-client.readthedocs.io/en/latest/globus_action_providers.html#globus-transfer-set-manage-permissions
                 "ActionUrl": "https://actions.automate.globus.org/transfer/set_permission",
                 "Parameters": {
-                    "endpoint_id.$": "$.PublishGatherMetadata.details.result[0].permissions.endpoint_id",
-                    "path.$": "$.PublishGatherMetadata.details.result[0].permissions.path",
+                    "endpoint_id.$": "$.PublishGatherMetadata.details.results[0].output.permissions.endpoint_id",
+                    "path.$": "$.PublishGatherMetadata.details.results[0].output.permissions.path",
                     "permissions": "r",  # read-only access
-                    "principal.$": "$.PublishGatherMetadata.details.result[0].permissions.principal_identifier",  # 'group'
-                    "principal_type.$": "$.PublishGatherMetadata.details.result[0].permissions.principal_type",
+                    "principal.$": "$.PublishGatherMetadata.details.results[0].output.permissions.principal_identifier",  # 'group'
+                    "principal_type.$": "$.PublishGatherMetadata.details.results[0].output.permissions.principal_type",
                     "operation": "CREATE",
                 },
                 "ExceptionOnActionFailure": False,
@@ -109,7 +109,7 @@ class Publish(GladierBaseTool):
                 'Type': 'Action',
                 'ActionUrl': 'https://actions.globus.org/search/ingest',
                 'ExceptionOnActionFailure': True,
-                'InputPath': '$.PublishGatherMetadata.details.result[0].search',
+                'InputPath': '$.PublishGatherMetadata.details.results[0].output.search',
                 'ResultPath': '$.PublishIngest',
                 'WaitTime': 300,
                 'End': True
@@ -119,7 +119,7 @@ class Publish(GladierBaseTool):
 
     required_input = [
         'pilot',
-        'funcx_endpoint_non_compute',
+        'compute_endpoint_non_compute',
     ]
 
     flow_input = {

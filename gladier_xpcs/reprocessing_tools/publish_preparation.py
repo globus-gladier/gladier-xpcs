@@ -65,7 +65,7 @@ def publish_preparation(**event):
 
 
 @generate_flow_definition(modifiers={
-    publish_preparation: {'endpoint': 'funcx_endpoint_non_compute',
+    publish_preparation: {'endpoint': 'compute_endpoint_non_compute',
                           # Not yet supported
                           # 'ExceptionOnActionFailure': True
                           }
@@ -81,7 +81,7 @@ class PublishPreparation(GladierBaseTool):
         'proc_dir',
         'hdf_file',
         'reprocessing_suffix',
-        'funcx_endpoint_non_compute',
+        'compute_endpoint_non_compute',
 
         # Reprocessing metadata
         'qmap_source_endpoint',

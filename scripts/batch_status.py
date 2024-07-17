@@ -117,21 +117,21 @@ def get_run_input(run_id, flow_id, scope=None):
     input_payload = resp['entries'][0]['details']['input']
 
     # These should be removed, but needed for old runs pre Gladier v0.9
-    input_payload['input']['login_node_compute'] = input_payload['input'].get('login_node_compute', input_payload['input']['funcx_endpoint_non_compute'])
-    input_payload['input']['compute_endpoint'] = input_payload['input'].get('compute_endpoint', input_payload['input']['funcx_endpoint_compute'])
+    input_payload['input']['login_node_compute'] = input_payload['input'].get('login_node_compute', input_payload['input']['compute_endpoint_non_compute'])
+    input_payload['input']['compute_endpoint'] = input_payload['input'].get('compute_endpoint', input_payload['input']['compute_endpoint_compute'])
 
     return input_payload
 
 
 
 def retry_single(run_id, flow_id, scope=None, use_local=False):
-    run_input = get_run_input(run_id, flow_id, scope)        
+    run_input = get_run_input(run_id, flow_id, scope)
     label = pathlib.Path(run_input['input']['hdf_file']).name[:62]
-    # Check for all values that resemble funcx functions and remove them.
+    # Check for all values that resemble globus compute functions and remove them.
     # Gladier will replace them with local functions
     if use_local:
         for k in list(run_input['input'].keys()):
-            if k.endswith('_funcx_id'):
+            if k.endswith('_function_id'):
                 run_input['input'].pop(k)
     return get_client().run_flow(flow_input=run_input, label=label)
 
@@ -174,7 +174,7 @@ def get_runs_since_label(runs, label):
     """
     Find the earliest occurance in which the run with a given label has failed, and
     return all runs since that point. If multiple runs include the label, this function
-    will return the first occurance. 
+    will return the first occurance.
     """
     bounding_run = -1
     for run in runs:
@@ -214,7 +214,7 @@ def summary(flow):
 @click.option('--run', help='Run to retry', required=True)
 @click.option('--flow', default=None, help='Flow id to use')
 @click.option('--local-fx', default=False, is_flag=True,
-help='Use local FuncX functions instead of the functions from the last run.')
+help='Use local globus compute functions instead of the functions from the last run.')
 def retry_run(run, flow, local_fx):
     resp = retry_single(run, flow, use_local=local_fx)
     click.secho(f'Retried {resp["label"]} (https://app.globus.org/runs/{resp["run_id"]})')
@@ -230,7 +230,7 @@ def dump_run_input(run, flow):
 @batch_status.command()
 @click.option('--flow', help='Flow id to use')
 @click.option('--local-fx', default=False, is_flag=True,
-    help='Use local FuncX functions instead of the functions from the last run.')
+    help='Use local globus compute functions instead of the functions from the last run.')
 @click.option('--status', default='FAILED', help='Flow id to use')
 @click.option('--preview', is_flag=True, default=False, help='Flow id to use')
 @click.option('--since', help='Re-run all failed jobs since the label of this failed job')

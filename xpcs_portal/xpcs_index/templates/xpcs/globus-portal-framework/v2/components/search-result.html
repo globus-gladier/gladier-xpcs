@@ -1,0 +1,8 @@
+{% load humanize %}
+<div class="card my-3">
+  <div class="card-header">
+    <h3 class="search-title">
+      <a href="{% url 'detail' globus_portal_framework.index result.subject %}">{{result.title|default:'Sample'}}</a>
+    </h3>
+  </div>
+</div>
