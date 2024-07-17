@@ -186,8 +186,8 @@ class APS8IDIPolaris(BaseDeployment):
         'acquire_nodes_function_id': '528fe875-ab52-4da7-a690-57aacb8392c9',
         'xpcs_boost_corr_function_id': '4db55ea5-0691-49a0-9e13-29823992f0de',
         'make_corr_plots_function_id': '09cc13bc-97db-4c3a-a3a0-da81c588042a',
-        'gather_xpcs_metadata_function_id': '76789fc3-e464-4d2b-a0be-62a6a6354c69',
-        'publish_gather_metadata_function_id': '35f120b3-ccf3-4bc2-89fb-002e173a8f2f',
+        'gather_xpcs_metadata_function_id': 'b8fd47ce-852d-4bf0-ba84-0571ba9f7ec0',
+        'publishv2_gather_metadata_function_id': 'ec7953a9-9635-4250-bf08-e8b993a0be00',
     }
 
 class RyanNERSC(BaseDeployment):

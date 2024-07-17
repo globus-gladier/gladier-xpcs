@@ -10,6 +10,7 @@ TEST_INPUTS = {
     'proc_dir': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000',
     # 'proc_dir':'/eagle/APSDataAnalysis/nick/xpcs_gpu',
     'hdf_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/output/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
+    'metadata_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/output/xpcs_metadata.json',
     'execution_metadata_file': 'foo/bar',
     'boost_corr': {
         'gpu_flag': 0
@@ -30,7 +31,7 @@ def test_publish(valid_metadata):
     from pprint import pprint
     valid_metadata["content"].pop("files")
     gather = gather_xpcs_metadata(**TEST_INPUTS)
-    metadata = gather["metadata"]
+    metadata = json.loads(pathlib.Path(TEST_INPUTS["metadata_file"]).read_text())
 
     for metadata in (
             valid_metadata["content"],

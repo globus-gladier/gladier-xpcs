@@ -17,13 +17,7 @@ from gladier_xpcs.deployments import deployment_map
 # import gladier_xpcs.log  # Uncomment for debug logging
 
 
-
-@generate_flow_definition(modifiers={
-    'publish_gather_metadata': {
-        'payload': '$.GatherXpcsMetadata.details.results[0].output',
-        'WaitTime': 600,
-    }
-})
+@generate_flow_definition
 class XPCSBoost(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
     
@@ -34,7 +28,7 @@ class XPCSBoost(GladierBaseClient):
         'gladier_xpcs.tools.ResultTransfer',
         'gladier_xpcs.tools.MakeCorrPlots',
         'gladier_xpcs.tools.gather_xpcs_metadata.GatherXPCSMetadata',
-        'gladier_tools.publish.Publish',
+        'gladier_tools.publish.Publishv2',
     ]
 
     def get_xpcs_input(self, deployment, raw, hdf, qmap, gpu_flag=0, verbose=False, batch_size=256, atype='Both', group=None):
@@ -87,22 +81,27 @@ class XPCSBoost(GladierBaseClient):
                         "stride_frame": 1,
                         "overwrite": True,
                 },
-
-                'pilot': {
-                    # This is the directory which will be published
+                'publishv2': {
                     'dataset': dataset_dir,
-                    # Old index, switch back to this when we want to publish to the main index
-                    'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
-                    # Test Index, use this for testing
-                    # 'index': '2e72452f-e932-4da0-b43c-1c722716896e',
-                    'project': 'xpcs-8id',
-                    'source_globus_endpoint': depl_input['input']['globus_endpoint_proc'],
+                    'destination': '/XPCSDATA/Automate/',
+                    'source_collection': deployment.staging_collection.uuid,
                     'source_collection_basepath': str(deployment.staging_collection.path),
-                    # Extra groups can be specified here. The XPCS Admins group will always
-                    # be provided automatically.
-                    'groups': groups,
-                },
+                    'destination_collection': str(deployment.pub_collection.uuid),
+                    'index': '2ec9cf61-c0c9-4213-8f1c-452c072c4ccc',
+                    # 'visible_to': groups,
+                    'visible_to': ["public"],
 
+                    # Ingest and Transfer can be disabled for dry-run testing.
+                    'enable_publish': True,
+                    'enable_transfer': True,
+
+                    'enable_meta_dc': True,
+                    'enable_meta_files': True,
+                    # Use this to validate the 'dc' or datacite field metadata schema
+                    # Requires 'datacite' package
+                    # 'metadata_dc_validation_schema': 'schema43',
+                    # Custom metadata can be added here.
+                },
                 'source_transfer': {
                     'source_endpoint_id': deployment.source_collection.uuid,
                     'destination_endpoint_id': deployment.staging_collection.uuid,

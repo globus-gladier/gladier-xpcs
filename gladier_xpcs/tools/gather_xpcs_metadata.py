@@ -142,22 +142,27 @@ def gather_xpcs_metadata(**data):
     # Parent: sanat
     project_metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
 
-    # metadata passed through from the top level takes precedence. This allows for
-    # overriding fields through $.input
-    publishv2 = data['publishv2']
-    project_metadata.update(publishv2.get('metadata', {}))
     if os.path.exists(data['execution_metadata_file']):
         with open(data['execution_metadata_file']) as f:
             project_metadata.update(json.load(f))
         os.unlink(data['execution_metadata_file'])
-    publishv2['metadata'] = {
+
+    metadata = {
         "dc": dc_metadata,
         "project_metadata": project_metadata,
     }
-    publishv2['groups'] = publishv2.get('groups', [])
-    publishv2['destination'] = f'/{project_metadata["cycle"]}/{root_folder.name}'
-    # return_value = data['publishv2']
-    return publishv2
+
+    metadata_file = pathlib.Path(hdf_file).parent / "xpcs_metadata.json"
+    with open(metadata_file, 'w') as f:
+        json.dump(metadata, f, indent=2)
+
+    return {
+        "destination": f'{project_metadata["cycle"]}/{root_folder.name}',
+        "metadata_file": str(metadata_file),
+        "cycle": project_metadata["cycle"],
+        "parent": root_folder.name,
+        "dataset": hdf_file
+    }
 
 
 @generate_flow_definition(modifiers={
