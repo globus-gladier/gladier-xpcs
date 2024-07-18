@@ -27,11 +27,11 @@ def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument('--experiment', help='Name of the DM experiment', default='test-xpcs-local-workflow-2023.12.19-01')
     parser.add_argument('--hdf', help='Path to the hdf (metadata) file',
-                        default='A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf')
-    parser.add_argument('-r', '--raw', help='Path to the raw data file. Multiple formats (.imm, .bin, etc) supported',
-                        default='A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm')
-    parser.add_argument('-q', '--qmap', help='Path to the qmap file',
-                        default='comm201901_qmap_aerogel_Lq0.h5')
+                        default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.hdf')
+    parser.add_argument('--raw', help='Path to the raw data file. Multiple formats (.imm, .bin, etc) supported',
+                        default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.h5')
+    parser.add_argument('--qmap', help='Path to the qmap file',
+                        default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/standard_qmaps/eiger4M_qmap_d36_s360.h5')
     parser.add_argument('-t', '--atype', default='Both', help='Analysis type to be performed. Available: Multitau, Twotime')
     parser.add_argument('-i', '--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     # Group MUST not be None in order for PublishTransferSetPermission to succeed. Group MAY
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     #source_raw_path = os.path.join(args.experiment, 'data', args.raw)
     #source_qmap_path = os.path.join(args.experiment, 'data', args.qmap)
     #Output path to transfer results back
-    result_path = os.path.join(args.output_dir, hdf_name)
+    # result_path = os.path.join(args.output_dir, hdf_name)
     # Generate Destination Pathnames.
     raw_file = os.path.join(dataset_dir, 'input', raw_name)
     qmap_file = os.path.join(dataset_dir, 'qmap', qmap_name)
@@ -119,21 +119,28 @@ if __name__ == '__main__':
                     "save_G2": args.save_G2,
                     "smooth": args.smooth,
             },
+            'publishv2': {
+                    'dataset': dataset_dir,
+                    'destination': '/XPCSDATA/Automate/',
+                    'source_collection': deployment.staging_collection.uuid,
+                    'source_collection_basepath': str(deployment.staging_collection.path),
+                    'destination_collection': str(deployment.pub_collection.uuid),
+                    'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
+                    # Test index
+                    # 'index': '2ec9cf61-c0c9-4213-8f1c-452c072c4ccc',
+                    'visible_to': [f'urn:globus:groups:id:{args.group}'] if args.group else [],
 
-            'pilot': {
-                # This is the directory which will be published
-                'dataset': dataset_dir,
-                # Old index, switch back to this when we want to publish to the main index
-                'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
-                # Test Index, use this for testing
-                # 'index': '2e72452f-e932-4da0-b43c-1c722716896e',
-                'project': 'xpcs-8id',
-                'source_globus_endpoint': depl_input['input']['globus_endpoint_proc'],
-                'source_collection_basepath': str(deployment.staging_collection.path),
-                # Extra groups can be specified here. The XPCS Admins group will always
-                # be provided automatically.
-                'groups': [args.group] if args.group else [],
-            },
+                    # Ingest and Transfer can be disabled for dry-run testing.
+                    'enable_publish': True,
+                    'enable_transfer': True,
+
+                    'enable_meta_dc': True,
+                    'enable_meta_files': True,
+                    # Use this to validate the 'dc' or datacite field metadata schema
+                    # Requires 'datacite' package
+                    # 'metadata_dc_validation_schema': 'schema43',
+                    'destination_url_hostname': 'https://g-f6125.fd635.8443.data.globus.org',
+                },
 
             'source_transfer': {
                 'source_endpoint_id': deployment.source_collection.uuid,
@@ -154,16 +161,16 @@ if __name__ == '__main__':
                 ],
             },
 
-            'result_transfer': {
-                'source_endpoint_id': deployment.staging_collection.uuid,
-                'destination_endpoint_id': deployment.source_collection.uuid,
-                'transfer_items': [
-                    {
-                        'source_path': deployment.staging_collection.to_globus(output_hdf_file),
-                        'destination_path': deployment.source_collection.to_globus(result_path)
-                    }
-                ]
-            },
+            # 'result_transfer': {
+            #     'source_endpoint_id': deployment.staging_collection.uuid,
+            #     'destination_endpoint_id': deployment.source_collection.uuid,
+            #     'transfer_items': [
+            #         {
+            #             'source_path': deployment.staging_collection.to_globus(output_hdf_file),
+            #             'destination_path': deployment.source_collection.to_globus(result_path)
+            #         }
+            #     ]
+            # },
             'proc_dir': dataset_dir,
             'metadata_file': input_hdf_file,
             'hdf_file': output_hdf_file,
