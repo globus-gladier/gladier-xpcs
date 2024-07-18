@@ -12,6 +12,87 @@ def gather_xpcs_metadata(**data):
     import copy
     import numpy
 
+    # These are the keys we collect with version 2 of the metadata
+    # Version 2 refers to July 2024, when 8idi first started to run
+    # datasets with the new beamline coming online.
+    V2_XPCS_KEYS = [
+        'aps_cycle_v2',
+        'cycle',
+        'entry.duration',
+        'entry.end_time',
+        'entry.entry_identifier',
+        'entry.instrument.bluesky.metadata.I0',
+        'entry.instrument.bluesky.metadata.I1',
+        'entry.instrument.bluesky.metadata.X_energy',
+        'entry.instrument.bluesky.metadata.absolute_cross_section_scale',
+        'entry.instrument.bluesky.metadata.acquire_period',
+        'entry.instrument.bluesky.metadata.acquire_time',
+        'entry.instrument.bluesky.metadata.bcx',
+        'entry.instrument.bluesky.metadata.bcy',
+        'entry.instrument.bluesky.metadata.beamline_id',
+        'entry.instrument.bluesky.metadata.ccdx',
+        'entry.instrument.bluesky.metadata.ccdx0',
+        'entry.instrument.bluesky.metadata.ccdy',
+        'entry.instrument.bluesky.metadata.ccdy0',
+        'entry.instrument.bluesky.metadata.concise',
+        'entry.instrument.bluesky.metadata.dataDir',
+        'entry.instrument.bluesky.metadata.data_management',
+        'entry.instrument.bluesky.metadata.databroker_catalog',
+        'entry.instrument.bluesky.metadata.datetime',
+        'entry.instrument.bluesky.metadata.description',
+        'entry.instrument.bluesky.metadata.det_dist',
+        'entry.instrument.bluesky.metadata.detector_name',
+        'entry.instrument.bluesky.metadata.detectors',
+        'entry.instrument.bluesky.metadata.header',
+        'entry.instrument.bluesky.metadata.hints',
+        'entry.instrument.bluesky.metadata.incident_beam_size_nm_xy',
+        'entry.instrument.bluesky.metadata.incident_energy_spread',
+        'entry.instrument.bluesky.metadata.index',
+        'entry.instrument.bluesky.metadata.instrument_name',
+        'entry.instrument.bluesky.metadata.login_id',
+        'entry.instrument.bluesky.metadata.metadatafile',
+        'entry.instrument.bluesky.metadata.num_capture',
+        'entry.instrument.bluesky.metadata.num_exposures',
+        'entry.instrument.bluesky.metadata.num_images',
+        'entry.instrument.bluesky.metadata.num_intervals',
+        'entry.instrument.bluesky.metadata.num_points',
+        'entry.instrument.bluesky.metadata.num_triggers',
+        'entry.instrument.bluesky.metadata.owner',
+        'entry.instrument.bluesky.metadata.pid',
+        'entry.instrument.bluesky.metadata.pix_dim_x',
+        'entry.instrument.bluesky.metadata.pix_dim_y',
+        'entry.instrument.bluesky.metadata.plan_args',
+        'entry.instrument.bluesky.metadata.plan_name',
+        'entry.instrument.bluesky.metadata.plan_type',
+        'entry.instrument.bluesky.metadata.proposal_id',
+        'entry.instrument.bluesky.metadata.qmap_file',
+        'entry.instrument.bluesky.metadata.safe_title',
+        'entry.instrument.bluesky.metadata.t0',
+        'entry.instrument.bluesky.metadata.t1',
+        'entry.instrument.bluesky.metadata.title',
+        'entry.instrument.bluesky.metadata.versions',
+        'entry.instrument.bluesky.metadata.workflow',
+        'entry.instrument.bluesky.metadata.xdim',
+        'entry.instrument.bluesky.metadata.ydim',
+        'entry.instrument.bluesky.streams.primary.eiger4M.image_file_name',
+        'entry.instrument.detector_1.description',
+        'entry.instrument.layout_version',
+        'entry.program_name',
+        'entry.start_time',
+        'entry.title',
+        'parent',
+        'project-slug',
+        'xpcs.analysis_type',
+        'xpcs.avg_frame_burst',
+        'xpcs.avg_frames',
+        'xpcs.dnophi',
+        'xpcs.dnoq',
+        'xpcs.qmap_hdf5_filename',
+        'xpcs.snophi',
+        'xpcs.snoq',
+        'xpcs.stride_frame_burst',
+        'xpcs.stride_frames']
+
     def gather_items(hdf5_dataframe):
         def decode_dtype(key, value, dtype):
             """Update a special numpy type to a python type"""
@@ -142,34 +223,10 @@ def gather_xpcs_metadata(**data):
         "project-slug": "xpcs-8id",
     }
     project_metadata.update(exp_metadata)
-
-    # TODO: Check the new v2 project metadata and make sure it's really all the stuff we want to add.
-    # This will be NEW metadata, that will live as permenant keys in this Globus Search index, so we
-    # should prune anything we don't want to be in there forever.
-    backwards_compatible_keys = (
-        'xpcs.snoq', 'cycle', 'xpcs.snophi', 'xpcs.analysis_type', 'xpcs.dnoq',
-        'aps_cycle_v2', 'xpcs.qmap_hdf5_filename', 'xpcs.dnophi', 'project-slug',
-        'xpcs.avg_frames', 'xpcs.stride_frames', 'parent'
-    )
-    v2_cherry_picked_keys = (
-        'entry.duration',
-        'entry.end_time',
-        'entry.entry_identifier',
-        'entry.instrument.bluesky.metadata.beamline_id',
-        'entry.instrument.bluesky.metadata.dataDir',
-        'entry.instrument.bluesky.metadata.data_management',
-        'entry.instrument.bluesky.metadata.databroker_catalog',
-        'entry.instrument.bluesky.metadata.datetime',
-        'entry.instrument.bluesky.metadata.metadatafile',
-        'entry.instrument.bluesky.metadata.qmap_file',
-        'entry.instrument.bluesky.metadata.title',
-        'entry.instrument.bluesky.metadata.versions',
-        'entry.instrument.bluesky.metadata.workflow',
-    )
-    wanted_gathered_metadata = {
-        k:v for k, v in gathered_metadata.items()
-        if k in backwards_compatible_keys or k in v2_cherry_picked_keys}
+    wanted_gathered_metadata = {k:v for k, v in gathered_metadata.items() if k in V2_XPCS_KEYS}
     project_metadata.update(wanted_gathered_metadata)
+    unexpected_xpcs_keys = [k for k in gathered_metadata if k not in V2_XPCS_KEYS]
+
 
     if os.path.exists(data['execution_metadata_file']):
         with open(data['execution_metadata_file']) as f:
@@ -191,6 +248,7 @@ def gather_xpcs_metadata(**data):
         # Add nested folders to destination
         "destination": str(pathlib.Path(data["publishv2"]["destination"]) / project_metadata["aps_cycle_v2"]),
         "metadata_file": str(metadata_file),
+        "unexpected_xpcs_keys": unexpected_xpcs_keys,
     }
     publish_data = data['publishv2']
     publish_data.update(new_data)
