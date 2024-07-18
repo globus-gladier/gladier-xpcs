@@ -84,7 +84,18 @@ if __name__ == '__main__':
     #source_raw_path = os.path.join(args.experiment, 'data', args.raw)
     #source_qmap_path = os.path.join(args.experiment, 'data', args.qmap)
     #Output path to transfer results back
-    # result_path = os.path.join(args.output_dir, hdf_name)
+    if args.output_dir:
+        result_path = os.path.join(args.output_dir, hdf_name)
+        result_path_transfer_items = [
+            {
+                'source_path': deployment.staging_collection.to_globus(output_hdf_file),
+                'destination_path': deployment.source_collection.to_globus(result_path)
+            }
+        ]
+    else:
+        print("No result path specified, transfer-back will be disabled.")
+        result_path = None
+        result_path_transfer_items = []
     # Generate Destination Pathnames.
     raw_file = os.path.join(dataset_dir, 'input', raw_name)
     qmap_file = os.path.join(dataset_dir, 'qmap', qmap_name)
@@ -161,16 +172,12 @@ if __name__ == '__main__':
                 ],
             },
 
-            # 'result_transfer': {
-            #     'source_endpoint_id': deployment.staging_collection.uuid,
-            #     'destination_endpoint_id': deployment.source_collection.uuid,
-            #     'transfer_items': [
-            #         {
-            #             'source_path': deployment.staging_collection.to_globus(output_hdf_file),
-            #             'destination_path': deployment.source_collection.to_globus(result_path)
-            #         }
-            #     ]
-            # },
+            'enable_result_transfer': bool(result_path),
+            'result_transfer': {
+                'source_endpoint_id': deployment.staging_collection.uuid,
+                'destination_endpoint_id': deployment.source_collection.uuid,
+                'transfer_items': result_path_transfer_items,
+            },
             'proc_dir': dataset_dir,
             'metadata_file': input_hdf_file,
             'hdf_file': output_hdf_file,
