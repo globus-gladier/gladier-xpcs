@@ -102,7 +102,14 @@ def gather_xpcs_metadata(**data):
             'resourceType': 'Dataset',
             'resourceTypeGeneral': 'Dataset'
         },
-        'dates': [],
+        'dates': [
+            {
+                # "date": "2020-09-04T21:08:59.027046Z",
+                # "date": "2024-07-17T16:01:36.595827",
+                "date": datetime.datetime.now().isoformat(),
+                "dateType": "Created"
+            }
+        ],
         'formats': [],
         'version': "2",
     }
