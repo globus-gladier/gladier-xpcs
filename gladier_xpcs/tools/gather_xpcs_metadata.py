@@ -87,7 +87,7 @@ def gather_xpcs_metadata(**data):
     # Generate metadata
     hdf_file = data['hdf_file']
     exp_name = pathlib.Path(hdf_file).name.replace(".hdf", "")
-    project_metadata = gather(hdf_file)
+    gathered_metadata = gather(hdf_file)
     dc_metadata = {
         'descriptions': [{
             "description": f"{exp_name}: Automated data processing.",
@@ -114,7 +114,7 @@ def gather_xpcs_metadata(**data):
         'version': "2",
     }
     extra_metadata = data.get('metadata', {}) or {}
-    project_metadata.update(extra_metadata)
+    project_metadata = extra_metadata.copy()
     # Create metadata file
     # Some types have changed between search ingests, and they cause the search ingest
     # to fail. Pop them so we don't get the search error.
@@ -125,7 +125,7 @@ def gather_xpcs_metadata(**data):
     # Get root_folder, ex: "/data/2020-1/sanat202002/"
     # All datasets need this info to publish correctly, not having it will raise an exception.
     # /gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000
-    root_folder = pathlib.Path(project_metadata['entry.instrument.bluesky.metadata.dataDir'])
+    root_folder = pathlib.Path(gathered_metadata['entry.instrument.bluesky.metadata.dataDir'])
     # 2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000
     relative_folder = root_folder.relative_to('/gdata/dm/8IDI/')
     # ("2024-1", "zhang202402_2", "data", H001_27445_QZ_XPCS_test-01000)
@@ -141,12 +141,35 @@ def gather_xpcs_metadata(**data):
         # removed.
         "project-slug": "xpcs-8id",
     }
+    project_metadata.update(exp_metadata)
 
     # TODO: Check the new v2 project metadata and make sure it's really all the stuff we want to add.
     # This will be NEW metadata, that will live as permenant keys in this Globus Search index, so we
     # should prune anything we don't want to be in there forever.
-    project_metadata = dict()
-    project_metadata.update(exp_metadata)
+    backwards_compatible_keys = (
+        'xpcs.snoq', 'cycle', 'xpcs.snophi', 'xpcs.analysis_type', 'xpcs.dnoq',
+        'aps_cycle_v2', 'xpcs.qmap_hdf5_filename', 'xpcs.dnophi', 'project-slug',
+        'xpcs.avg_frames', 'xpcs.stride_frames', 'parent'
+    )
+    v2_cherry_picked_keys = (
+        'entry.duration',
+        'entry.end_time',
+        'entry.entry_identifier',
+        'entry.instrument.bluesky.metadata.beamline_id',
+        'entry.instrument.bluesky.metadata.dataDir',
+        'entry.instrument.bluesky.metadata.data_management',
+        'entry.instrument.bluesky.metadata.databroker_catalog',
+        'entry.instrument.bluesky.metadata.datetime',
+        'entry.instrument.bluesky.metadata.metadatafile',
+        'entry.instrument.bluesky.metadata.qmap_file',
+        'entry.instrument.bluesky.metadata.title',
+        'entry.instrument.bluesky.metadata.versions',
+        'entry.instrument.bluesky.metadata.workflow',
+    )
+    wanted_gathered_metadata = {
+        k:v for k, v in gathered_metadata.items()
+        if k in backwards_compatible_keys or k in v2_cherry_picked_keys}
+    project_metadata.update(wanted_gathered_metadata)
 
     if os.path.exists(data['execution_metadata_file']):
         with open(data['execution_metadata_file']) as f:
@@ -200,13 +223,13 @@ if __name__ == '__main__':
         #'hdf_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/output/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
         'hdf_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/H001_27445_QZ_XPCS_test-01000/output/H001_27445_QZ_XPCS_test-01000.hdf',
         'execution_metadata_file': 'foo/bar',
-        'destination': '/foo/bar',
         'boost_corr': {
             'gpu_flag': 0
         },
         'publishv2': {
             'metadata': {},
-            'groups': []
+            'groups': [],
+            'destination': '/foo/bar',
         },
     }
     from pprint import pprint
