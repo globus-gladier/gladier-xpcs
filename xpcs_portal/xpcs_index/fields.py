@@ -199,7 +199,7 @@ def fetch_all_previews(result):
             'caption': get_xpcs_field_title(entry['filename'].rstrip('png'),
                                             ''),
             'name': get_xpcs_field_title(entry['filename'], ''),
-            'url': entry['url'],
+            'url': entry.get('https_url') or entry['url'],
             'filename': entry['filename'],
             'mime_type': entry['mime_type']
         } for entry in result[0].get('files', {})}
