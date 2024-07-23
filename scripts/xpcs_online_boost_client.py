@@ -100,7 +100,7 @@ if __name__ == '__main__':
 
     if not args.skip_transfer_back:
         # Transfer back step transfers data to the following location automatically:
-        #   /cycle/parent/experiment-name/analysis/dataset-name/dataset.hdf
+        #   /cycle/parent/analysis/dataset-name/dataset.hdf
         # Input dirs tend to look like the following, but the strongest convention we have is that the .hdf file
         # will be within a directory of the same name. It *may* be in a 'data' directory, and if so, we want to
         # make sure processed data does not go back into the 'data' directory. Example paths look like this:
