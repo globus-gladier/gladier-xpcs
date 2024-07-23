@@ -7,6 +7,8 @@ import os
 import sys
 import pathlib
 import time
+import json
+import logging
 
 from gladier_xpcs.flows import XPCSBoost
 from gladier_xpcs.deployments import deployment_map
@@ -56,7 +58,7 @@ def arg_parse():
 
 if __name__ == '__main__':
     args = arg_parse()
-    print(args)
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
     deployment = deployment_map.get(args.deployment)
     if "/gdata/dm/XPCS8" in args.raw:
         deployment = deployment_map.get('voyager-xpcs8-polaris')
@@ -73,12 +75,12 @@ if __name__ == '__main__':
 
     raw_name = os.path.basename(args.raw)
     hdf_name = os.path.basename(args.hdf)
-    print(f"{hdf_name=}")
+    logging.debug(f"{hdf_name=}")
     qmap_name = os.path.basename(args.qmap)
     dataset_name = hdf_name[:hdf_name.rindex('.')] #remove file extension
-    print(f"{dataset_name=}")
+    logging.debug(f"{dataset_name=}")
     dataset_dir = os.path.join(depl_input['input']['staging_dir'], args.experiment, dataset_name)
-    print(f"{dataset_dir=}")
+    logging.debug(f"{dataset_dir=}")
     #Processing type
     atype = args.atype
 
@@ -111,12 +113,12 @@ if __name__ == '__main__':
 
         result_path_destination_filename = source_directory_base / "analysis" / dataset_name / hdf_name
         if source_directory_base.name != args.experiment:
-            print(f'Error: {source_directory_base} does not end with "{args.experiment}" for transferring processed '
+            logging.error(f'Error: {source_directory_base} does not end with "{args.experiment}" for transferring processed '
                   'datasets. Please ensure these match to avoid overwriting unexpected files on source (would transfer '
                   f'output file to the following location "{result_path_destination_filename}).', file=sys.stderr)
             sys.exit(1)
 
-        print(
+        logging.info(
             f"Flow will transfer processed dataset {hdf_name} back to "
             f"{deployment.source_collection.name} ({deployment.source_collection.uuid}) with path "
             f"'{str(result_path_destination_filename)}'"
@@ -128,7 +130,7 @@ if __name__ == '__main__':
             }
         ]
     else:
-        print("--skip-transfer-back option was used, result will not be transferred back to source.")
+        logging.warning("--skip-transfer-back option was used, result will not be transferred back to source.")
         result_path_destination_filename = None
         result_path_transfer_items = []
 
@@ -216,10 +218,18 @@ if __name__ == '__main__':
     corr_flow = XPCSBoost()
 
     corr_run_label = pathlib.Path(hdf_name).name[:62]
+    logging.info(f'Staging data from {deployment.source_collection.name} ({deployment.source_collection.uuid}) to '
+                 f'{deployment.staging_collection.name} ({deployment.staging_collection.uuid})')
+    logging.debug(f'Staging data files: {json.dumps(flow_input["input"]["source_transfer"]["transfer_items"], indent=4)}')
+    logging.info(f'Publish Ingest Enabled: {flow_input["input"]["publishv2"]["enable_publish"]}')
+    logging.info(f'Publish Transfer Enabled: {flow_input["input"]["publishv2"]["enable_transfer"]}')
     flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs'])
 
     actionID = flow_run['action_id']
-    print(f"Flow Action ID: {actionID}")
-    print(f"URL: https://app.globus.org/runs/{actionID}")
+    logging.debug(f"Flow Action ID: {actionID}")
+    logging.info(f"URL: https://app.globus.org/runs/{actionID}")
     status = corr_flow.get_status(actionID).get('status')
-    print(f"Status: {status}")
+    logging.info(f"Status: {status}")
+
+    # Print the actionID, such that any program can use this in batch scripts
+    print(actionID)
