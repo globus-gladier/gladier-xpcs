@@ -1,0 +1,623 @@
+{"content": {
+    "dc": {
+      "creators": [
+        {
+          "creatorName": "8-ID"
+        }
+      ],
+      "dates": [
+        {
+          "date": "2024-02-20T21:03:32.725514Z",
+          "dateType": "Created"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000: Automated data processing.",
+          "descriptionType": "Other"
+        }
+      ],
+      "formats": [
+        "application/json",
+        "application/octet-stream",
+        "application/x-hdf",
+        "image/png",
+        "text/x-log"
+      ],
+      "publicationYear": "2024",
+      "publisher": "Automate",
+      "resourceType": {
+        "resourceType": "Dataset",
+        "resourceTypeGeneral": "Dataset"
+      },
+      "subjects": [
+        {
+          "subject": "A001"
+        },
+        {
+          "subject": "Aerogel"
+        },
+        {
+          "subject": "1mm"
+        },
+        {
+          "subject": "att6"
+        },
+        {
+          "subject": "Lq0"
+        },
+        {
+          "subject": "001"
+        },
+        {
+          "subject": "0001-1000"
+        }
+      ],
+      "titles": [
+        {
+          "title": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000"
+        }
+      ],
+      "version": "1"
+    },
+    "files": [
+      {
+        "field_metadata": {},
+        "filename": "boost_corr.log",
+        "length": 300,
+        "md5": "0b21a090091f6301bc3c526511ee2f34",
+        "mime_type": "text/x-log",
+        "sha256": "ed9516aabefd5c41e42da631ce44bdd1a5ba853bd1f34ead08b4dcd45fa04006",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/boost_corr.log"
+      },
+      {
+        "field_metadata": {},
+        "filename": "metadata.json",
+        "length": 305,
+        "md5": "30b74dfa7305f0faa532a29b5c8bb7c4",
+        "mime_type": "application/json",
+        "sha256": "9e3457c91b4cd8213e24f32eb026856f800d6c02d65ed24d2510d151999d3fec",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/metadata.json"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_072_080.png",
+        "length": 170546,
+        "md5": "36c204cb4533c4bf00de8f7bf16c131e",
+        "mime_type": "image/png",
+        "sha256": "1f1fc28266345a8962a87b695c6654d43839fd65277e65efb803e5322351a600",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_072_080.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_135_143.png",
+        "length": 164455,
+        "md5": "604c2614caad7474d83b8cffa712fcfd",
+        "mime_type": "image/png",
+        "sha256": "906c4a4e00244da2f888c9fbef67793f55e78715c6fdeeb6187cf08f140c6280",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_135_143.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_009_017.png",
+        "length": 170787,
+        "md5": "53e247a4a4a7fb37355675db86ef996f",
+        "mime_type": "image/png",
+        "sha256": "143e0c1340af331f30a9a6308d3b17fa4c9c1de4ea13b022e5d41ec1e72e7265",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_009_017.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_000_008.png",
+        "length": 172651,
+        "md5": "4213f45c151c61d5cd40ac2a41b32c0e",
+        "mime_type": "image/png",
+        "sha256": "286af76d2b253f31f06758cbb8e89b5bb3499a984fe3fcd34c0eaab41319311e",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_000_008.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 864,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "total_intensity_vs_time.png",
+        "length": 216053,
+        "md5": "bb4e52e4352fb29ec9af2ac1252fb621",
+        "mime_type": "image/png",
+        "sha256": "624c5c317a92a09e8f6a84bb44d55271e2bbc3ca403fd0fe45eb612a519b72e6",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/total_intensity_vs_time.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_063_071.png",
+        "length": 165619,
+        "md5": "441b60245aa25ca16873af55d11a7598",
+        "mime_type": "image/png",
+        "sha256": "9e872b13ca9633777e4277ed9075eb113b3eb7533626adc3e4cd7b45525129c5",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_063_071.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_108_116.png",
+        "length": 157668,
+        "md5": "6aaa47a25c3f0c5eaa583a8c36b97e9b",
+        "mime_type": "image/png",
+        "sha256": "debd9173c5ebdcbf8f558b089aef58763c8ecc60939241b60f1ca3f33dd76111",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_108_116.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_036_044.png",
+        "length": 156065,
+        "md5": "76a16443b401b1a0d1b3edcbea353ffc",
+        "mime_type": "image/png",
+        "sha256": "1d972c782e61027a7cd5872ce8d5d432195e6df700d4c29eb6efa3cf803a19c3",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_036_044.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_081_089.png",
+        "length": 167599,
+        "md5": "1c49a3d823638845a6fbb2d00cf3d5ef",
+        "mime_type": "image/png",
+        "sha256": "e837d454f08a9e92e4e724605c1277d5e658cc291f4a14cc377df8a93f4a48d7",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_081_089.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_054_062.png",
+        "length": 158659,
+        "md5": "a6f4c48d77647426204d42bc42a7a96b",
+        "mime_type": "image/png",
+        "sha256": "2ff224a25555374f71d9d19b3ef8d2699f6e9c4be519a73bb0330be5be3e7754",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_054_062.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 864,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "scattering_pattern_log.png",
+        "length": 1923285,
+        "md5": "32b13c003301e7c1274b9bde9ce4009c",
+        "mime_type": "image/png",
+        "sha256": "db150f6054294bcbd58d01ded68568b4ac4607db568ca02fb585b53715eeb98e",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/scattering_pattern_log.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_045_053.png",
+        "length": 164670,
+        "md5": "f4355b9c89a34e0e2ca8435c251d7a47",
+        "mime_type": "image/png",
+        "sha256": "d13f648a733a7dc92c81dc2c9f774a5c963826b9aff469ce9c381bb14dd306ce",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_045_053.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_117_125.png",
+        "length": 161742,
+        "md5": "154b1c1fc9a09edededa661d46739b20",
+        "mime_type": "image/png",
+        "sha256": "39521e855c22d88426641186d77f5ba66df4e85a2e181a832ebf55cd76f04064",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_117_125.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_144_152.png",
+        "length": 165379,
+        "md5": "2b8bec2ebffb2290c90fad6a7bb7ad09",
+        "mime_type": "image/png",
+        "sha256": "904a8db7ecf33b91c4550c57688c095f59a8932335acc1a64039b3cbdcb51e24",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_144_152.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_018_026.png",
+        "length": 160548,
+        "md5": "1dbf8675441d4f32feafa4bdae63495b",
+        "mime_type": "image/png",
+        "sha256": "7d12ebe33b10552a2812df2323463cb2dfe98b01236b6036caa140f9819f2f33",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_018_026.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_153_161.png",
+        "length": 144917,
+        "md5": "6011eac77001573b7e6679a8614b9bc3",
+        "mime_type": "image/png",
+        "sha256": "a0b224f420f64d11b53f690bab5df37be501f4190a8fd3bbb275032aa58c698f",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_153_161.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_027_035.png",
+        "length": 160218,
+        "md5": "5e5f1b822891994975e614d74d0b4ffd",
+        "mime_type": "image/png",
+        "sha256": "76151f93945b4685318b90c1ccf154b34c5d222ce51436ebb0f2e27d32662143",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_027_035.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_090_098.png",
+        "length": 176744,
+        "md5": "b58064a5be5759f03063f370b828d081",
+        "mime_type": "image/png",
+        "sha256": "cca3071da93a5a6a05b75708c9e7fe1f9950b96b47ea1e5a6e4702ef82703c95",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_090_098.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_126_134.png",
+        "length": 158045,
+        "md5": "35183822790214186bf111d4a51915d9",
+        "mime_type": "image/png",
+        "sha256": "9b847320b8c421fbf6bdfe1b9aa9bf6265d90aff78f45d7142beeece8f16c301",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_126_134.png"
+      },
+      {
+        "field_metadata": {
+          "colorspace": "RGBA",
+          "format": "PNG",
+          "format_description": "Portable network graphics",
+          "height": 576,
+          "name": "Image Metadata",
+          "width": 3840
+        },
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_099_107.png",
+        "length": 165536,
+        "md5": "ec784a78cf76fb4ca505d591c5dd9c0f",
+        "mime_type": "image/png",
+        "sha256": "ac80bdc78a59faa621e36a78629d4289cbfa74a2931c472d7df1b9ccbe0b47f0",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/A001_Aerogel_1mm_att6_Lq0_001_0001-1000_g2_corr_099_107.png"
+      },
+      {
+        "field_metadata": {},
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf",
+        "length": 27596728,
+        "md5": "b45f6ce1cef6ee12d8554e3205d06128",
+        "mime_type": "application/x-hdf",
+        "sha256": "f374e95e518fad5691cdd8e9a6112e60034c25d4ac2b0bf873311fabfa5c107e",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/input/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf"
+      },
+      {
+        "field_metadata": {},
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm",
+        "length": 677665912,
+        "md5": "e053d2753f85300b2bc56762381201ef",
+        "mime_type": "application/octet-stream",
+        "sha256": "955a4c5740e0a0a2f6b6484c88d6e98c3984c84503c1292acd84c1386999af83",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/input/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm"
+      },
+      {
+        "field_metadata": {},
+        "filename": "Rigaku_test.h5",
+        "length": 21526926,
+        "md5": "481b568363af41f483fa10bcdb224ef2",
+        "mime_type": "application/octet-stream",
+        "sha256": "00a396aaa3ac9644d178a2050131e109be0d5e6a71df7ece7307efa5822e0ed7",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/qmap/Rigaku_test.h5"
+      },
+      {
+        "field_metadata": {},
+        "filename": "jaeger202102_Lq0_S360_D36_Lin.h5",
+        "length": 32955106,
+        "md5": "d927da460be3baecabd671b439974af0",
+        "mime_type": "application/octet-stream",
+        "sha256": "ac929e21c868a630a62370adcc4f652ca1a0e0397986ba00c73e8451288a3db2",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/qmap/jaeger202102_Lq0_S360_D36_Lin.h5"
+      },
+      {
+        "field_metadata": {},
+        "filename": "comm201901_qmap_aerogel_Lq0.h5",
+        "length": 32954194,
+        "md5": "aa8e6956e4817de080ac269643f4673a",
+        "mime_type": "application/octet-stream",
+        "sha256": "2861b02fbb5dd89ba8193f7672607252ae3fd29d76a10913692b6a9ef5cd842d",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/qmap/comm201901_qmap_aerogel_Lq0.h5"
+      },
+      {
+        "field_metadata": {},
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf",
+        "length": 27596728,
+        "md5": "b45f6ce1cef6ee12d8554e3205d06128",
+        "mime_type": "application/x-hdf",
+        "sha256": "f374e95e518fad5691cdd8e9a6112e60034c25d4ac2b0bf873311fabfa5c107e",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/qmap/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf"
+      },
+      {
+        "field_metadata": {},
+        "filename": "A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf",
+        "length": 16985656,
+        "md5": "19e186a7545cc30fb55d9a93f71f9834",
+        "mime_type": "application/x-hdf",
+        "sha256": "33373b4a88992534edbf6b7424e0a604d810ab2c7ee581eb8f8bbfebe336b457",
+        "url": "https://g-f6125.fd635.8443.data.globus.org/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/output/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf"
+      }
+    ],
+    "project_metadata": {
+      "aps_cycle_v2": "2019-1/comm201901",
+      "cycle": "2019-1",
+      "executable": {
+        "device": "gpu",
+        "name": "boost_corr",
+        "source": "https://pypi.org/project/boost_corr/",
+        "tool_version": "0.1.5.dev51+g741fb83"
+      },
+      "measurement.instrument.acquisition.angle": -1,
+      "measurement.instrument.acquisition.attenuation": 73.18987274169922,
+      "measurement.instrument.acquisition.beam_center_x": 673.845703125,
+      "measurement.instrument.acquisition.beam_center_y": 157.69932556152344,
+      "measurement.instrument.acquisition.beam_size_H": 200,
+      "measurement.instrument.acquisition.beam_size_V": 100,
+      "measurement.instrument.acquisition.ccdxspec": -1,
+      "measurement.instrument.acquisition.ccdzspec": -1,
+      "measurement.instrument.acquisition.compression": "ENABLED",
+      "measurement.instrument.acquisition.dark_begin": 0,
+      "measurement.instrument.acquisition.dark_end": 0,
+      "measurement.instrument.acquisition.data_begin": 1,
+      "measurement.instrument.acquisition.data_end": 1000,
+      "measurement.instrument.acquisition.data_folder": "A001_Aerogel_1mm_att6_Lq0_001/",
+      "measurement.instrument.acquisition.datafilename": "A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm",
+      "measurement.instrument.acquisition.parent_folder": "comm201901",
+      "measurement.instrument.acquisition.root_folder": "/data/2019-1/comm201901/",
+      "measurement.instrument.acquisition.specfile": "comm20190129",
+      "measurement.instrument.acquisition.specscan_dark_number": 0,
+      "measurement.instrument.acquisition.specscan_data_number": 179,
+      "measurement.instrument.acquisition.stage_x": 215.3000030517578,
+      "measurement.instrument.acquisition.stage_z": 37.099998474121094,
+      "measurement.instrument.acquisition.stage_zero_x": 209.5,
+      "measurement.instrument.acquisition.stage_zero_z": 31.5,
+      "measurement.instrument.acquisition.xspec": -1,
+      "measurement.instrument.acquisition.zspec": -1,
+      "measurement.instrument.detector.adu_per_photon": 1,
+      "measurement.instrument.detector.bit_depth": 12,
+      "measurement.instrument.detector.blemish_enabled": "ENABLED",
+      "measurement.instrument.detector.distance": 3930,
+      "measurement.instrument.detector.efficiency": 1,
+      "measurement.instrument.detector.exposure_period": 0.10000000149011612,
+      "measurement.instrument.detector.exposure_time": 0.10000000149011612,
+      "measurement.instrument.detector.flatfield_enabled": "ENABLED",
+      "measurement.instrument.detector.gain": 1,
+      "measurement.instrument.detector.geometry": "TRANSMISSION",
+      "measurement.instrument.detector.kinetics.first_usable_window": 0,
+      "measurement.instrument.detector.kinetics.last_usable_window": 0,
+      "measurement.instrument.detector.kinetics.top": 0,
+      "measurement.instrument.detector.kinetics.window_size": 0,
+      "measurement.instrument.detector.kinetics_enabled": "DISABLED",
+      "measurement.instrument.detector.lld": 0,
+      "measurement.instrument.detector.manufacturer": "LAMBDA",
+      "measurement.instrument.detector.roi.x1": 0,
+      "measurement.instrument.detector.roi.x2": 1555,
+      "measurement.instrument.detector.roi.y1": 0,
+      "measurement.instrument.detector.roi.y2": 515,
+      "measurement.instrument.detector.sigma": 0,
+      "measurement.instrument.detector.x_binning": 1,
+      "measurement.instrument.detector.x_dimension": 1556,
+      "measurement.instrument.detector.x_pixel_size": 0.054999999701976776,
+      "measurement.instrument.detector.y_binning": 1,
+      "measurement.instrument.detector.y_dimension": 516,
+      "measurement.instrument.detector.y_pixel_size": 0.054999999701976776,
+      "measurement.instrument.source_begin.beam_intensity_incident": 1,
+      "measurement.instrument.source_begin.beam_intensity_transmitted": 72284480,
+      "measurement.instrument.source_begin.current": 87.19297790527344,
+      "measurement.instrument.source_begin.energy": 7.349999904632568,
+      "measurement.instrument.source_end.current": 87.66867065429688,
+      "measurement.instrument.source_end.datetime": "Wed Jan 30 16:35:11 2019",
+      "measurement.sample.orientation": [
+        0,
+        0,
+        0
+      ],
+      "measurement.sample.temperature_A": -273.1400146484375,
+      "measurement.sample.temperature_A_set": 25,
+      "measurement.sample.temperature_B": -273.1400146484375,
+      "measurement.sample.temperature_B_set": 25,
+      "measurement.sample.thickness": 1,
+      "measurement.sample.translation": [
+        0,
+        0,
+        3.552713678800501e-15
+      ],
+      "measurement.sample.translation_table": [
+        -2.74637508392334,
+        -0.0008900000248104334,
+        8.498000144958496
+      ],
+      "parent": "comm",
+      "project-slug": "xpcs-8id",
+      "xpcs.Version": "1.0",
+      "xpcs.analysis_type": "Multitau",
+      "xpcs.avg_frame_burst": 1,
+      "xpcs.avg_frames": 1,
+      "xpcs.batches": 1,
+      "xpcs.blemish_enabled": "ENABLED",
+      "xpcs.compression": "ENABLED",
+      "xpcs.dark_begin": 0,
+      "xpcs.dark_begin_todo": 0,
+      "xpcs.dark_end": 0,
+      "xpcs.dark_end_todo": 0,
+      "xpcs.data_begin": 1,
+      "xpcs.data_begin_todo": 1,
+      "xpcs.data_end": 1000,
+      "xpcs.data_end_todo": 1000,
+      "xpcs.delays_per_level": 4,
+      "xpcs.delays_per_level_burst": 1,
+      "xpcs.dnophi": 1,
+      "xpcs.dnoq": 72,
+      "xpcs.dphispan": [
+        -268.8115234375,
+        89.61882019042969
+      ],
+      "xpcs.dynamic_mean_window_size": 100,
+      "xpcs.flatfield_enabled": "ENABLED",
+      "xpcs.input_file_local": "A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm",
+      "xpcs.input_file_remote": "comm201901/A001_Aerogel_1mm_att6_Lq0_001/A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm",
+      "xpcs.kinetics": "DISABLED",
+      "xpcs.lld": 0,
+      "xpcs.normalization_method": "TRANSMITTED",
+      "xpcs.normalize_by_framesum": 0,
+      "xpcs.normalize_by_smoothed_img": 1,
+      "xpcs.num_g2partials": 1,
+      "xpcs.output_data": "/exchange",
+      "xpcs.output_file_local": "A001_Aerogel_1mm_att6_Lq0_001_00001-01000.imm",
+      "xpcs.output_file_remote": "output/results",
+      "xpcs.qmap_hdf5_filename": "/eagle/APSDataProcessing/aps8idi/xpcs_staging/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/qmap/comm201901_qmap_aerogel_Lq0.h5",
+      "xpcs.qphi_bin_to_process": 1,
+      "xpcs.sigma": 0,
+      "xpcs.smoothing_filter": "None",
+      "xpcs.smoothing_method": "symmetric",
+      "xpcs.snophi": 1,
+      "xpcs.snoq": 360,
+      "xpcs.specfile": "comm20190129",
+      "xpcs.specscan_dark_number": 0,
+      "xpcs.specscan_data_number": 179,
+      "xpcs.sphispan": [
+        -268.8115234375,
+        89.61882019042969
+      ],
+      "xpcs.static_mean_window_size": 100,
+      "xpcs.stride_frame_burst": 1,
+      "xpcs.stride_frames": 1,
+      "xpcs.swbinX": 1,
+      "xpcs.swbinY": 1,
+      "xpcs.twotime2onetime_window_size": 100
+    }
+  },
+  "id": "metadata",
+  "search_index": "6871e83e-866b-41bc-8430-e3cf83b43bdc",
+  "subject": "globus://74defd5b-5f61-42fc-bcc4-834c9f376a4f/XPCSDATA/Automate/2019-1/comm201901/A001_Aerogel_1mm_att6_Lq0_001_0001-1000",
+  "visible_to": [
+    "urn:globus:groups:id:368beb47-c9c5-11e9-b455-0efb3ba9a670",
+    "urn:globus:groups:id:368beb47-c9c5-11e9-b455-0efb3ba9a670",
+    "urn:globus:groups:id:368beb47-c9c5-11e9-b455-0efb3ba9a670"
+  ]
+}

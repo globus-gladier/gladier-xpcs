@@ -12,24 +12,86 @@ def gather_xpcs_metadata(**data):
     import copy
     import numpy
 
-    GENERAL_METADATA = {
-        "creators": [
-            {
-                "creatorName": "Suresh Narayanan"
-            }
-        ],
-        "publicationYear": "2019",
-        "publisher": "Argonne National Lab",
-        "resourceType": {
-            "resourceType": "Dataset",
-            "resourceTypeGeneral": "Dataset"
-        },
-        "subjects": [
-            {
-                "subject": "beamline"
-            }
-        ],
-    }
+    # These are the keys we collect with version 2 of the metadata
+    # Version 2 refers to July 2024, when 8idi first started to run
+    # datasets with the new beamline coming online.
+    V2_XPCS_KEYS = [
+        'aps_cycle_v2',
+        'cycle',
+        'entry.duration',
+        'entry.end_time',
+        'entry.entry_identifier',
+        'entry.instrument.bluesky.metadata.I0',
+        'entry.instrument.bluesky.metadata.I1',
+        'entry.instrument.bluesky.metadata.X_energy',
+        'entry.instrument.bluesky.metadata.absolute_cross_section_scale',
+        'entry.instrument.bluesky.metadata.acquire_period',
+        'entry.instrument.bluesky.metadata.acquire_time',
+        'entry.instrument.bluesky.metadata.bcx',
+        'entry.instrument.bluesky.metadata.bcy',
+        'entry.instrument.bluesky.metadata.beamline_id',
+        'entry.instrument.bluesky.metadata.ccdx',
+        'entry.instrument.bluesky.metadata.ccdx0',
+        'entry.instrument.bluesky.metadata.ccdy',
+        'entry.instrument.bluesky.metadata.ccdy0',
+        'entry.instrument.bluesky.metadata.concise',
+        'entry.instrument.bluesky.metadata.dataDir',
+        'entry.instrument.bluesky.metadata.data_management',
+        'entry.instrument.bluesky.metadata.databroker_catalog',
+        'entry.instrument.bluesky.metadata.datetime',
+        'entry.instrument.bluesky.metadata.description',
+        'entry.instrument.bluesky.metadata.det_dist',
+        'entry.instrument.bluesky.metadata.detector_name',
+        'entry.instrument.bluesky.metadata.detectors',
+        'entry.instrument.bluesky.metadata.header',
+        'entry.instrument.bluesky.metadata.hints',
+        'entry.instrument.bluesky.metadata.incident_beam_size_nm_xy',
+        'entry.instrument.bluesky.metadata.incident_energy_spread',
+        'entry.instrument.bluesky.metadata.index',
+        'entry.instrument.bluesky.metadata.instrument_name',
+        'entry.instrument.bluesky.metadata.login_id',
+        'entry.instrument.bluesky.metadata.metadatafile',
+        'entry.instrument.bluesky.metadata.num_capture',
+        'entry.instrument.bluesky.metadata.num_exposures',
+        'entry.instrument.bluesky.metadata.num_images',
+        'entry.instrument.bluesky.metadata.num_intervals',
+        'entry.instrument.bluesky.metadata.num_points',
+        'entry.instrument.bluesky.metadata.num_triggers',
+        'entry.instrument.bluesky.metadata.owner',
+        'entry.instrument.bluesky.metadata.pid',
+        'entry.instrument.bluesky.metadata.pix_dim_x',
+        'entry.instrument.bluesky.metadata.pix_dim_y',
+        'entry.instrument.bluesky.metadata.plan_args',
+        'entry.instrument.bluesky.metadata.plan_name',
+        'entry.instrument.bluesky.metadata.plan_type',
+        'entry.instrument.bluesky.metadata.proposal_id',
+        'entry.instrument.bluesky.metadata.qmap_file',
+        'entry.instrument.bluesky.metadata.safe_title',
+        'entry.instrument.bluesky.metadata.t0',
+        'entry.instrument.bluesky.metadata.t1',
+        'entry.instrument.bluesky.metadata.title',
+        'entry.instrument.bluesky.metadata.versions',
+        'entry.instrument.bluesky.metadata.workflow',
+        'entry.instrument.bluesky.metadata.xdim',
+        'entry.instrument.bluesky.metadata.ydim',
+        'entry.instrument.bluesky.streams.primary.eiger4M.image_file_name',
+        'entry.instrument.detector_1.description',
+        'entry.instrument.layout_version',
+        'entry.program_name',
+        'entry.start_time',
+        'entry.title',
+        'parent',
+        'project-slug',
+        'xpcs.analysis_type',
+        'xpcs.avg_frame_burst',
+        'xpcs.avg_frames',
+        'xpcs.dnophi',
+        'xpcs.dnoq',
+        'xpcs.qmap_hdf5_filename',
+        'xpcs.snophi',
+        'xpcs.snoq',
+        'xpcs.stride_frame_burst',
+        'xpcs.stride_frames']
 
     def gather_items(hdf5_dataframe):
         def decode_dtype(key, value, dtype):
@@ -62,25 +124,6 @@ def gather_xpcs_metadata(**data):
         return items
 
 
-    def get_extra_metadata(metadata):
-        meta = metadata.copy()
-
-        # Add the aps_cycle_v2 key, based on another key below.
-        aps_cycle_key = 'aps_cycle_v2'
-        root_key = 'measurement.instrument.acquisition.root_folder'
-        root = meta.get(root_key)
-        if root:
-            root = root.lstrip('/').rstrip('/')
-            #_, aps_cycle, user_str = root.split('/')
-            if root[-1] == '/':
-                root = root[:-1]
-            aps_cycle, user_str = root.split('/')[-2:]
-            meta[aps_cycle_key] = '/'.join((aps_cycle, user_str))
-
-        # Return the new metadata
-        return meta
-
-
     def clean_metadata(metadata, spoiled_keys):
         """Change or delete metadata that meets the following criteria:
         * Value is NAN --
@@ -109,11 +152,11 @@ def gather_xpcs_metadata(**data):
 
         metafilename, _ = os.path.splitext(os.path.basename(dataframe))
         metafilename += '.json'
-        metadata = GENERAL_METADATA.copy()
+        metadata = dict()
         metadata.update(gather_items(hframe))
 
         # Extra stuff we added in later
-        extra_metadata = get_extra_metadata(metadata)
+        extra_metadata = dict() # get_extra_metadata(metadata)
         metadata.update(extra_metadata)
         # Keys that cause ingest into Globus Search to fail. This is likely due to
         # another key of the same name being ingested previously, causing the types
@@ -125,51 +168,91 @@ def gather_xpcs_metadata(**data):
     # Generate metadata
     hdf_file = data['hdf_file']
     exp_name = pathlib.Path(hdf_file).name.replace(".hdf", "")
-    metadata = gather(hdf_file)
-    metadata.update({
-            'description': f'{exp_name}: Automated data processing.',
-            'creators': [{'creatorName': '8-ID'}],
-            'publisher': 'Automate',
-            'title': exp_name,
-            'subjects': [{'subject': s} for s in exp_name.split('_')],
-            'publicationYear': f'{datetime.datetime.now().year}',
-            'resourceType': {
-                'resourceType': 'Dataset',
-                'resourceTypeGeneral': 'Dataset'
+    gathered_metadata = gather(hdf_file)
+    dc_metadata = {
+        'descriptions': [{
+            "description": f"{exp_name}: Automated data processing.",
+            "descriptionType": "Other"
+        }],
+        'creators': [{'creatorName': '8-ID'}],
+        'publisher': 'Automate',
+        'titles': [{'title': exp_name}],
+        'subjects': [{'subject': s} for s in exp_name.split('_')],
+        'publicationYear': f'{datetime.datetime.now().year}',
+        'resourceType': {
+            'resourceType': 'Dataset',
+            'resourceTypeGeneral': 'Dataset'
+        },
+        'dates': [
+            {
+                # "date": "2020-09-04T21:08:59.027046Z",
+                # "date": "2024-07-17T16:01:36.595827",
+                "date": datetime.datetime.now().isoformat(),
+                "dateType": "Created"
             }
-        })
+        ],
+        'formats': [],
+        'version': "2",
+    }
     extra_metadata = data.get('metadata', {}) or {}
-    metadata.update(extra_metadata)
+    project_metadata = extra_metadata.copy()
     # Create metadata file
     # Some types have changed between search ingests, and they cause the search ingest
     # to fail. Pop them so we don't get the search error.
     for evil_key in ['exchange.partition_norm_factor']:
-        if evil_key in metadata.keys():
-            metadata.pop(evil_key)
-
-    pilot = data['pilot']
+        if evil_key in project_metadata.keys():
+            project_metadata.pop(evil_key)
 
     # Get root_folder, ex: "/data/2020-1/sanat202002/"
     # All datasets need this info to publish correctly, not having it will raise an exception.
-    root_folder = metadata.get('measurement.instrument.acquisition.root_folder')
-    if root_folder:
-        root_folder = pathlib.Path(root_folder)
+    # /gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000
+    root_folder = pathlib.Path(gathered_metadata['entry.instrument.bluesky.metadata.dataDir'])
+    # 2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000
+    relative_folder = root_folder.relative_to('/gdata/dm/8IDI/')
+    # ("2024-1", "zhang202402_2", "data", H001_27445_QZ_XPCS_test-01000)
+    aps_parts = relative_folder.parts
+    exp_metadata = {
         # Cycle: 2021-1
-        metadata['cycle'] = root_folder.parent.name
-        # Parent: sanat
-        metadata['parent'] = re.search(r'([a-z]+)*', root_folder.name).group()
-        pilot['destination'] = f'/{metadata["cycle"]}/{root_folder.name}'
-    # metadata passed through from the top level takes precedence. This allows for
-    # overriding fields through $.input
-    metadata.update(pilot.get('metadata', {}))
-    execution_metadata_file = data.get('execution_metadata_file')
-    if execution_metadata_file and os.path.exists(execution_metadata_file):
+        'cycle': aps_parts[0],
+        # Parent: zhang
+        'parent': re.search(r'([a-z]+)*', aps_parts[1]).group(),
+        # Raw Cycle/Parent: 2021-1/sanat012345
+        'aps_cycle_v2': f'{aps_parts[0]}/{aps_parts[1]}',
+        # This is an old pilot-era publish v1 fixture which should be removed once the portal filters are
+        # removed.
+        "project-slug": "xpcs-8id",
+    }
+    project_metadata.update(exp_metadata)
+    wanted_gathered_metadata = {k:v for k, v in gathered_metadata.items() if k in V2_XPCS_KEYS}
+    project_metadata.update(wanted_gathered_metadata)
+    unexpected_xpcs_keys = [k for k in gathered_metadata if k not in V2_XPCS_KEYS]
+
+
+    if os.path.exists(data['execution_metadata_file']):
         with open(data['execution_metadata_file']) as f:
-            metadata.update(json.load(f))
+            project_metadata.update(json.load(f))
         os.unlink(data['execution_metadata_file'])
-    pilot['metadata'] = metadata
-    pilot['groups'] = pilot.get('groups', [])
-    return pilot
+
+    metadata = {
+        "dc": dc_metadata,
+        "project_metadata": project_metadata,
+    }
+
+    metadata_file = pathlib.Path(hdf_file).parent / "xpcs_metadata.json"
+    with open(metadata_file, 'w') as f:
+        json.dump(metadata, f, indent=2)
+
+
+    # Update the publish data with a couple extra key pieces of info
+    new_data = {
+        # Add nested folders to destination
+        "destination": str(pathlib.Path(data["publishv2"]["destination"]) / project_metadata["aps_cycle_v2"]),
+        "metadata_file": str(metadata_file),
+        "unexpected_xpcs_keys": unexpected_xpcs_keys,
+    }
+    publish_data = data['publishv2']
+    publish_data.update(new_data)
+    return publish_data
 
 
 @generate_flow_definition(modifiers={
@@ -182,7 +265,7 @@ class GatherXPCSMetadata(GladierBaseTool):
     required_input = [
         'proc_dir',
         'hdf_file',
-        'pilot',
+        'publishv2',
     ]
 
     compute_functions = [
@@ -192,14 +275,19 @@ class GatherXPCSMetadata(GladierBaseTool):
 
 if __name__ == '__main__':
     data = {
-        'proc_dir':'/eagle/APSDataAnalysis/nick/xpcs_gpu',
-        'hdf_file': '/eagle/APSDataAnalysis/nick/xpcs_gpu/C032_B315_A200_150C_att01_001_0001-1000/output/C032_B315_A200_150C_att01_001_0001-1000.hdf',
+        #'proc_dir': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000',
+        'proc_dir': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/H001_27445_QZ_XPCS_test-01000',
+        # 'proc_dir':'/eagle/APSDataAnalysis/nick/xpcs_gpu',
+        #'hdf_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/output/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
+        'hdf_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/H001_27445_QZ_XPCS_test-01000/output/H001_27445_QZ_XPCS_test-01000.hdf',
+        'execution_metadata_file': 'foo/bar',
         'boost_corr': {
             'gpu_flag': 0
         },
-        'pilot': {
+        'publishv2': {
             'metadata': {},
-            'groups': []
+            'groups': [],
+            'destination': '/foo/bar',
         },
     }
     from pprint import pprint
