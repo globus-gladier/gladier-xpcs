@@ -40,7 +40,8 @@ def arg_parse():
     parser.add_argument('--deployment','-d', default='voyager-8idi-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
     parser.add_argument('--batch_size', default='256', help=f'Size of gpu corr processing batch')
     parser.add_argument('-v', '--verbose', default=False, action='store_true', help=f'Verbose output')
-    parser.add_argument('-o', '--output_dir', help=f'Output directory')
+    parser.add_argument('--skip-transfer-back', action='store_true', default=False, help="Skip transfer of processed data to source collection. "
+                        "Should not be skipped in normal operation. Use this option only for testing or reprocessing old data.")
     parser.add_argument('-s', '--smooth', default='sqmap', help=f'Smooth method to be used in Twotime correlation.')
     parser.add_argument('--save_G2', default=False, action='store_true', help=f'Save G2, IP, and IF to file.')
     parser.add_argument('-avg_frame', '--avgFrame', default=1, type=int, help=f'Defines the number of frames to be averaged before the correlation.')
@@ -84,18 +85,6 @@ if __name__ == '__main__':
     #source_raw_path = os.path.join(args.experiment, 'data', args.raw)
     #source_qmap_path = os.path.join(args.experiment, 'data', args.qmap)
     #Output path to transfer results back
-    if args.output_dir:
-        result_path = os.path.join(args.output_dir, hdf_name)
-        result_path_transfer_items = [
-            {
-                'source_path': deployment.staging_collection.to_globus(output_hdf_file),
-                'destination_path': deployment.source_collection.to_globus(result_path)
-            }
-        ]
-    else:
-        print("No result path specified, transfer-back will be disabled.")
-        result_path = None
-        result_path_transfer_items = []
     # Generate Destination Pathnames.
     raw_file = os.path.join(dataset_dir, 'input', raw_name)
     qmap_file = os.path.join(dataset_dir, 'qmap', qmap_name)
@@ -107,6 +96,34 @@ if __name__ == '__main__':
     output_dir = os.path.join(dataset_dir, 'output')
     # This tells the corr state where to place version specific info
     execution_metadata_file = os.path.join(dataset_dir, 'execution_metadata.json')
+
+    if not args.skip_transfer_back:
+        # Transfer back step transfers data to the following location automatically:
+        #   /cycle/parent/experiment-name/analysis/dataset-name/dataset.hdf
+        # Input dirs tend to look like the following, but the strongest convention we have is that the .hdf file
+        # will be within a directory of the same name. It *may* be in a 'data' directory, and if so, we want to
+        # make sure processed data does not go back into the 'data' directory. Example paths look like this:
+        #   /2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.hdf
+        source_directory_base = pathlib.Path(args.hdf).parent.parent
+        if source_directory_base.name == 'data':
+            source_directory_base = source_directory_base.parent
+
+        result_path_destination_filename = source_directory_base / args.experiment / "analysis" / dataset_name / hdf_name
+        print(
+            f"Flow will transfer processed dataset {hdf_name} back to "
+            f"{deployment.source_collection.name} ({deployment.source_collection.uuid}) with path "
+            f"'{str(result_path_destination_filename)}'"
+            )
+        result_path_transfer_items = [
+            {
+                'source_path': deployment.staging_collection.to_globus(output_hdf_file),
+                'destination_path': deployment.source_collection.to_globus(result_path_destination_filename)
+            }
+        ]
+    else:
+        print("--skip-transfer-back option was used, result will not be transferred back to source.")
+        result_path_destination_filename = None
+        result_path_transfer_items = []
 
     flow_input = {
         'input': {
@@ -172,7 +189,7 @@ if __name__ == '__main__':
                 ],
             },
 
-            'enable_result_transfer': bool(result_path),
+            'enable_result_transfer': bool(result_path_destination_filename),
             'result_transfer': {
                 'source_endpoint_id': deployment.staging_collection.uuid,
                 'destination_endpoint_id': deployment.source_collection.uuid,
