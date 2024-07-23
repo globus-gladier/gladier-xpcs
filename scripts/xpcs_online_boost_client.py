@@ -4,6 +4,7 @@
 
 import argparse
 import os
+import sys
 import pathlib
 import time
 
@@ -25,7 +26,7 @@ CLIENT_SECRET = os.getenv("GLADIER_CLIENT_SECRET")
 
 def arg_parse():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--experiment', help='Name of the DM experiment', default='test-xpcs-local-workflow-2023.12.19-01')
+    parser.add_argument('--experiment', help='Name of the DM experiment', default='zhang202402_2')
     parser.add_argument('--hdf', help='Path to the hdf (metadata) file',
                         default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.hdf')
     parser.add_argument('--raw', help='Path to the raw data file. Multiple formats (.imm, .bin, etc) supported',
@@ -108,7 +109,13 @@ if __name__ == '__main__':
         if source_directory_base.name == 'data':
             source_directory_base = source_directory_base.parent
 
-        result_path_destination_filename = source_directory_base / args.experiment / "analysis" / dataset_name / hdf_name
+        result_path_destination_filename = source_directory_base / "analysis" / dataset_name / hdf_name
+        if source_directory_base.name != args.experiment:
+            print(f'Error: {source_directory_base} does not end with "{args.experiment}" for transferring processed '
+                  'datasets. Please ensure these match to avoid overwriting unexpected files on source (would transfer '
+                  f'output file to the following location "{result_path_destination_filename}).', file=sys.stderr)
+            sys.exit(1)
+
         print(
             f"Flow will transfer processed dataset {hdf_name} back to "
             f"{deployment.source_collection.name} ({deployment.source_collection.uuid}) with path "
