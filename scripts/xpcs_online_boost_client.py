@@ -29,9 +29,9 @@ def arg_parse():
     parser.add_argument('--experiment', help='Name of the DM experiment', default='zhang202402_2')
     parser.add_argument('--hdf', help='Path to the hdf (metadata) file',
                         default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.hdf')
-    parser.add_argument('--raw', help='Path to the raw data file. Multiple formats (.imm, .bin, etc) supported',
+    parser.add_argument('-r', '--raw', help='Path to the raw data file. Multiple formats (.imm, .bin, etc) supported',
                         default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.h5')
-    parser.add_argument('--qmap', help='Path to the qmap file',
+    parser.add_argument('-q', '--qmap', help='Path to the qmap file',
                         default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/standard_qmaps/eiger4M_qmap_d36_s360.h5')
     parser.add_argument('-t', '--atype', default='Both', help='Analysis type to be performed. Available: Multitau, Twotime')
     parser.add_argument('-i', '--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
@@ -51,6 +51,8 @@ def arg_parse():
     parser.add_argument('-stride_frame', '--strideFrame', default=1, type=int, help=f'Defines the stride.')
     parser.add_argument('-ow', '--overwrite', default=False, action='store_true', help=f'Overwrite the existing result file.')
     parser.add_argument('-dq', '--dq', default='all', help=f'A string that selects the dq list, eg. \'1, 2, 5-7\' selects [1,2,5,6,7]')
+    parser.add_argument('-o', '--output_dir', help=f'Output directory')
+
     return parser.parse_args()
 
 
@@ -99,22 +101,13 @@ if __name__ == '__main__':
     execution_metadata_file = os.path.join(dataset_dir, 'execution_metadata.json')
 
     if not args.skip_transfer_back:
+        result_path_destination_filename = os.path.join(args.output_dir, hdf_name)
         # Transfer back step transfers data to the following location automatically:
         #   /cycle/parent/analysis/dataset-name/dataset.hdf
         # Input dirs tend to look like the following, but the strongest convention we have is that the .hdf file
         # will be within a directory of the same name. It *may* be in a 'data' directory, and if so, we want to
         # make sure processed data does not go back into the 'data' directory. Example paths look like this:
         #   /2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.hdf
-        source_directory_base = pathlib.Path(args.hdf).parent.parent
-        if source_directory_base.name == 'data':
-            source_directory_base = source_directory_base.parent
-
-        result_path_destination_filename = source_directory_base / "analysis" / dataset_name / hdf_name
-        if source_directory_base.name != args.experiment:
-            print(f'Error: {source_directory_base} does not end with "{args.experiment}" for transferring processed '
-                  'datasets. Please ensure these match to avoid overwriting unexpected files on source (would transfer '
-                  f'output file to the following location "{result_path_destination_filename}).', file=sys.stderr)
-            sys.exit(1)
 
         print(
             f"Flow will transfer processed dataset {hdf_name} back to "
