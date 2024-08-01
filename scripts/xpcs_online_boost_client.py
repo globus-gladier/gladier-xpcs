@@ -209,7 +209,7 @@ if __name__ == '__main__':
     corr_flow = XPCSBoost()
 
     corr_run_label = pathlib.Path(hdf_name).name[:62]
-    flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs'])
+    flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs', args.experiment])
 
     actionID = flow_run['action_id']
     print(f"Flow Action ID: {actionID}")
