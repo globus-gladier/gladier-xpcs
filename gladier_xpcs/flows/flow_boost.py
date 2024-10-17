@@ -28,7 +28,6 @@ class XPCSBoost(GladierBaseClient):
     
     gladier_tools = [
         'gladier_xpcs.tools.SourceTransfer',
-        'gladier_xpcs.tools.AcquireNodes',
         'gladier_xpcs.tools.BoostCorr',
         'gladier_xpcs.tools.ResultTransfer',
         'gladier_xpcs.tools.MakeCorrPlots',
