@@ -3,6 +3,7 @@ from gladier import GladierBaseTool, generate_flow_definition
 def xpcs_boost_corr(**data):
     import os
     import json
+    import time
     import logging
     from boost_corr.xpcs_aps_8idi import gpu_corr_multitau, gpu_corr_twotime
     from boost_corr import __version__ as boost_version
@@ -25,16 +26,18 @@ def xpcs_boost_corr(**data):
 
     atype = data['boost_corr'].pop('atype')
 
-
+    corr_start = time.time()
     if atype in ('Multitau', 'Both'):
         gpu_corr_multitau.solve_multitau(**data['boost_corr'])
     elif atype in ('Twotime', 'Both'):
         gpu_corr_twotime.solve_twotime(**data['boost_corr'])
+    execution_time_seconds = round(time.time() - corr_start, 2)
 
     
     metadata = {
         'executable' : {
             'name': 'boost_corr',
+            'execution_time_seconds': execution_time_seconds,
             'tool_version': str(boost_version),
             'device': 'gpu' if data['boost_corr'].get('gpu_flag', 0) >= 0 else 'cpu',
             'source': 'https://pypi.org/project/boost_corr/',
