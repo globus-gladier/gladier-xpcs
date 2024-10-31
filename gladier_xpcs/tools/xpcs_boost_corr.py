@@ -44,25 +44,7 @@ def xpcs_boost_corr(**data):
     result = subprocess.run([" ".join(cmd)], shell=True, capture_output=True, text=True)
     execution_time_seconds = round(time.time() - corr_start, 2)
     pathlib.Path(log_file).write_text(str(result.stderr))
-    # {
-    #                 'atype': atype,
-    #                 "qmap": qmap_file,
-    #                 "raw": raw_file,
-    #                 "output": output_dir,
-    #                 "batch_size": 8,
-    #                 "gpu_id": args.gpu_flag,
-    #                 "verbose": args.verbose,
-    #                 "masked_ratio_threshold": 0.75,
-    #                 "use_loader": True,
-    #                 "begin_frame": args.beginFrame,
-    #                 "end_frame": args.endFrame,
-    #                 "avg_frame": args.avgFrame,
-    #                 "stride_frame": args.strideFrame,
-    #                 "overwrite": args.overwrite,
-    #                 "dq": args.dq,
-    #                 "save_G2": args.save_G2,
-    #                 "smooth": args.smooth,
-    # },
+
     metadata = {
         'executable' : {
             'name': 'boost_corr',
