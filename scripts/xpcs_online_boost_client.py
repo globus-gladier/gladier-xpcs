@@ -40,7 +40,7 @@ def arg_parse():
     parser.add_argument('--group', help='Visibility in Search', default='368beb47-c9c5-11e9-b455-0efb3ba9a670')
     parser.add_argument('--deployment','-d', default='voyager-8idi-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
     parser.add_argument('--batch_size', default='256', help=f'Size of gpu corr processing batch')
-    parser.add_argument('-v', '--verbose', default=False, action='store_true', help=f'Verbose output')
+    parser.add_argument('-v', '--verbose', default=True, action='store_true', help=f'Verbose output')
     parser.add_argument('--skip-transfer-back', action='store_true', default=False, help="Skip transfer of processed data to source collection. "
                         "Should not be skipped in normal operation. Use this option only for testing or reprocessing old data.")
     parser.add_argument('-s', '--smooth', default='sqmap', help=f'Smooth method to be used in Twotime correlation.')
