@@ -33,7 +33,7 @@ def arg_parse():
                         default='/gdata/dm/8IDI/2024-3/comm202410/data/G001_436_PorousGlass-08000/G001_436_PorousGlass-08000.h5')
     parser.add_argument('-q', '--qmap', help='Path to the qmap file',
                         default='/gdata/dm/8IDI/2024-3/comm202410/data/eiger4m_qmap_1018_hongrui_d36.h5')
-    parser.add_argument('-t', '--atype', default='Both', help='Analysis type to be performed. Available: Multitau, Twotime')
+    parser.add_argument('-t', '--atype', default='Multitau', help='Analysis type to be performed. Available: Multitau, Twotime')
     parser.add_argument('-i', '--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     # Group MUST not be None in order for PublishTransferSetPermission to succeed. Group MAY
     # be specified even if the flow owner does not have a role to set ACLs, in which case PublishTransferSetPermission will be skipped.
@@ -133,11 +133,11 @@ if __name__ == '__main__':
                     "qmap": qmap_file,
                     "raw": raw_file,
                     "output": output_dir,
-                    "batch_size": 8,
+                    # "batch_size": 8,  # No longer supported
                     "gpu_id": args.gpu_flag,
                     "verbose": args.verbose,
-                    "masked_ratio_threshold": 0.75,
-                    "use_loader": True,
+                    # "masked_ratio_threshold": 0.75,  # No longer supported
+                    # "use_loader": True,  # No longer supported
                     "begin_frame": args.beginFrame,
                     "end_frame": args.endFrame,
                     "avg_frame": args.avgFrame,

@@ -3,39 +3,71 @@ from gladier import GladierBaseTool, generate_flow_definition
 def xpcs_boost_corr(**data):
     import os
     import json
+    import time
     import logging
-    from boost_corr.xpcs_aps_8idi import gpu_corr_multitau, gpu_corr_twotime
+    import subprocess
+    import pathlib
     from boost_corr import __version__ as boost_version
-
-    level = 'DEBUG' if data['boost_corr'].get('verbose') else 'INFO'
-    log_file = os.path.join(data['proc_dir'], 'boost_corr.log')
-    handlers = (
-        # Useful for flows, logging will be captured in a file
-        logging.FileHandler(filename=log_file, mode='w'),
-        # Useful for testing, will only output when run directly on compute
-        logging.StreamHandler(),
-    )
-    logging.basicConfig(handlers=handlers, level=level)
-    logging.info(f'Logging setup with level {level}')
 
     if not os.path.exists(data['proc_dir']):
         raise NameError(f'{data["proc_dir"]} \n Proc dir does not exist!')
 
+    log_file = os.path.join(data['proc_dir'], 'boost_corr.log')
+
     os.chdir(data['proc_dir'])
 
-    atype = data['boost_corr'].pop('atype')
-
-
-    if atype in ('Multitau', 'Both'):
-        gpu_corr_multitau.solve_multitau(**data['boost_corr'])
-    elif atype in ('Twotime', 'Both'):
-        gpu_corr_twotime.solve_twotime(**data['boost_corr'])
-
-    
+    boost_corr = data['boost_corr']
+    # usage: boost_corr [-h] -r RAW_FILENAME [-q QMAP_FILENAME] [-o OUTPUT_DIR]
+    # [-s SMOOTH] [-i GPU_ID] [-begin_frame BEGIN_FRAME]
+    # [-end_frame END_FRAME] [-stride_frame STRIDE_FRAME]
+    # [-avg_frame AVG_FRAME] [-t TYPE] [-dq TYPE] [--verbose]
+    # [--save_G2] [--dryrun] [--overwrite] [-c CONFIG.JSON]
+    cmd = [
+        "boost_corr",
+        "-r", boost_corr["raw"],
+        "-q", boost_corr["qmap"],
+        "-o", boost_corr["output"],
+        "-i", str(boost_corr["gpu_id"]),
+        "-s", boost_corr["smooth"],
+        "-begin_frame", str(boost_corr["begin_frame"]),
+        "-end_frame", str(boost_corr["end_frame"]),
+        "-stride_frame", str(boost_corr["stride_frame"]),
+        "-avg_frame", str(boost_corr["avg_frame"]),
+        "-t", boost_corr["atype"],
+        "-dq", boost_corr["dq"],
+        # "-dq", ## I don't know what this is??
+        "--save_G2" if boost_corr["save_G2"] else "",
+        "--overwrite" if boost_corr["overwrite"] else "",
+        "--verbose" if boost_corr["verbose"] else "",
+    ]
+    corr_start = time.time()
+    result = subprocess.run([" ".join(cmd)], shell=True, capture_output=True, text=True)
+    execution_time_seconds = round(time.time() - corr_start, 2)
+    pathlib.Path(log_file).write_text(str(result.stderr))
+    # {
+    #                 'atype': atype,
+    #                 "qmap": qmap_file,
+    #                 "raw": raw_file,
+    #                 "output": output_dir,
+    #                 "batch_size": 8,
+    #                 "gpu_id": args.gpu_flag,
+    #                 "verbose": args.verbose,
+    #                 "masked_ratio_threshold": 0.75,
+    #                 "use_loader": True,
+    #                 "begin_frame": args.beginFrame,
+    #                 "end_frame": args.endFrame,
+    #                 "avg_frame": args.avgFrame,
+    #                 "stride_frame": args.strideFrame,
+    #                 "overwrite": args.overwrite,
+    #                 "dq": args.dq,
+    #                 "save_G2": args.save_G2,
+    #                 "smooth": args.smooth,
+    # },
     metadata = {
         'executable' : {
             'name': 'boost_corr',
             'tool_version': str(boost_version),
+            'execution_time_seconds': execution_time_seconds,
             'device': 'gpu' if data['boost_corr'].get('gpu_flag', 0) >= 0 else 'cpu',
             'source': 'https://pypi.org/project/boost_corr/',
             }
@@ -54,6 +86,7 @@ def xpcs_boost_corr(**data):
         # 'boost_corr_log': logs,
         'proc_dir': data['proc_dir'],
         'boost_corr': data['boost_corr'],
+        'execution_time_seconds': execution_time_seconds,
     }
 
 
