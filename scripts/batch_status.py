@@ -17,7 +17,7 @@ from gladier import FlowsManager
 FILTER_RANGE_MIN = datetime.datetime.now(tz=zoneinfo.ZoneInfo('UTC')) - datetime.timedelta(days=3)
 FILTER_RANGE_MAX = datetime.datetime.now(tz=zoneinfo.ZoneInfo('UTC'))
 FLOW_CLASS = XPCSBoost
-FLOW_ID = '193373a8-8040-4267-aea6-a41f171e7f96'
+FLOW_ID = '56c933db-16c3-4416-b8df-6fa31379a602'
 RUNS_CACHE = f'/tmp/{FLOW_CLASS.__name__}RunsCache.json'
 # Keep cache for a week
 CACHE_TTL = 60 * 60 * 24 * 7
