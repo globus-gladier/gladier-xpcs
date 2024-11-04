@@ -186,7 +186,7 @@ def get_runs_since_label(runs, label):
 
 
 @click.group()
-@click.option('--cached', is_flag=True, default=False, help='Re-use the list of runs the last time this script was used.')
+@click.option('--cached/--no-cached', default=True, help='Re-use the list of runs the last time this script was used.')
 def batch_status(cached):
     global USE_CACHE
     if cached:
