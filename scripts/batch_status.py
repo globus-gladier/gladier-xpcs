@@ -115,11 +115,6 @@ def get_runs(flow_id, cache_ttl=CACHE_TTL):
 def get_run_input(run_id, flow_id, scope=None):
     resp = get_flows_client().get_run_logs(run_id)
     input_payload = resp['entries'][0]['details']['input']
-
-    # These should be removed, but needed for old runs pre Gladier v0.9
-    input_payload['input']['login_node_compute'] = input_payload['input'].get('login_node_compute', input_payload['input']['compute_endpoint_non_compute'])
-    input_payload['input']['compute_endpoint'] = input_payload['input'].get('compute_endpoint', input_payload['input']['compute_endpoint_compute'])
-
     return input_payload
 
 
