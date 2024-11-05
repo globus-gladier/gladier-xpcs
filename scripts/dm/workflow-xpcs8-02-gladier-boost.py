@@ -8,39 +8,83 @@
 
 {
     'owner': '8idiuser',
-    'name': 'xpcs8-02-gladier-boost',
-    'description': 'XPCS8-02 workflow to run online boost processing using gladier',
     'stages': {
-        '00-name'  : {'command': 'echo xpcs8-02-gladier-boost', 'outputVariableRegexList' : ['(?P<name>.*)']},
-        '01-Staging' : {
-            'command': '/home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/dm/dm_gladier_xpcs_online_boost_pre_01.sh \
-                $filePath $experimentName $qmapFile $rawFile',
+        '01-ANALYSIS-MACHINE' : {
+            'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/machine.sh ' + \
+                       '/home/dm/etc/dm.workflow_setup.sh ' + \
+                       '\"$analysisMachine\"',
             'outputVariableRegexList' : [
-                'Cluster Data Directory: (?P<clusterDataDir>.*)',
-                'SGE Job Name: (?P<sgeJobName>.*)',
-                'Input HDF5 File: (?P<inputHdf5File>.*)',
-                'Raw Data File: (?P<rawFile>.*)',
-                'QMap File: (?P<qmapFile>.*)',
-                'Globus Group ID: (?P<globusID>.*)'
-            ],
+                'Analysis Machine: (?P<analysisMachine>.*)',
+            ]
         },
-        '02-Automate' : {
-            'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/xpcs_online_boost_client.py \
-                    --hdf $clusterDataDir/$inputHdf5File \
-                    --raw $clusterDataDir/$rawFile \
-                    --qmap $qmapFile \
-                    --atype $atype \
-                    --group $globusID \
-                    --verbose \
-                    -d aps8idi-polaris',
+        '02-PARSE-ARGS' : {
+            'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/parse.sh \"$experimentName\" \"$filePath\" \"$qmap\" \"$smooth\" \"$gpuID\" \"$beginFrame\" \"$endFrame\" \"$strideFrame\" \"$avgFrame\" \"$type\" \"$dq\" \"$verbose\" \"$saveG2\" \"$overwrite\"',
             'outputVariableRegexList' : [
-                'run_id : (?P<AutomateId>.*)'
-            ],
+                'Metadata File: (?P<metadata>.*)',
+                'Boost Corr Arguments: (?P<boostCorrArgs>.*)',
+            ]
         },
-        '03-MonitorAutomate' : {'command': '/bin/echo https://app.globus.org/runs/$AutomateId'},
-        '04-Automate_TransferOut': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step SourceTransfer --gpu'},
-        '05-Automate_Corr': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step XpcsBoostCorr --gpu'},
-        '06-Automate_Plots': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step MakeCorrPlots --gpu'},
-        '07-Automate_TransferBack': {'command': 'source /home/dm/etc/dm.globus-cli.sh && /home/beams10/8IDIUSER/DM_Workflows/xpcs8/automate/gladier-xpcs/scripts/get_status.py --run_id $AutomateId --step GatherXpcsMetadata --gpu'},
-	}
+        '03-LOCAL' : {
+            'runIf': '"$analysisMachine" != "polaris"',
+            'command': 'ssh $analysisMachine \"/home/beams/8IDIUSER/.conda/envs/i2402_production/bin/boost_corr $boostCorrArgs\"'
+        },
+        '04-GROUP' : {
+            'runIf': '"$analysisMachine" == "polaris"',
+            'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/group.sh ' + \
+                       '/home/dm/etc/dm.workflow_setup.sh ' + \
+                       '\"$experimentName\"',
+            'outputVariableRegexList' : [
+                'Globus Group: (?P<globusGroup>.*)',
+            ]
+        },
+        '05-POLARIS' : {
+            'runIf': '"$analysisMachine" == "polaris"',
+            'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/gladier.sh ' + \
+                       '/home/dm/etc/dm.workflow_setup.sh ' + \
+                       '$experimentName $globusGroup $metadata $boostCorrArgs',
+            'outputVariableRegexList' : [
+                'Flow Action ID: (?P<flowActionID>.*)',
+                'URL: (?P<url>.*)',
+                'Status: (?P<gladierStatus>.*)'
+            ]
+        },
+        '06-MONITOR' : {
+            'runIf': '"$analysisMachine" == "polaris"',
+            'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/monitor.sh ' + \
+                        '/home/dm/etc/dm.workflow_setup.sh ' + \
+                       '$flowActionID',
+            'repeatPeriod': 5,
+            'repeatUntil': '"$gladierStatus" == "SUCCEEDED" or "$gladierStatus" == "FAILED"',
+            'maxRepeats': 999999,
+            'outputVariableRegexList' : [
+                'Status: (?P<gladierStatus>.*)'
+            ]
+        },
+        '07-PERMISSIONS' : {
+            'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/permissions.sh ' + \
+                '/home/dm/etc/dm.workflow_setup.sh ' + \
+                '$experimentName',
+        },
+        '08-DONE' : {
+            'command': '/bin/echo Job done.'
+        },
+    },
+    'description': 'XPCS8 Polaris Development Workflow for post-APSU.\n' + \
+        'Keyword Arguments:\n' + \
+        '\texperimentName - Name of the experiment, which corresponds to file paths on Voyager.\n' + \
+        '\tfilePath - Name of the raw data file located in the experiment data directory.\n' + \
+        '\tqmap - Name of the qmap file located in the experiment data directory.\n' + \
+        '\tsmooth (optional) - smooth method to be used in Twotime correlation. default: sqmap\n' + \
+        '\tgpuID (optional) - choose which GPU to use. default: -1 (CPU)\n' + \
+        '\tbeginFrame (optional) - specifies which frame to begin with for the correlation. default: 1\n' + \
+        '\tendFrame (optional) - specifies the last frame used for the correlation. default: -1\n' + \
+        '\tstrideFrame (optional) - defines the stride. default: 1\n' + \
+        '\tavgFrame (optional) - defines the number of frames to be averaged before the correlation. default: 1\n' + \
+        '\ttype (optional) - analysis type Multitau, Twotime, or Both. default: Multitau\n' + \
+        '\tdq (optional) - a string that selects the dq list, eg. \'1, 2, 5-7\' selects [1,2,5,6,7]. default: all\n' + \
+        '\tverbose (optional) default: False\n' + \
+        '\tsaveG2 (optional) - save G2, IP, and IF to file. default: False\n' + \
+        '\toverwrite (optional) - overwrite the existing result file.  default: False\n',
+    'name': 'xpcs8-02-gladier-boost',
+    'userAccount': '8idiuser'
 }

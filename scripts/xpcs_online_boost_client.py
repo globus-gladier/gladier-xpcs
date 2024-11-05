@@ -7,12 +7,14 @@ import os
 import sys
 import pathlib
 import time
+import traceback
 
 from gladier_xpcs.flows import XPCSBoost
 from gladier_xpcs.deployments import deployment_map
 from gladier_xpcs import log  # noqa Add INFO logging
 
-from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer
+from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer, FlowsClient
+from globus_sdk.exc.convert import GlobusConnectionError
 from gladier.managers.login_manager import CallbackLoginManager
 
 from typing import List, Mapping, Union
@@ -29,9 +31,9 @@ def arg_parse():
     parser.add_argument('--experiment', help='Name of the DM experiment', default='zhang202402_2')
     parser.add_argument('--hdf', help='Path to the hdf (metadata) file',
                         default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.hdf')
-    parser.add_argument('--raw', help='Path to the raw data file. Multiple formats (.imm, .bin, etc) supported',
+    parser.add_argument('-r', '--raw', help='Path to the raw data file. Multiple formats (.imm, .bin, etc) supported',
                         default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.h5')
-    parser.add_argument('--qmap', help='Path to the qmap file',
+    parser.add_argument('-q', '--qmap', help='Path to the qmap file',
                         default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/standard_qmaps/eiger4M_qmap_d36_s360.h5')
     parser.add_argument('-t', '--atype', default='Both', help='Analysis type to be performed. Available: Multitau, Twotime')
     parser.add_argument('-i', '--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
@@ -51,8 +53,17 @@ def arg_parse():
     parser.add_argument('-stride_frame', '--strideFrame', default=1, type=int, help=f'Defines the stride.')
     parser.add_argument('-ow', '--overwrite', default=False, action='store_true', help=f'Overwrite the existing result file.')
     parser.add_argument('-dq', '--dq', default='all', help=f'A string that selects the dq list, eg. \'1, 2, 5-7\' selects [1,2,5,6,7]')
+    parser.add_argument('-o', '--output_dir', help=f'Output directory')
+
     return parser.parse_args()
 
+def globus_connection(func, *args, **kwargs):
+    try:
+        return func(*args, **kwargs)
+    except GlobusConnectionError as e:
+        print(f"Caught GlobusConnectionError during {func}. Retrying connection.")
+        time.sleep(1)
+        return globus_connection(func, *args, **kwargs)
 
 if __name__ == '__main__':
     args = arg_parse()
@@ -99,22 +110,13 @@ if __name__ == '__main__':
     execution_metadata_file = os.path.join(dataset_dir, 'execution_metadata.json')
 
     if not args.skip_transfer_back:
+        result_path_destination_filename = os.path.join(args.output_dir, hdf_name)
         # Transfer back step transfers data to the following location automatically:
         #   /cycle/parent/analysis/dataset-name/dataset.hdf
         # Input dirs tend to look like the following, but the strongest convention we have is that the .hdf file
         # will be within a directory of the same name. It *may* be in a 'data' directory, and if so, we want to
         # make sure processed data does not go back into the 'data' directory. Example paths look like this:
         #   /2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.hdf
-        source_directory_base = pathlib.Path(args.hdf).parent.parent
-        if source_directory_base.name == 'data':
-            source_directory_base = source_directory_base.parent
-
-        result_path_destination_filename = source_directory_base / "analysis" / dataset_name / hdf_name
-        if source_directory_base.name != args.experiment:
-            print(f'Error: {source_directory_base} does not end with "{args.experiment}" for transferring processed '
-                  'datasets. Please ensure these match to avoid overwriting unexpected files on source (would transfer '
-                  f'output file to the following location "{result_path_destination_filename}).', file=sys.stderr)
-            sys.exit(1)
 
         print(
             f"Flow will transfer processed dataset {hdf_name} back to "
@@ -131,10 +133,9 @@ if __name__ == '__main__':
         print("--skip-transfer-back option was used, result will not be transferred back to source.")
         result_path_destination_filename = None
         result_path_transfer_items = []
-
+    developerGroup = 'urn:globus:groups:id:368beb47-c9c5-11e9-b455-0efb3ba9a670'
     flow_input = {
         'input': {
-
             'boost_corr': {
                     'atype': atype,
                     "qmap": qmap_file,
@@ -163,7 +164,7 @@ if __name__ == '__main__':
                     'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
                     # Test index
                     # 'index': '2ec9cf61-c0c9-4213-8f1c-452c072c4ccc',
-                    'visible_to': [f'urn:globus:groups:id:{args.group}'] if args.group else [],
+                    'visible_to': [f'urn:globus:groups:id:{args.group}', developerGroup] if args.group else [developerGroup],
 
                     # Ingest and Transfer can be disabled for dry-run testing.
                     'enable_publish': True,
@@ -216,10 +217,14 @@ if __name__ == '__main__':
     corr_flow = XPCSBoost()
 
     corr_run_label = pathlib.Path(hdf_name).name[:62]
-    flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs'])
-
+   
+    print("Submitting flow to Globus...")
+    flow_run = globus_connection(corr_flow.run_flow, flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs'])
+    print("Flow successfully submitted to Globus.")
     actionID = flow_run['action_id']
     print(f"Flow Action ID: {actionID}")
     print(f"URL: https://app.globus.org/runs/{actionID}")
-    status = corr_flow.get_status(actionID).get('status')
+
+    print("Getting flow status from Globus...")
+    status = globus_connection(corr_flow.get_status, action_id=actionID).get('status')
     print(f"Status: {status}")
