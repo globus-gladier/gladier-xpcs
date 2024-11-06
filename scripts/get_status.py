@@ -5,6 +5,10 @@ import sys
 import time
 import globus_sdk
 
+# Get client id/secret
+CLIENT_ID = os.getenv("GLADIER_CLIENT_ID")
+CLIENT_SECRET = os.getenv("GLADIER_CLIENT_SECRET")
+
 
 def arg_parse():
     parser = argparse.ArgumentParser()
@@ -24,13 +28,14 @@ def arg_parse():
 
 
 def get_flows_client():
-    # Get client id/secret
-    CLIENT_ID = os.getenv("GLADIER_CLIENT_ID")
-    CLIENT_SECRET = os.getenv("GLADIER_CLIENT_SECRET")
+    if not CLIENT_ID or not CLIENT_SECRET:
+        raise Exception(
+            "No client credentials specified. Please set these env vars: GLADIER_CLIENT_ID, GLADIER_CLIENT_SECRET"
+        )
     app = globus_sdk.ClientApp(
         app_name="XPCSBoost",
-        client_id=os.getenv("GLADIER_CLIENT_ID"),
-        client_secret=os.getenv("GLADIER_CLIENT_SECRET"),
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
     )
     return globus_sdk.FlowsClient(app=app)
 
