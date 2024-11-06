@@ -30,11 +30,11 @@ class ResultTransfer(GladierBaseTool):
             'ResultTransferDoTransfer': {
                 'Comment': 'Transfer from the staging location back to the source collection',
                 'Type': 'Action',
-                'ActionUrl': 'https://actions.automate.globus.org/transfer/transfer',
+                'ActionUrl': 'https://transfer.actions.globus.org/transfer/',
                 'Parameters': {
-                    'source_endpoint_id.$': '$.input.result_transfer.source_endpoint_id',
-                    'destination_endpoint_id.$': '$.input.result_transfer.destination_endpoint_id',
-                    'transfer_items.$': '$.input.result_transfer.transfer_items',
+                    'source_endpoint.$': '$.input.result_transfer.source_endpoint_id',
+                    'destination_endpoint.$': '$.input.result_transfer.destination_endpoint_id',
+                    'DATA.$': '$.input.result_transfer.transfer_items',
                 },
                 'ResultPath': '$.ResultTransferDoTransfer',
                 'WaitTime': 600,

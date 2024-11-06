@@ -28,21 +28,21 @@ CLIENT_SECRET = os.getenv("GLADIER_CLIENT_SECRET")
 
 def arg_parse():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--experiment', help='Name of the DM experiment', default='zhang202402_2')
+    parser.add_argument('--experiment', help='Name of the DM experiment', default='comm202410')
     parser.add_argument('--hdf', help='Path to the hdf (metadata) file',
-                        default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.hdf')
+                        default='/gdata/dm/8IDI/2024-3/comm202410/data/G001_436_PorousGlass-08000/G001_436_PorousGlass-08000.hdf')
     parser.add_argument('-r', '--raw', help='Path to the raw data file. Multiple formats (.imm, .bin, etc) supported',
-                        default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.h5')
+                        default='/gdata/dm/8IDI/2024-3/comm202410/data/G001_436_PorousGlass-08000/G001_436_PorousGlass-08000.h5')
     parser.add_argument('-q', '--qmap', help='Path to the qmap file',
-                        default='/gdata/dm/8IDI/2024-1/zhang202402_2/data/standard_qmaps/eiger4M_qmap_d36_s360.h5')
-    parser.add_argument('-t', '--atype', default='Both', help='Analysis type to be performed. Available: Multitau, Twotime')
+                        default='/gdata/dm/8IDI/2024-3/comm202410/data/eiger4m_qmap_1018_hongrui_d36.h5')
+    parser.add_argument('-t', '--atype', default='Multitau', help='Analysis type to be performed. Available: Multitau, Twotime')
     parser.add_argument('-i', '--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     # Group MUST not be None in order for PublishTransferSetPermission to succeed. Group MAY
     # be specified even if the flow owner does not have a role to set ACLs, in which case PublishTransferSetPermission will be skipped.
     parser.add_argument('--group', help='Visibility in Search', default='368beb47-c9c5-11e9-b455-0efb3ba9a670')
     parser.add_argument('--deployment','-d', default='voyager-8idi-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
     parser.add_argument('--batch_size', default='256', help=f'Size of gpu corr processing batch')
-    parser.add_argument('-v', '--verbose', default=False, action='store_true', help=f'Verbose output')
+    parser.add_argument('-v', '--verbose', default=True, action='store_true', help=f'Verbose output')
     parser.add_argument('--skip-transfer-back', action='store_true', default=False, help="Skip transfer of processed data to source collection. "
                         "Should not be skipped in normal operation. Use this option only for testing or reprocessing old data.")
     parser.add_argument('-s', '--smooth', default='sqmap', help=f'Smooth method to be used in Twotime correlation.')
@@ -141,11 +141,11 @@ if __name__ == '__main__':
                     "qmap": qmap_file,
                     "raw": raw_file,
                     "output": output_dir,
-                    "batch_size": 8,
+                    # "batch_size": 8,  # No longer supported
                     "gpu_id": args.gpu_flag,
                     "verbose": args.verbose,
-                    "masked_ratio_threshold": 0.75,
-                    "use_loader": True,
+                    # "masked_ratio_threshold": 0.75,  # No longer supported
+                    # "use_loader": True,  # No longer supported
                     "begin_frame": args.beginFrame,
                     "end_frame": args.endFrame,
                     "avg_frame": args.avgFrame,
@@ -219,8 +219,9 @@ if __name__ == '__main__':
     corr_run_label = pathlib.Path(hdf_name).name[:62]
    
     print("Submitting flow to Globus...")
-    flow_run = globus_connection(corr_flow.run_flow, flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs'])
+    flow_run = globus_connection(corr_flow.run_flow, flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs', args.experiment])
     print("Flow successfully submitted to Globus.")
+
     actionID = flow_run['action_id']
     print(f"Flow Action ID: {actionID}")
     print(f"URL: https://app.globus.org/runs/{actionID}")

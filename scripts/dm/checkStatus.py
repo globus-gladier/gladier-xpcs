@@ -5,9 +5,7 @@ from globus_sdk.exc.convert import GlobusConnectionError
 
 
 class FlowExecutionError(Exception):
-    def __init__(self, message="ERROR: Gladier flow failed."):
-        self.message = message
-        super().__init__(self.message)
+    pass
 
 def arg_parse():
     parser = argparse.ArgumentParser()
@@ -18,7 +16,7 @@ def getStatus(client, flowID):
     ''' for intermittent connection errors, recursively retry status request '''
     try:
         return client.get_status(flowID)
-    except Exception as e:
+    except GlobusConnectionError as e:
         print(f"Resubmitting flow, Globus Connection Error: {e}")
         return getStatus(client, flowID)
             
