@@ -52,7 +52,6 @@ def is_target_state_in_run_logs(flows_client: globus_sdk.FlowsClient, run_id: st
     for pagelog in get_run_logs(flows_client, run_id):
         if pagelog.get("code") in ["PassCompleted", "ActionCompleted"]:
             step = pagelog["details"]["state_name"]
-            steps_checked.append(step)
             if step == target_step:
                 return True
     return False
@@ -70,7 +69,7 @@ if __name__ == "__main__":
 
         if is_target_state_in_run_logs(fc, run["run_id"], args.step) is True:
             print(
-                f"Run Status: {run['status']} -- {step}: Completed {get_run_url(args.run_id)}"
+                f"Run Status: {run['status']} -- {args.step}: Completed {get_run_url(args.run_id)}"
             )
             sys.exit(0)
 
