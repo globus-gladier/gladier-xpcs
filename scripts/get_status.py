@@ -13,7 +13,7 @@ CLIENT_SECRET = os.getenv("GLADIER_CLIENT_SECRET")
 def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--run_id", help="The automate flow instance(run) to check.", default=None
+        "--run_id", help="The automate flow instance(run) to check.", required=True
     )
     parser.add_argument(
         "--step",
