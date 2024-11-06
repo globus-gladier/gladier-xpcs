@@ -61,7 +61,7 @@ if __name__ == "__main__":
                 steps_checked.append(step)
                 if step == args.step:
                     print(
-                        f"Run Status: {run['status']} -- {step}: {pagelog["code"]} {get_run_url(args.run_id)}"
+                        f"Run Status: {run['status']} -- {step}: {pagelog['code']} {get_run_url(args.run_id)}"
                     )
                     sys.exit(0)
 
