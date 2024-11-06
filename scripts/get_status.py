@@ -40,8 +40,22 @@ def get_flows_client():
     return globus_sdk.FlowsClient(app=app)
 
 
-def get_run_url(run_id):
+def get_run_url(run_id: str):
     return f"https://app.globus.org/runs/{run_id}"
+
+
+def get_run_logs(flows_client: globus_sdk.FlowsClient, run_id: str):
+    return flows_client.paginated.get_run_logs(args.run_id, limit=30).items()
+
+
+def is_target_state_in_run_logs(flows_client: globus_sdk.FlowsClient, run_id: str, target_step: str):
+    for pagelog in get_run_logs(flows_client, run_id):
+        if pagelog.get("code") in ["PassCompleted", "ActionCompleted"]:
+            step = pagelog["details"]["state_name"]
+            steps_checked.append(step)
+            if step == target_step:
+                return True
+    return False
 
 
 if __name__ == "__main__":
@@ -54,16 +68,11 @@ if __name__ == "__main__":
             print(f"Run Status: {run['status']}: {get_run_url(args.run_id)}")
             sys.exit(0)
 
-        steps_checked = []
-        for pagelog in fc.paginated.get_run_logs(args.run_id, limit=30).items():
-            if pagelog.get("code") in ["PassCompleted", "ActionCompleted"]:
-                step = pagelog["details"]["state_name"]
-                steps_checked.append(step)
-                if step == args.step:
-                    print(
-                        f"Run Status: {run['status']} -- {step}: {pagelog['code']} {get_run_url(args.run_id)}"
-                    )
-                    sys.exit(0)
+        if is_target_state_in_run_logs(fc, run["run_id"], args.step) is True:
+            print(
+                f"Run Status: {run['status']} -- {step}: Completed {get_run_url(args.run_id)}"
+            )
+            sys.exit(0)
 
         print(f"Run Status: {run['status']}: {get_run_url(args.run_id)}")
         time.sleep(args.interval)
