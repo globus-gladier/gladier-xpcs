@@ -7,12 +7,14 @@ import os
 import sys
 import pathlib
 import time
+import traceback
 
 from gladier_xpcs.flows import XPCSBoost
 from gladier_xpcs.deployments import deployment_map
 from gladier_xpcs import log  # noqa Add INFO logging
 
-from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer
+from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer, FlowsClient
+from globus_sdk.exc.convert import GlobusConnectionError
 from gladier.managers.login_manager import CallbackLoginManager
 
 from typing import List, Mapping, Union
@@ -55,6 +57,13 @@ def arg_parse():
 
     return parser.parse_args()
 
+def globus_connection(func, *args, **kwargs):
+    try:
+        return func(*args, **kwargs)
+    except GlobusConnectionError as e:
+        print(f"Caught GlobusConnectionError during {func}. Retrying connection.")
+        time.sleep(1)
+        return globus_connection(func, *args, **kwargs)
 
 if __name__ == '__main__':
     args = arg_parse()
@@ -124,10 +133,9 @@ if __name__ == '__main__':
         print("--skip-transfer-back option was used, result will not be transferred back to source.")
         result_path_destination_filename = None
         result_path_transfer_items = []
-
+    developerGroup = 'urn:globus:groups:id:368beb47-c9c5-11e9-b455-0efb3ba9a670'
     flow_input = {
         'input': {
-
             'boost_corr': {
                     'atype': atype,
                     "qmap": qmap_file,
@@ -156,7 +164,7 @@ if __name__ == '__main__':
                     'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
                     # Test index
                     # 'index': '2ec9cf61-c0c9-4213-8f1c-452c072c4ccc',
-                    'visible_to': [f'urn:globus:groups:id:{args.group}'] if args.group else [],
+                    'visible_to': [f'urn:globus:groups:id:{args.group}', developerGroup] if args.group else [developerGroup],
 
                     # Ingest and Transfer can be disabled for dry-run testing.
                     'enable_publish': True,
@@ -209,10 +217,15 @@ if __name__ == '__main__':
     corr_flow = XPCSBoost()
 
     corr_run_label = pathlib.Path(hdf_name).name[:62]
-    flow_run = corr_flow.run_flow(flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs', args.experiment])
+   
+    print("Submitting flow to Globus...")
+    flow_run = globus_connection(corr_flow.run_flow, flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs', args.experiment])
+    print("Flow successfully submitted to Globus.")
 
     actionID = flow_run['action_id']
     print(f"Flow Action ID: {actionID}")
     print(f"URL: https://app.globus.org/runs/{actionID}")
-    status = corr_flow.get_status(actionID).get('status')
+
+    print("Getting flow status from Globus...")
+    status = globus_connection(corr_flow.get_status, action_id=actionID).get('status')
     print(f"Status: {status}")
