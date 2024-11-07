@@ -23,6 +23,12 @@ def arg_parse():
     parser.add_argument(
         "--interval", help="Interval between checking statuses", type=int, default=5
     )
+    parser.add_argument(
+        "--max-wait",
+        help="Maixmum time to wait for a run before exiting",
+        type=int,
+        default=60 * 60,
+    )
     args = parser.parse_args()
     return args
 
@@ -45,10 +51,12 @@ def get_run_url(run_id: str):
 
 
 def get_run_logs(flows_client: globus_sdk.FlowsClient, run_id: str):
-    return flows_client.paginated.get_run_logs(args.run_id, limit=30).items()
+    return flows_client.paginated.get_run_logs(run_id, limit=30).items()
 
 
-def is_target_state_in_run_logs(flows_client: globus_sdk.FlowsClient, run_id: str, target_step: str):
+def is_target_state_in_run_logs(
+    flows_client: globus_sdk.FlowsClient, run_id: str, target_step: str
+):
     for pagelog in get_run_logs(flows_client, run_id):
         if pagelog.get("code") in ["PassCompleted", "ActionCompleted"]:
             step = pagelog["details"]["state_name"]
@@ -57,21 +65,30 @@ def is_target_state_in_run_logs(flows_client: globus_sdk.FlowsClient, run_id: st
     return False
 
 
-if __name__ == "__main__":
-    args = arg_parse()
-    fc = get_flows_client()
+def main_loop(args: argparse.ArgumentParser, flows_client: globus_sdk.FlowsClient):
+    start_time = time.time()
+    elapsed_time = 0
 
-    while True:
-        run = fc.get_run(args.run_id)
+    while elapsed_time < args.max_wait:
+        run = flows_client.get_run(args.run_id)
         if run["status"] in ["SUCCEEDED", "FAILED"]:
-            print(f"Run Status: {run['status']}: {get_run_url(args.run_id)}")
-            sys.exit(0)
-
-        if is_target_state_in_run_logs(fc, run["run_id"], args.step) is True:
             print(
-                f"Run Status: {run['status']} -- {args.step}: Completed {get_run_url(args.run_id)}"
+                f"Run Status: {run['status']} ({elapsed_time}/{args.max_wait}): {get_run_url(args.run_id)}"
             )
             sys.exit(0)
 
-        print(f"Run Status: {run['status']}: {get_run_url(args.run_id)}")
+        if is_target_state_in_run_logs(flows_client, run["run_id"], args.step) is True:
+            print(
+                f"Run Status: {run['status']} ({elapsed_time}/{args.max_wait}): -- {args.step}: Completed {get_run_url(args.run_id)}"
+            )
+            sys.exit(0)
+
+        print(
+            f"Run Status: {run['status']} ({elapsed_time}/{args.max_wait}): {get_run_url(args.run_id)}"
+        )
         time.sleep(args.interval)
+        elapsed_time = int(time.time() - start_time)
+
+
+if __name__ == "__main__":
+    main_loop(arg_parse(), get_flows_client())
