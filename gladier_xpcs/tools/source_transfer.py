@@ -15,6 +15,7 @@ class SourceTransfer(GladierBaseTool):
                     'source_endpoint.$': '$.input.source_transfer.source_endpoint_id',
                     'destination_endpoint.$': '$.input.source_transfer.destination_endpoint_id',
                     'DATA.$': '$.input.source_transfer.transfer_items',
+                    "sync_level": 2,
                 },
                 'ResultPath': '$.SourceTransfer',
                 'WaitTime': 60,
