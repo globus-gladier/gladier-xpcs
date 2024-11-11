@@ -10,4 +10,4 @@ source $WORKFLOW_SETUP_FILE
 flowID=$2
 source $CONDA_PATH
 conda activate $CONDA_ENV
-python $DM_WORKFLOWS_DIR/scripts/dm/checkStatus.py --flowID $flowID
+python $DM_WORKFLOWS_DIR/scripts/get_status.py --run_id $flowID
