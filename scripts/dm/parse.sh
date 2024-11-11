@@ -85,6 +85,8 @@ fi
 
 #metadata file is not given to boost corr as an arg
 METADATA_FILE_PATH="$EXPERIMENT_DIRECTORY/data/$DATASET_NAME/$DATASET_NAME.hdf"
+RESULT_FILE_PATH=$OUTPUT_DIR/$DATASET_NAME.hdf
 
 echo "Metadata File: $METADATA_FILE_PATH"
+echo "Result File: $RESULT_FILE_PATH"
 echo "Boost Corr Arguments: $BOOST_CORR_ARGS"
