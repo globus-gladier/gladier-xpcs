@@ -13,4 +13,6 @@ if [[ "$#" -lt 2 || "$EXPERIMENT_NAME" == "" ]]; then
     exit 1
 fi
 
-dm-restore-permissions --relative-path analysis/ --experiment $EXPERIMENT_NAME
+RESULT_PATH=${3:-analysis/}
+
+dm-restore-permissions --relative-path $RESULT_PATH --experiment $EXPERIMENT_NAME

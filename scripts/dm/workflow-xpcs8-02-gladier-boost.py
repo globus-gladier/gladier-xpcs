@@ -21,6 +21,7 @@
             'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/parse.sh \"$experimentName\" \"$filePath\" \"$qmap\" \"$smooth\" \"$gpuID\" \"$beginFrame\" \"$endFrame\" \"$strideFrame\" \"$avgFrame\" \"$type\" \"$dq\" \"$verbose\" \"$saveG2\" \"$overwrite\"',
             'outputVariableRegexList' : [
                 'Metadata File: (?P<metadata>.*)',
+                'Result File: (?P<resultFile>.*)',
                 'Boost Corr Arguments: (?P<boostCorrArgs>.*)',
             ]
         },
@@ -63,7 +64,7 @@
         '07-PERMISSIONS' : {
             'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/permissions.sh ' + \
                 '/home/dm/etc/dm.workflow_setup.sh ' + \
-                '$experimentName',
+                '$experimentName $resultFile',
         },
         '08-DONE' : {
             'command': '/bin/echo Job done.'
