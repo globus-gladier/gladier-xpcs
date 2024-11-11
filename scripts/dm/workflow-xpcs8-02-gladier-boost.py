@@ -54,12 +54,6 @@
             'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/monitor.sh ' + \
                         '/home/dm/etc/dm.workflow_setup.sh ' + \
                        '$flowActionID',
-            'repeatPeriod': 5,
-            'repeatUntil': '"$gladierStatus" == "SUCCEEDED" or "$gladierStatus" == "FAILED"',
-            'maxRepeats': 999999,
-            'outputVariableRegexList' : [
-                'Status: (?P<gladierStatus>.*)'
-            ]
         },
         '07-PERMISSIONS' : {
             'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/permissions.sh ' + \
