@@ -18,10 +18,10 @@ from gladier_xpcs.deployments import deployment_map
 
 
 @generate_flow_definition(modifiers={
-   'publishv2_gather_metadata': {
-       'payload': '$.GatherXpcsMetadata.details.results[0].output',
-       'WaitTime': 600,
-    }
+#    'publishv2_gather_metadata': {
+#        'payload': '$.GatherXpcsMetadata.details.results[0].output',
+#        'WaitTime': 600,
+#     }
 })
 class XPCSBoost(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
@@ -32,5 +32,7 @@ class XPCSBoost(GladierBaseClient):
         'gladier_xpcs.tools.ResultTransfer',
         'gladier_xpcs.tools.MakeCorrPlots',
         'gladier_xpcs.tools.gather_xpcs_metadata.GatherXPCSMetadata',
-        'gladier_tools.publish.Publishv2',
+        # Publication is currently broken due to the destination collection being down.
+        # Uncomment this to re-enable
+        # 'gladier_tools.publish.Publishv2',
     ]
