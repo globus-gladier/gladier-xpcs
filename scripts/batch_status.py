@@ -17,7 +17,7 @@ from gladier import FlowsManager
 FILTER_RANGE_MIN = datetime.datetime.now(tz=zoneinfo.ZoneInfo('UTC')) - datetime.timedelta(days=3)
 FILTER_RANGE_MAX = datetime.datetime.now(tz=zoneinfo.ZoneInfo('UTC'))
 FLOW_CLASS = XPCSBoost
-FLOW_ID = '193373a8-8040-4267-aea6-a41f171e7f96'
+FLOW_ID = '56c933db-16c3-4416-b8df-6fa31379a602'
 RUNS_CACHE = f'/tmp/{FLOW_CLASS.__name__}RunsCache.json'
 # Keep cache for a week
 CACHE_TTL = 60 * 60 * 24 * 7
@@ -115,11 +115,6 @@ def get_runs(flow_id, cache_ttl=CACHE_TTL):
 def get_run_input(run_id, flow_id, scope=None):
     resp = get_flows_client().get_run_logs(run_id)
     input_payload = resp['entries'][0]['details']['input']
-
-    # These should be removed, but needed for old runs pre Gladier v0.9
-    input_payload['input']['login_node_compute'] = input_payload['input'].get('login_node_compute', input_payload['input']['compute_endpoint_non_compute'])
-    input_payload['input']['compute_endpoint'] = input_payload['input'].get('compute_endpoint', input_payload['input']['compute_endpoint_compute'])
-
     return input_payload
 
 
@@ -185,8 +180,18 @@ def get_runs_since_label(runs, label):
     return runs[bounding_run:]
 
 
+def exclude_successful_retries(runs, status='FAILED'):
+    fail_runs = [run for run in runs if run['status'] == status]
+    fail_run_labels = [r['label'] for r in fail_runs]
+
+    excluded_re_runs = [run for run in runs
+        if run['status'] in ['SUCCEEDED', 'ACTIVE'] and
+        run['label'] not in fail_run_labels
+    ]
+    return excluded_re_runs
+
 @click.group()
-@click.option('--cached', is_flag=True, default=False, help='Re-use the list of runs the last time this script was used.')
+@click.option('--cached/--no-cached', default=True, help='Re-use the list of runs the last time this script was used.')
 def batch_status(cached):
     global USE_CACHE
     if cached:
@@ -235,8 +240,14 @@ def dump_run_input(run, flow):
 @click.option('--preview', is_flag=True, default=False, help='Flow id to use')
 @click.option('--since', help='Re-run all failed jobs since the label of this failed job')
 @click.option('--workers', help='Number of parallel processing jobs', default=30)
-def retry_runs(flow, local_fx, status, preview, since, workers):
-    runs = [run for run in get_runs(flow) if run['status'] == status]
+@click.option('--exclude-old-retries/--no-exclude-old-retries', help='Retries done before are not run again', default=True)
+def retry_runs(flow, local_fx, status, preview, since, workers, exclude_old_retries):
+    all_runs = get_runs(flow)
+    if exclude_old_retries:
+        prev_run_num = len(all_runs)
+        all_runs = exclude_successful_retries(all_runs)
+        click.secho(f'Excluded {prev_run_num - len(all_runs)} runs from run list due to prior successful re-run', fg='green')
+    runs = [run for run in all_runs if run['status'] == status]
     runs = sort_runs(runs)
     if since:
         try:
