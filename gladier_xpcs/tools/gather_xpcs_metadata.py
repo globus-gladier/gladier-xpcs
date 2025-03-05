@@ -206,7 +206,9 @@ def gather_xpcs_metadata(**data):
     # Get root_folder, ex: "/data/2020-1/sanat202002/"
     # All datasets need this info to publish correctly, not having it will raise an exception.
     # /gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000
-    root_folder = pathlib.Path(gathered_metadata['entry.instrument.bluesky.metadata.dataDir'])
+    # root_folder = pathlib.Path(gathered_metadata['entry.instrument.bluesky.metadata.dataDir'])
+    # This is a quick fix while we're fixing metadata, so we can continue to publish stuff
+    root_folder = pathlib.Path("/gdata/dm/8IDI/2025-1/foster/data/current_xpcs_dataset")
     # 2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000
     relative_folder = root_folder.relative_to('/gdata/dm/8IDI/')
     # ("2024-1", "zhang202402_2", "data", H001_27445_QZ_XPCS_test-01000)
