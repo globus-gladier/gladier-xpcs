@@ -35,25 +35,25 @@ def arg_parse():
                         default='/gdata/dm/8IDI/2024-3/comm202410/data/G001_436_PorousGlass-08000/G001_436_PorousGlass-08000.h5')
     parser.add_argument('-q', '--qmap', help='Path to the qmap file',
                         default='/gdata/dm/8IDI/2024-3/comm202410/data/eiger4m_qmap_1018_hongrui_d36.h5')
-    parser.add_argument('-t', '--atype', default='Multitau', help='Analysis type to be performed. Available: Multitau, Twotime')
-    parser.add_argument('-i', '--gpu_flag', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
+    parser.add_argument('-t', '--type', default='Multitau', help='Analysis type to be performed. Available: Multitau, Twotime')
+    parser.add_argument('-i', '--gpu-id', type=int, default=0, help='''Choose which GPU to use. if the input is -1, then CPU is used''')
     # Group MUST not be None in order for PublishTransferSetPermission to succeed. Group MAY
     # be specified even if the flow owner does not have a role to set ACLs, in which case PublishTransferSetPermission will be skipped.
     parser.add_argument('--group', help='Visibility in Search', default='368beb47-c9c5-11e9-b455-0efb3ba9a670')
-    parser.add_argument('--deployment','-d', default='voyager-8idi-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
+    parser.add_argument('--deployment', default='voyager-8idi-polaris', help=f'Deployment configs. Available: {list(deployment_map.keys())}')
     parser.add_argument('--batch_size', default='256', help=f'Size of gpu corr processing batch')
     parser.add_argument('-v', '--verbose', default=True, action='store_true', help=f'Verbose output')
     parser.add_argument('--skip-transfer-back', action='store_true', default=False, help="Skip transfer of processed data to source collection. "
                         "Should not be skipped in normal operation. Use this option only for testing or reprocessing old data.")
     parser.add_argument('-s', '--smooth', default='sqmap', help=f'Smooth method to be used in Twotime correlation.')
-    parser.add_argument('--save_G2', default=False, action='store_true', help=f'Save G2, IP, and IF to file.')
-    parser.add_argument('-avg_frame', '--avgFrame', default=1, type=int, help=f'Defines the number of frames to be averaged before the correlation.')
-    parser.add_argument('-begin_frame', '--beginFrame', default=1, type=int, help=f'Specifies which frame to begin with for the correlation. ')
-    parser.add_argument('-end_frame', '--endFrame', default=-1, type=int, help=f'Specifies the last frame used for the correlation.')
-    parser.add_argument('-stride_frame', '--strideFrame', default=1, type=int, help=f'Defines the stride.')
-    parser.add_argument('-ow', '--overwrite', default=False, action='store_true', help=f'Overwrite the existing result file.')
-    parser.add_argument('-dq', '--dq', default='all', help=f'A string that selects the dq list, eg. \'1, 2, 5-7\' selects [1,2,5,6,7]')
-    parser.add_argument('-o', '--output_dir', help=f'Output directory')
+    parser.add_argument('-G', '--save-g2', default=False, action='store_true', help=f'Save G2, IP, and IF to file.')
+    parser.add_argument('-a', '--avg-frame', default=1, type=int, help=f'Defines the number of frames to be averaged before the correlation.')
+    parser.add_argument('-b', '--begin-frame', default=0, type=int, help=f'Specifies which frame to begin with for the correlation. ')
+    parser.add_argument('-e', '--end-frame', default=-1, type=int, help=f'Specifies the last frame used for the correlation.')
+    parser.add_argument('-f', '--stride-frame', default=1, type=int, help=f'Defines the stride.')
+    parser.add_argument('-w', '--overwrite', default=False, action='store_true', help=f'Overwrite the existing result file.')
+    parser.add_argument('-d', '--dq-selection', default='all', help=f'A string that selects the dq list, eg. \'1, 2, 5-7\' selects [1,2,5,6,7]')
+    parser.add_argument('-o', '--output', help=f'Output directory')
 
     return parser.parse_args()
 
@@ -77,8 +77,8 @@ if __name__ == '__main__':
         raise ValueError(f'Deployment requires setting GLADIER_CLIENT_ID and GLADIER_CLIENT_SECRET')
 
     atype_options = ['Multitau', 'Both', 'Twotime']
-    if args.atype not in atype_options:
-        raise ValueError(f'Invalid --atype, must be one of: {", ".join(atype_options)}')
+    if args.type not in atype_options:
+        raise ValueError(f'Invalid --type, must be one of: {", ".join(atype_options)}')
 
     depl_input = deployment.get_input()
 
@@ -86,12 +86,12 @@ if __name__ == '__main__':
     hdf_name = os.path.basename(args.hdf)
     print(f"{hdf_name=}")
     qmap_name = os.path.basename(args.qmap)
-    dataset_name = hdf_name[:hdf_name.rindex('.')] #remove file extension
+    dataset_name = raw_name[:raw_name.rindex('.')] #remove file extension
     print(f"{dataset_name=}")
     dataset_dir = os.path.join(depl_input['input']['staging_dir'], args.experiment, dataset_name)
     print(f"{dataset_dir=}")
     #Processing type
-    atype = args.atype
+    atype = args.type
 
     # Generate Source Pathnames.
     #source_raw_path = os.path.join(args.experiment, 'data', args.raw)
@@ -103,14 +103,14 @@ if __name__ == '__main__':
     #do need to transfer the metadata file because corr will look for it
     #internally even though it is not specified as an argument
     input_hdf_file = os.path.join(dataset_dir, 'input', hdf_name)
-    output_hdf_file = os.path.join(dataset_dir, 'output', hdf_name)
+    output_hdf_file = os.path.join(dataset_dir, 'output', dataset_name + "_results.hdf")
     # Required by boost_corr to know where to stick the output HDF
     output_dir = os.path.join(dataset_dir, 'output')
     # This tells the corr state where to place version specific info
     execution_metadata_file = os.path.join(dataset_dir, 'execution_metadata.json')
 
     if not args.skip_transfer_back:
-        result_path_destination_filename = os.path.join(args.output_dir, hdf_name)
+        result_path_destination_filename = os.path.join(args.output, dataset_name + "_results.hdf")
         # Transfer back step transfers data to the following location automatically:
         #   /cycle/parent/analysis/dataset-name/dataset.hdf
         # Input dirs tend to look like the following, but the strongest convention we have is that the .hdf file
@@ -119,7 +119,7 @@ if __name__ == '__main__':
         #   /2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000/H001_27445_QZ_XPCS_test-01000.hdf
 
         print(
-            f"Flow will transfer processed dataset {hdf_name} back to "
+            f"Flow will transfer processed dataset {dataset_name} back to "
             f"{deployment.source_collection.name} ({deployment.source_collection.uuid}) with path "
             f"'{str(result_path_destination_filename)}'"
             )
@@ -137,22 +137,22 @@ if __name__ == '__main__':
     flow_input = {
         'input': {
             'boost_corr': {
-                    'atype': atype,
+                    "type": atype,
                     "qmap": qmap_file,
                     "raw": raw_file,
                     "output": output_dir,
                     # "batch_size": 8,  # No longer supported
-                    "gpu_id": args.gpu_flag,
+                    "gpu_id": args.gpu_id,
                     "verbose": args.verbose,
                     # "masked_ratio_threshold": 0.75,  # No longer supported
                     # "use_loader": True,  # No longer supported
-                    "begin_frame": args.beginFrame,
-                    "end_frame": args.endFrame,
-                    "avg_frame": args.avgFrame,
-                    "stride_frame": args.strideFrame,
+                    "begin_frame": args.begin_frame,
+                    "end_frame": args.end_frame,
+                    "avg_frame": args.avg_frame,
+                    "stride_frame": args.stride_frame,
                     "overwrite": args.overwrite,
-                    "dq": args.dq,
-                    "save_G2": args.save_G2,
+                    "dq_selection": args.dq_selection,
+                    "save_g2": args.save_g2,
                     "smooth": args.smooth,
             },
             'publishv2': {
@@ -216,7 +216,7 @@ if __name__ == '__main__':
 
     corr_flow = XPCSBoost()
 
-    corr_run_label = pathlib.Path(hdf_name).name[:62]
+    corr_run_label = dataset_name
    
     print("Submitting flow to Globus...")
     flow_run = globus_connection(corr_flow.run_flow, flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs', args.experiment])
