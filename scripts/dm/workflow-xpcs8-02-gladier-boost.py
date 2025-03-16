@@ -18,15 +18,31 @@
             ]
         },
         '02-PARSE-ARGS' : {
-            'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/parse.sh \"$experimentName\" \"$filePath\" \"$qmap\" \"$smooth\" \"$gpuID\" \"$beginFrame\" \"$endFrame\" \"$strideFrame\" \"$avgFrame\" \"$type\" \"$dq\" \"$verbose\" \"$saveG2\" \"$overwrite\"',
+            'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/parse.sh ' + \
+                '\"$experimentName\" ' + \
+                '\"$filePath\" ' + \
+                '\"$qmap\" ' + \
+                '\"$smooth\" ' + \
+                '\"$gpuID\" ' + \
+                '\"$beginFrame\" ' + \
+                '\"$endFrame\" ' + \
+                '\"$strideFrame\" ' + \
+                '\"$avgFrame\" ' + \
+                '\"$type\" ' + \
+                '\"$dq\" ' + \
+                '\"$verbose\" ' + \
+                '\"$saveG2\" ' + \
+                '\"$overwrite\" ' + \
+                '\"$outputDir\" ',
             'outputVariableRegexList' : [
                 'Metadata File: (?P<metadata>.*)',
+                'Result File: (?P<resultFile>.*)',
                 'Boost Corr Arguments: (?P<boostCorrArgs>.*)',
             ]
         },
         '03-LOCAL' : {
             'runIf': '"$analysisMachine" != "polaris"',
-            'command': 'ssh $analysisMachine \"/home/beams/8IDIUSER/.conda/envs/i2402_production/bin/boost_corr $boostCorrArgs\"'
+            'command': 'ssh $analysisMachine \"boost_corr_bin $boostCorrArgs\"'
         },
         '04-GROUP' : {
             'runIf': '"$analysisMachine" == "polaris"',
@@ -53,17 +69,11 @@
             'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/monitor.sh ' + \
                         '/home/dm/etc/dm.workflow_setup.sh ' + \
                        '$flowActionID',
-            'repeatPeriod': 5,
-            'repeatUntil': '"$gladierStatus" == "SUCCEEDED" or "$gladierStatus" == "FAILED"',
-            'maxRepeats': 999999,
-            'outputVariableRegexList' : [
-                'Status: (?P<gladierStatus>.*)'
-            ]
         },
         '07-PERMISSIONS' : {
             'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/permissions.sh ' + \
                 '/home/dm/etc/dm.workflow_setup.sh ' + \
-                '$experimentName',
+                '$experimentName $resultFile',
         },
         '08-DONE' : {
             'command': '/bin/echo Job done.'
