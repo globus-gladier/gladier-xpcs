@@ -65,6 +65,24 @@ def globus_connection(func, *args, **kwargs):
         time.sleep(1)
         return globus_connection(func, *args, **kwargs)
 
+def add_rigaku_transfer_items(flow_input, args_raw, raw_file):
+    ''' Rigaku detector splits raw data into 6 separate files
+        with extension .bin.000 - .bin.005 
+        Boost corr takes the 000 file as argument and then looks for the other 5
+        This function adds the other 5 file names to the list of source transfer items  
+    ''' 
+    if raw_file.endswith('000'):
+        # remove last 0
+        args_raw = args_raw[:-1]
+        raw_file = raw_file[:-1]
+        for i in range(1, 6):
+            transfer_item = {
+                'source_path': deployment.source_collection.to_globus(f"{args_raw}{i}"),
+                'destination_path': deployment.staging_collection.to_globus(f"{raw_file}{i}"),
+            }
+            flow_input['input']['source_transfer']['transfer_items'].append(transfer_item)
+    return flow_input
+    
 if __name__ == '__main__':
     args = arg_parse()
     print(args)
@@ -213,6 +231,7 @@ if __name__ == '__main__':
             'compute_endpoint': depl_input['input']['compute_endpoint'],
         }
     }
+    add_rigaku_transfer_items(flow_input, args.raw, raw_file)
 
     corr_flow = XPCSBoost()
 
