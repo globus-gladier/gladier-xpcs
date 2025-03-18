@@ -33,6 +33,10 @@ echo "Time activating conda env: $TIME_DIFF seconds"
 
 START_TIME=$(date +%s.%N)
 python $DM_WORKFLOWS_DIR/scripts/xpcs_online_boost_client.py --experiment $EXPERIMENT --group $GROUP --hdf $METADATA_FILE_PATH $BOOST_CORR_ARGS
+if [ $? != 0 ]; then
+    echo "ERROR: Encountered error while submitting Gladier flow"
+    exit 1
+fi
 END_TIME=$(date +%s.%N)
 TIME_DIFF=$(awk "BEGIN {print $END_TIME - $START_TIME}")
 TIME_DIFF=$(printf "%.2f" "$TIME_DIFF")

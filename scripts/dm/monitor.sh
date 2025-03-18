@@ -28,7 +28,11 @@ TIME_DIFF=$(printf "%.2f" "$TIME_DIFF")
 echo "Time activating conda env: $TIME_DIFF seconds"
 
 START_TIME=$(date +%s.%N)
-python $DM_WORKFLOWS_DIR/scripts/get_status.py --run_id $flowID
+python $DM_WORKFLOWS_DIR/scripts/dm/checkStatus.py --flowID $flowID
+if [ $? != 0 ]; then
+    echo "ERROR: Encountered error while running Gladier flow"
+    exit 1
+fi
 END_TIME=$(date +%s.%N)
 TIME_DIFF=$(awk "BEGIN {print $END_TIME - $START_TIME}")
 TIME_DIFF=$(printf "%.2f" "$TIME_DIFF")
