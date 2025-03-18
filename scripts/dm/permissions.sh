@@ -7,7 +7,8 @@ WORKFLOW_SETUP_FILE=${1:-/home/dm/etc/dm.workflow_setup.sh}
 START_TIME=$(date +%s.%N)
 source $WORKFLOW_SETUP_FILE
 END_TIME=$(date +%s.%N)
-TIME_DIFF=$((END_TIME - START_TIME))
+TIME_DIFF=$(awk "BEGIN {print $END_TIME - $START_TIME}")
+TIME_DIFF=$(printf "%.2f" "$TIME_DIFF")
 echo "Time sourcing setup file: $TIME_DIFF seconds"
 
 EXPERIMENT_NAME=$2
@@ -36,7 +37,8 @@ for SUBDIR in "${SUBDIRS[@]}"; do
                     exit 1
                 fi
                 END_TIME=$(date +%s.%N)
-                TIME_DIFF=$((END_TIME - START_TIME))
+                TIME_DIFF=$(awk "BEGIN {print $END_TIME - $START_TIME}")
+                TIME_DIFF=$(printf "%.2f" "$TIME_DIFF")
                 echo "Time restoring permissions: $TIME_DIFF seconds"
                 echo "Restored permissions for experiment $EXPERIMENT_NAME path $RELATIVE_RESTORE_PATH"
                 exit 0
@@ -55,6 +57,7 @@ if [ $? != 0 ]; then
     exit 1
 fi
 END_TIME=$(date +%s)
-TIME_DIFF=$((END_TIME - START_TIME))
+TIME_DIFF=$(awk "BEGIN {print $END_TIME - $START_TIME}")
+TIME_DIFF=$(printf "%.2f" "$TIME_DIFF")
 echo "Time restoring permissions: $TIME_DIFF seconds"
 echo "Restored permissions for experiment $EXPERIMENT_NAME path $RELATIVE_RESTORE_PATH"
