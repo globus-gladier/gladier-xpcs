@@ -69,6 +69,12 @@
             'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/monitor.sh ' + \
                         '/home/dm/etc/dm.workflow_setup.sh ' + \
                        '$flowActionID',
+            'repeatPeriod': 5,
+            'repeatUntil': '"$gladierStatus" == "SUCCEEDED" or "$gladierStatus" == "FAILED"',
+            'maxRepeats': 999999,
+            'outputVariableRegexList' : [
+                'Status: (?P<gladierStatus>.*)'
+            ]
         },
         '07-PERMISSIONS' : {
             'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/permissions.sh ' + \
@@ -95,6 +101,6 @@
         '\tverbose (optional) default: False\n' + \
         '\tsaveG2 (optional) - save G2, IP, and IF to file. default: False\n' + \
         '\toverwrite (optional) - overwrite the existing result file.  default: False\n',
-    'name': 'xpcs8-02-gladier-boost',
+    'name': 'xpcs8-boost-corr',
     'userAccount': '8idiuser'
 }
