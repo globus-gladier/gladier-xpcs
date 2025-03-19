@@ -18,7 +18,22 @@
             ]
         },
         '02-PARSE-ARGS' : {
-            'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/parse.sh \"$experimentName\" \"$filePath\" \"$qmap\" \"$smooth\" \"$gpuID\" \"$beginFrame\" \"$endFrame\" \"$strideFrame\" \"$avgFrame\" \"$type\" \"$dq\" \"$verbose\" \"$saveG2\" \"$overwrite\"',
+            'command': 'sh /home/dm/workflows/xpcs8/gladier-xpcs/scripts/dm/parse.sh ' + \
+                '\"$experimentName\" ' + \
+                '\"$filePath\" ' + \
+                '\"$qmap\" ' + \
+                '\"$smooth\" ' + \
+                '\"$gpuID\" ' + \
+                '\"$beginFrame\" ' + \
+                '\"$endFrame\" ' + \
+                '\"$strideFrame\" ' + \
+                '\"$avgFrame\" ' + \
+                '\"$type\" ' + \
+                '\"$dq\" ' + \
+                '\"$verbose\" ' + \
+                '\"$saveG2\" ' + \
+                '\"$overwrite\" ' + \
+                '\"$outputDir\" ',
             'outputVariableRegexList' : [
                 'Metadata File: (?P<metadata>.*)',
                 'Result File: (?P<resultFile>.*)',
@@ -27,7 +42,7 @@
         },
         '03-LOCAL' : {
             'runIf': '"$analysisMachine" != "polaris"',
-            'command': 'ssh $analysisMachine \"/home/beams/8IDIUSER/.conda/envs/i2402_production/bin/boost_corr $boostCorrArgs\"'
+            'command': 'ssh $analysisMachine \"boost_corr_bin $boostCorrArgs\"'
         },
         '04-GROUP' : {
             'runIf': '"$analysisMachine" == "polaris"',
@@ -80,6 +95,6 @@
         '\tverbose (optional) default: False\n' + \
         '\tsaveG2 (optional) - save G2, IP, and IF to file. default: False\n' + \
         '\toverwrite (optional) - overwrite the existing result file.  default: False\n',
-    'name': 'xpcs8-02-gladier-boost',
+    'name': 'xpcs8-boost-corr',
     'userAccount': '8idiuser'
 }

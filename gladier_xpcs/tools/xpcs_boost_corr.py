@@ -17,11 +17,10 @@ def xpcs_boost_corr(**data):
     os.chdir(data['proc_dir'])
 
     boost_corr = data['boost_corr']
-    # usage: boost_corr [-h] -r RAW_FILENAME [-q QMAP_FILENAME] [-o OUTPUT_DIR]
-    # [-s SMOOTH] [-i GPU_ID] [-begin_frame BEGIN_FRAME]
-    # [-end_frame END_FRAME] [-stride_frame STRIDE_FRAME]
-    # [-avg_frame AVG_FRAME] [-t TYPE] [-dq TYPE] [--verbose]
-    # [--save_G2] [--dryrun] [--overwrite] [-c CONFIG.JSON]
+    # usage: boost_corr [-h] -r RAW_FILENAME [-q QMAP_FILENAME] [-o OUTPUT_DIR] [-s SMOOTH] 
+    # [-i GPU_ID] [-b BEGIN_FRAME] [-e END_FRAME] [-f STRIDE_FRAME]
+    # [-a AVG_FRAME] [-t TYPE] [-d DQ_SELECTION] [-v] [-G] [-n] [-w] [-c CONFIG_JSON]
+
     cmd = [
         "boost_corr",
         "-r", boost_corr["raw"],
@@ -29,16 +28,15 @@ def xpcs_boost_corr(**data):
         "-o", boost_corr["output"],
         "-i", str(boost_corr["gpu_id"]),
         "-s", boost_corr["smooth"],
-        "-begin_frame", str(boost_corr["begin_frame"]),
-        "-end_frame", str(boost_corr["end_frame"]),
-        "-stride_frame", str(boost_corr["stride_frame"]),
-        "-avg_frame", str(boost_corr["avg_frame"]),
-        "-t", boost_corr["atype"],
-        "-dq", boost_corr["dq"],
-        # "-dq", ## I don't know what this is??
-        "--save_G2" if boost_corr["save_G2"] else "",
-        "--overwrite" if boost_corr["overwrite"] else "",
-        "--verbose" if boost_corr["verbose"] else "",
+        "-b", str(boost_corr["begin_frame"]),
+        "-e", str(boost_corr["end_frame"]),
+        "-f", str(boost_corr["stride_frame"]),
+        "-a", str(boost_corr["avg_frame"]),
+        "-t", boost_corr["type"],
+        "-d", boost_corr["dq_selection"],
+        "-G" if boost_corr["save_g2"] else "",
+        "-w" if boost_corr["overwrite"] else "",
+        "-v" if boost_corr["verbose"] else "",
     ]
     corr_start = time.time()
     result = subprocess.run([" ".join(cmd)], shell=True, capture_output=True, text=True)

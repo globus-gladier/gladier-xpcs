@@ -206,9 +206,15 @@ def gather_xpcs_metadata(**data):
     # Get root_folder, ex: "/data/2020-1/sanat202002/"
     # All datasets need this info to publish correctly, not having it will raise an exception.
     # /gdata/dm/8IDI/2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000
-    root_folder = pathlib.Path(gathered_metadata['entry.instrument.bluesky.metadata.dataDir'])
+    try:
+        root_folder = gathered_metadata['entry.instrument.bluesky.metadata.dataDir']
+        root_folder = pathlib.Path(root_folder)
+        relative_folder = root_folder.relative_to('/gdata/dm/8IDI/')
+    except KeyError:
+        source_transfer_file = data['source_transfer']['transfer_items'][0]['source_path']
+        relative_folder_name = os.path.dirname(source_transfer_file)
+        relative_folder = pathlib.Path(relative_folder_name)
     # 2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000
-    relative_folder = root_folder.relative_to('/gdata/dm/8IDI/')
     # ("2024-1", "zhang202402_2", "data", H001_27445_QZ_XPCS_test-01000)
     aps_parts = relative_folder.parts
     exp_metadata = {
@@ -227,6 +233,9 @@ def gather_xpcs_metadata(**data):
     project_metadata.update(wanted_gathered_metadata)
     unexpected_xpcs_keys = [k for k in gathered_metadata if k not in V2_XPCS_KEYS]
 
+    # prevent time format mismatch
+    project_metadata['entry.end_time'] = project_metadata['entry.end_time'].split(".")[0]
+    project_metadata['entry.start_time'] = project_metadata['entry.start_time'].split(".")[0]
 
     if os.path.exists(data['execution_metadata_file']):
         with open(data['execution_metadata_file']) as f:
@@ -246,7 +255,7 @@ def gather_xpcs_metadata(**data):
     # Update the publish data with a couple extra key pieces of info
     new_data = {
         # Add nested folders to destination
-        "destination": str(pathlib.Path(data["publishv2"]["destination"]) / project_metadata["aps_cycle_v2"]),
+        "destination": f'{data["publishv2"]["destination"]}/{project_metadata["aps_cycle_v2"]}',
         "metadata_file": str(metadata_file),
         "unexpected_xpcs_keys": unexpected_xpcs_keys,
     }
