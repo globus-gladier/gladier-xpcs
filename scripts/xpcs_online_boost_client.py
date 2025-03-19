@@ -9,7 +9,7 @@ import pathlib
 import time
 import traceback
 
-from gladier_xpcs.flows import XPCSBoost
+from gladier_xpcs.flows.flow_boost import XPCSBoost
 from gladier_xpcs.deployments import deployment_map
 from gladier_xpcs import log  # noqa Add INFO logging
 
