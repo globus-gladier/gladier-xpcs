@@ -10,15 +10,24 @@ import threading
 import click
 import globus_sdk
 import pathlib
-from gladier_xpcs.flows import XPCSBoost
+import asyncio
+import collections
+from gladier_xpcs.flows.flow_boost import XPCSBoost
 from gladier import FlowsManager
 
 
 FILTER_RANGE_MIN = datetime.datetime.now(tz=zoneinfo.ZoneInfo('UTC')) - datetime.timedelta(days=3)
 FILTER_RANGE_MAX = datetime.datetime.now(tz=zoneinfo.ZoneInfo('UTC'))
+FILTER_RANGE_MIN = datetime.datetime.now(
+    tz=zoneinfo.ZoneInfo("UTC")
+) - datetime.timedelta(days=20)
+FILTER_RANGE_MAX = datetime.datetime.now(tz=zoneinfo.ZoneInfo("UTC"))
 FLOW_CLASS = XPCSBoost
 FLOW_ID = '193373a8-8040-4267-aea6-a41f171e7f96'
 RUNS_CACHE = f'/tmp/{FLOW_CLASS.__name__}RunsCache.json'
+FLOW_ID = "56c933db-16c3-4416-b8df-6fa31379a602"
+RUNS_CACHE = f"/tmp/{FLOW_CLASS.__name__}RunsCache.json"
+RUN_LOGS_CACHE = f"/tmp/{FLOW_CLASS.__name__}RunLogsCache.json"
 # Keep cache for a week
 CACHE_TTL = 60 * 60 * 24 * 7
 USE_CACHE = False
@@ -66,11 +75,11 @@ def is_cached(cache_ttl=CACHE_TTL) -> bool:
     return get_run_cache_age() < cache_ttl
 
 
-def load_cache():
+def load_cache(filename=RUNS_CACHE) -> dict:
     try:
-        with open(RUNS_CACHE) as f:
+        with open(filename) as f:
             return json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.decoder.JSONDecodeError):
         return dict()
 
 
@@ -87,41 +96,58 @@ def save_run_cache(runs):
         json.dump({'runs': runs, 'timestamp': time.time()}, f)
 
 
-def get_runs(flow_id, cache_ttl=CACHE_TTL):
+def get_run_logs_cache(cache_ttl=CACHE_TTL) -> list:
+    return (
+        load_cache(RUN_LOGS_CACHE).get("run_logs")
+        if is_cached(cache_ttl=cache_ttl)
+        else None
+    )
+
+
+def save_run_logs_cache(run_logs):
+    with open(RUN_LOGS_CACHE, "w") as f:
+        json.dump({"run_logs": run_logs, "timestamp": time.time()}, f)
+
+
+def get_query_params(since_days=0):
+    query_params = {"orderby": ("start_time DESC",)}
+    if since_days > 0:
+        min_filter = datetime.datetime.now(
+            tz=zoneinfo.ZoneInfo("UTC")
+        ) - datetime.timedelta(days=since_days)
+        max_filter = datetime.datetime.now(tz=zoneinfo.ZoneInfo("UTC"))
+        rng = f'{min_filter.isoformat(timespec="seconds")},{max_filter.isoformat(timespec="seconds")}'
+        query_params["filter_start_time"] = rng
+    return query_params
+
+
+def get_runs(flow_id, cache_ttl=CACHE_TTL, since_days=0):
     if USE_CACHE and is_cached(cache_ttl):
         return get_run_cache(cache_ttl)
     client = get_client()
     client.login()
 
     fc = client.flows_manager.flows_client
-    rng = f'{FILTER_RANGE_MIN.isoformat(timespec="seconds")},{FILTER_RANGE_MAX.isoformat(timespec="seconds")}'
-    resp = fc.list_runs(filter_flow_id=FLOW_ID, query_params=dict(filter_start_time=rng))
-    runs = resp['runs']
-    pages = 0
-    while resp['has_next_page']:
-        pages += 1
-        resp = fc.list_runs(filter_flow_id=FLOW_ID, marker=resp['marker'])
-        runs += resp['runs']
+    run_list = []
+    print("Fetching runs with parameters: ", get_query_params(since_days=since_days))
+    for resp in fc.paginated.list_runs(
+        query_params=get_query_params(since_days=since_days)
+    ):
+        run_list += resp.data["runs"]
 
         # For admins, desperate for continuous feedback
         print('.', end='')
         sys.stdout.flush()
 
     print()
-    save_run_cache(runs)
-    return runs
+    save_run_cache(run_list)
+    return run_list
 
 
 def get_run_input(run_id, flow_id, scope=None):
     resp = get_flows_client().get_run_logs(run_id)
-    input_payload = resp['entries'][0]['details']['input']
-
-    # These should be removed, but needed for old runs pre Gladier v0.9
-    input_payload['input']['login_node_compute'] = input_payload['input'].get('login_node_compute', input_payload['input']['compute_endpoint_non_compute'])
-    input_payload['input']['compute_endpoint'] = input_payload['input'].get('compute_endpoint', input_payload['input']['compute_endpoint_compute'])
-
+    input_payload = resp["entries"][0]["details"]["input"]
     return input_payload
-
 
 
 def retry_single(run_id, flow_id, scope=None, use_local=False):
@@ -170,6 +196,110 @@ def sort_runs(runs, sort_field='start_time'):
     return sorted(runs, key=lambda x: x[sort_field])
 
 
+async def _update_single_run_log(
+    worker_name: str,
+    flows_client: globus_sdk.FlowsClient,
+    queue,
+    run_logs: dict,
+):
+    print(f"Worker {worker_name} started.")
+    while not queue.empty():
+        run_id = await queue.get()
+        run_log = await asyncio.to_thread(flows_client.get_run_logs, run_id, limit=1)
+        assert run_log.data["entries"][0]["code"] == "FlowStarted"
+        run_logs[run_id] = run_log.data["entries"][0]["details"]["input"]
+        queue.task_done()
+
+
+async def _update_run_logs_loop(runs, run_logs):
+    # Prep the queue
+    fetch_queue = asyncio.Queue()
+    for run in runs:
+        if run["run_id"] not in run_logs:
+            fetch_queue.put_nowait(run["run_id"])
+
+    if fetch_queue.empty():
+        return
+    else:
+        print(f"Fetching {fetch_queue.qsize()} logs")
+
+    initial_size = fetch_queue.qsize()
+    flows_client = get_client().flows_manager.flows_client
+
+    tasks = []
+    for i in range(3):
+        task = asyncio.create_task(
+            _update_single_run_log(f"worker-{i}", flows_client, fetch_queue, run_logs)
+        )
+        tasks.append(task)
+
+    while not fetch_queue.empty():
+        print(f"Working on queue ({initial_size - fetch_queue.qsize()}/{initial_size})")
+        await asyncio.sleep(1)
+    await fetch_queue.join()
+    await asyncio.gather(*tasks, return_exceptions=True)
+
+
+def update_run_logs(runs):
+
+    run_logs = get_run_logs_cache() or dict()
+    exit_now = False
+
+    try:
+        asyncio.run(_update_run_logs_loop(runs, run_logs))
+    except KeyboardInterrupt:
+        print("Interrupt Received! Saving and exiting...")
+        exit_now = True
+    finally:
+        save_run_logs_cache(run_logs)
+        if exit_now:
+            sys.exit(1)
+    return run_logs
+
+
+def filter_unsuccessful_failure_runs(runs, run_logs):
+    """
+    Filter any runs that have previously failed, and have not been retried successfully.
+
+    Uniqueness is based on the output.input.hdf_file field.
+    """
+    runs_by_hdf = collections.defaultdict(list)
+    for idx, run in enumerate(runs):
+        try:
+            hdf_file = run_logs[run["run_id"]]["input"]["hdf_file"]
+        except KeyError as ke:
+            print("Failed at item", idx)
+            raise ke
+        runs_by_hdf[hdf_file].append(run)
+
+    # Iterate thorugh runs, and filter out any that have a successful run
+    filtered_runs = []
+    for run in runs:
+        hdf_file = run_logs[run["run_id"]]["input"]["hdf_file"]
+        if any(r["status"] == "SUCCEEDED" for r in runs_by_hdf[hdf_file]):
+            print(
+                f"Skipping {run['label']} as it has a successful run at date {run['start_time']}"
+            )
+            continue
+        # If a run has failures, and no successful runs, only choose the most recent failure.
+        if datetime.datetime.fromisoformat(run["start_time"]) == max(
+            datetime.datetime.fromisoformat(r["start_time"])
+            for r in runs_by_hdf[hdf_file]
+        ):
+            print(f"Adding last failed run {run['label']} at date {run['start_time']}")
+            filtered_runs.append(run)
+        else:
+            print(
+                f"Skipping {run['label']} as it has a more recent failure at date {run['start_time']}"
+            )
+            print(
+                f"\t{run['start_time']} vs {max(datetime.datetime.fromisoformat(r['start_time']) for r in runs_by_hdf[hdf_file])}"
+            )
+
+    print(f"Filtered {len(runs)} runs down to {len(filtered_runs)} runs.")
+    return filtered_runs
+
+
 def get_runs_since_label(runs, label):
     """
     Find the earliest occurance in which the run with a given label has failed, and
@@ -177,12 +307,17 @@ def get_runs_since_label(runs, label):
     will return the first occurance.
     """
     bounding_run = -1
+    total = len(runs)
     for run in runs:
         if run['label'] == label:
             bounding_run = runs.index(run)
     if bounding_run < 0:
-        raise ValueError(f'Failed to find {label} in {len(runs)} total runs.')
-    return runs[bounding_run:]
+        raise ValueError(f"Failed to find {label} in {len(runs)} total runs.")
+    runs = runs[bounding_run:]
+    print(
+        f"Found Bounding run at index {bounding_run}, with num runs: {len(runs)}, discarding {bounding_run}/{total} runs."
+    )
+    return runs
 
 
 @click.group()
@@ -231,19 +366,26 @@ def dump_run_input(run, flow):
 @click.option('--flow', help='Flow id to use')
 @click.option('--local-fx', default=False, is_flag=True,
     help='Use local globus compute functions instead of the functions from the last run.')
-@click.option('--status', default='FAILED', help='Flow id to use')
+@click.option('--status', default=None, help='Flow id to use')
 @click.option('--preview', is_flag=True, default=False, help='Flow id to use')
 @click.option('--since', help='Re-run all failed jobs since the label of this failed job')
+@click.option("--since-days", default=14, help="Re-run all failed jobs since the label of this failed job")
+@click.option("--filter-unsuccessful-failures", is_flag=True, default=True, help="Filter out runs that have never succeeded.")
 @click.option('--workers', help='Number of parallel processing jobs', default=30)
-def retry_runs(flow, local_fx, status, preview, since, workers):
-    runs = [run for run in get_runs(flow) if run['status'] == status]
+def retry_runs(flow, local_fx, status, preview, since, since_days, filter_unsuccessful_failures, workers):
+    runs = [run for run in get_runs(flow, since_days=since_days)]
     runs = sort_runs(runs)
+    if filter_unsuccessful_failures:
+        run_logs = update_run_logs(runs)
+        runs = filter_unsuccessful_failure_runs(runs, run_logs)
     if since:
         try:
             runs = get_runs_since_label(runs, label=since)
         except ValueError as ve:
             click.secho(str(ve), fg='red')
             return
+    if status:
+        runs = [run for run in runs if run['status'] == status]
     if preview == True:
         click.echo(make_csv(runs))
         click.echo(f'{len(runs)} above will be restarted.')
