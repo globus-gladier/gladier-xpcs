@@ -85,7 +85,7 @@
         '\tfilePath - Name of the raw data file located in the experiment data directory.\n' + \
         '\tqmap - Name of the qmap file located in the experiment data directory.\n' + \
         '\tsmooth (optional) - smooth method to be used in Twotime correlation. default: sqmap\n' + \
-        '\tgpuID (optional) - choose which GPU to use. default: -1 (CPU)\n' + \
+        '\tgpuID (optional) - choose which GPU to use. -1 is CPU, 0 is GPU. default: 0 (GPU)\n' + \
         '\tbeginFrame (optional) - specifies which frame to begin with for the correlation. default: 1\n' + \
         '\tendFrame (optional) - specifies the last frame used for the correlation. default: -1\n' + \
         '\tstrideFrame (optional) - defines the stride. default: 1\n' + \
