@@ -1,3 +1,4 @@
+import pathlib
 from gladier import GladierBaseTool, generate_flow_definition
 
 
@@ -211,9 +212,11 @@ def gather_xpcs_metadata(**data):
         root_folder = pathlib.Path(root_folder)
         relative_folder = root_folder.relative_to('/gdata/dm/8IDI/')
     except KeyError:
-        source_transfer_file = data['source_transfer']['transfer_items'][0]['source_path']
-        relative_folder_name = os.path.dirname(source_transfer_file)
-        relative_folder = pathlib.Path(relative_folder_name)
+        # Pull from source instead, the paths should look like this:
+        # /2025-1/milliron202503/data/volfrac116029_10nm-frac_a0050_f100000_r00001/volfrac116029_10nm-frac_a0050_f100000_r00001.bin.003
+        root_folder = data['source_transfer']['transfer_items'][0]['source_path']
+        root_folder = pathlib.Path(root_folder)
+        relative_folder = root_folder.relative_to('/')
     # 2024-1/zhang202402_2/data/H001_27445_QZ_XPCS_test-01000
     # ("2024-1", "zhang202402_2", "data", H001_27445_QZ_XPCS_test-01000)
     aps_parts = relative_folder.parts
@@ -283,12 +286,17 @@ class GatherXPCSMetadata(GladierBaseTool):
 
 
 if __name__ == '__main__':
+    current_directory = pathlib.Path(__file__).parent.absolute()
     data = {
-        #'proc_dir': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000',
-        'proc_dir': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/H001_27445_QZ_XPCS_test-01000',
-        # 'proc_dir':'/eagle/APSDataAnalysis/nick/xpcs_gpu',
-        #'hdf_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/A001_Aerogel_1mm_att6_Lq0_001_0001-1000/output/A001_Aerogel_1mm_att6_Lq0_001_0001-1000.hdf',
-        'hdf_file': '/Users/nick/globus/aps/xpcs_client/gladier_xpcs/tools/H001_27445_QZ_XPCS_test-01000/output/H001_27445_QZ_XPCS_test-01000.hdf',
+        "source_transfer": {
+            "transfer_items": [
+                {
+                    "source_path": "/2025-1/milliron202503/data/volfrac116029_10nm-frac_a0050_f100000_r00001/volfrac116029_10nm-frac_a0050_f100000_r00001.bin.003",
+                }
+            ]
+        },
+        'proc_dir': str(current_directory / 'data/'),
+        'hdf_file': str(current_directory / 'data/volfrac215967_17nm-frac_a0050_f100000_r00001_results.hdf'),
         'execution_metadata_file': 'foo/bar',
         'boost_corr': {
             'gpu_flag': 0
