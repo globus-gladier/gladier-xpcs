@@ -212,7 +212,7 @@ def gather_xpcs_metadata(**data):
         root_folder = pathlib.Path(root_folder)
         relative_folder = root_folder.relative_to('/gdata/dm/8IDI/')
     except KeyError:
-        # Pull from source instead, the paths should look like this: 
+        # Pull from source instead, the paths should look like this:
         # /2025-1/milliron202503/data/volfrac116029_10nm-frac_a0050_f100000_r00001/volfrac116029_10nm-frac_a0050_f100000_r00001.bin.003
         root_folder = data['source_transfer']['transfer_items'][0]['source_path']
         root_folder = pathlib.Path(root_folder)
