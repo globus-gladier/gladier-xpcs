@@ -370,9 +370,10 @@ def dump_run_input(run, flow):
 @click.option('--preview', is_flag=True, default=False, help='Flow id to use')
 @click.option('--since', help='Re-run all failed jobs since the label of this failed job')
 @click.option("--since-days", default=14, help="Re-run all failed jobs since the label of this failed job")
-@click.option("--filter-unsuccessful-failures", is_flag=True, default=True, help="Filter out runs that have never succeeded.")
+@click.option("--filter-unsuccessful-failures/--no-filter-unsuccessful-failures", is_flag=True, default=True, help="Filter out runs that have never succeeded.")
+@click.option("--limit", default=0, help="Limit the number of runs to retry")
 @click.option('--workers', help='Number of parallel processing jobs', default=30)
-def retry_runs(flow, local_fx, status, preview, since, since_days, filter_unsuccessful_failures, workers):
+def retry_runs(flow, local_fx, status, preview, since, since_days, filter_unsuccessful_failures, limit, workers):
     runs = [run for run in get_runs(flow, since_days=since_days)]
     runs = sort_runs(runs)
     if filter_unsuccessful_failures:
@@ -386,6 +387,8 @@ def retry_runs(flow, local_fx, status, preview, since, since_days, filter_unsucc
             return
     if status:
         runs = [run for run in runs if run['status'] == status]
+    if limit:
+        runs = runs[-limit:]
     if preview == True:
         click.echo(make_csv(runs))
         click.echo(f'{len(runs)} above will be restarted.')
