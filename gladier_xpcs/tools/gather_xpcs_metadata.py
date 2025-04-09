@@ -268,9 +268,11 @@ def gather_xpcs_metadata(**data):
 
 
 @generate_flow_definition(modifiers={
-    gather_xpcs_metadata: {'endpoint': 'login_node_endpoint',
-                           'ExceptionOnActionFailure': True,
-                           }
+    gather_xpcs_metadata: {
+        'endpoint': 'login_node_endpoint',
+        'ExceptionOnActionFailure': True,
+        'WaitTime': 86400,
+    }
 })
 class GatherXPCSMetadata(GladierBaseTool):
 
