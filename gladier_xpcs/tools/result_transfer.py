@@ -37,7 +37,7 @@ class ResultTransfer(GladierBaseTool):
                     'DATA.$': '$.input.result_transfer.transfer_items',
                 },
                 'ResultPath': '$.ResultTransferDoTransfer',
-                'WaitTime': 600,
+                'WaitTime': 86400,
                 "Next": "ResultTransferDone",
             },
             "ResultTransferSkipTransfer": {
