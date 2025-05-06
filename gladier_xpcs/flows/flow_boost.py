@@ -14,8 +14,5 @@ class XPCSBoost(GladierBaseClient):
         'gladier_xpcs.tools.xpcs_boost_corr.BoostCorr',
         'gladier_xpcs.tools.result_transfer.ResultTransfer',
         'gladier_xpcs.tools.plot.MakeCorrPlots',
-        'gladier_xpcs.tools.gather_xpcs_metadata.GatherXPCSMetadata',
-        # Publication is currently broken due to the destination collection being down.
-        # Uncomment this to re-enable
-        # 'gladier_tools.publish.Publishv2',
+        'gladier_tools.publish.Publishv2',
     ]

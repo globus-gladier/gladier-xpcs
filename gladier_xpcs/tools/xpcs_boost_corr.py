@@ -67,6 +67,7 @@ def xpcs_boost_corr(**data):
         'proc_dir': data['proc_dir'],
         'boost_corr': data['boost_corr'],
         'execution_time_seconds': execution_time_seconds,
+        'metadata': metadata,
     }
 
 
