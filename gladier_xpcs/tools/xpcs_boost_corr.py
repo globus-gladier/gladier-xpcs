@@ -72,7 +72,7 @@ def xpcs_boost_corr(**data):
 
 
 @generate_flow_definition(modifiers={
-    xpcs_boost_corr: {'WaitTime': 7200,
+    xpcs_boost_corr: {'WaitTime': 604800,
                       'ExceptionOnActionFailure': True}
 })
 class BoostCorr(GladierBaseTool):

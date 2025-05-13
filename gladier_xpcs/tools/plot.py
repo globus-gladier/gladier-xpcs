@@ -54,7 +54,7 @@ def make_corr_plots(hdf_file: str, webplot_target_dir: str, plotting_metadata_fi
 
 
 @generate_flow_definition(modifiers={
-    'make_corr_plots': {'WaitTime': 28800}
+    'make_corr_plots': {'WaitTime': 604800, 'ExceptionOnActionFailure': True}
 })
 class MakeCorrPlots(GladierBaseTool):
     required_input = [
