@@ -1,8 +1,10 @@
 import logging
+import globus_sdk
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from xpcs_portal.xpcs_index.models import FilenameFilter
 from globus_portal_framework.gclients import load_transfer_client
+from xpcs_portal.xpcs_index.auth import get_globus_app_client
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +28,12 @@ def operation_ls(request, index):
             return JsonResponse({'error': f'Missing param: {item}'}, status=400)
 
     try:
-        tc = load_transfer_client(request.user)
+        globus_app_client = request.GET.get("service_account")
+        if globus_app_client:
+            app = get_globus_app_client(request.user, globus_app_client)
+            tc = globus_sdk.TransferClient(app=app)
+        else:
+            tc = load_transfer_client(request.user)
         response = tc.operation_ls(request.GET["collection"], path=request.GET["path"])
         return JsonResponse(response.data)
     except Exception as e:

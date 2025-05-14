@@ -3,10 +3,14 @@ import pathlib
 import urllib
 import copy
 import collections
+import globus_sdk
 from globus_app_flows.collectors.search import SearchCollector
 from globus_app_flows.collectors.transfer import TransferCollector
 from gladier_xpcs.deployments import deployment_map
 from gladier_xpcs.flows.flow_boost import XPCSBoost
+from gladier_xpcs.deployments import BaseDeployment
+from xpcs_portal.xpcs_index.auth import get_globus_app_client
+
 
 log = logging.getLogger(__name__)
 
@@ -21,6 +25,10 @@ class XPCSTransferCollector(TransferCollector):
         self.cluster_results = None
         # super().__init__(collection="74defd5b-5f61-42fc-bcc4-834c9f376a4f", path="/XPCSDATA/2019-1/comm201901/", user=kwargs["user"])
         super().__init__(collection, path, *args, **kwargs)
+
+    def get_transfer_client(self):
+        app = get_globus_app_client(self.user, "aps8idi-polaris")
+        return globus_sdk.TransferClient(app=app)
 
     def get_files(self, globus_dir: str):
         tc = self.get_transfer_client()

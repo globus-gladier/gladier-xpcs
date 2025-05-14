@@ -106,8 +106,14 @@ class XPCSComputeTransfer(XPCSReprocessing, BatchCreateView):
     template_name = "xpcs/transfer-selection-form.html"
     form_class = CollectionSelectionForm
     collector = XPCSTransferCollector
-    collection = "74defd5b-5f61-42fc-bcc4-834c9f376a4f"
-    path = "/XPCSDATA/"
+    # Eagle endpoint and path
+    # collection = "74defd5b-5f61-42fc-bcc4-834c9f376a4f"
+    # path = "/XPCSDATA/"
+
+    # Voyager endpoint and path
+    collection = "dc86d51b-81d1-4827-81be-2b5e64ba7dc1"
+    path = "/"
+
     cycle_exclude = [
         "spec_data",
         "partitionMapLibrary",

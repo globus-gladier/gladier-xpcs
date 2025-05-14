@@ -22,7 +22,7 @@
     function getParent() {
         var cycle = $('#id_cycle').find(":selected").val();
         var cycle_path = path + '/' + cycle
-        $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + cycle_path,
+        $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + cycle_path + "&service_account=aps8idi-polaris",
               dataType: "json",
               success: function(data) {updateOptions(data, "#id_parent")}
         });
@@ -36,7 +36,7 @@
           var cycle = $('#id_cycle').find(":selected").val();
           var qmap_path = qmap_basepath + cycle + '/';
           var include_only = $('#id_parent').find(":selected").val();
-          $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + qmap_path,
+          $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + qmap_path + "&service_account=aps8idi-polaris",
               dataType: "json",
               success: function(data) {
                 var includes = []
@@ -57,7 +57,7 @@
     $( document ).ready(function() {
         $("#div_id_qmap").hide()
 
-        $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + path,
+        $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + path + "&service_account=aps8idi-polaris",
             dataType: "json",
             success: function(data) {data.DATA = data.DATA.reverse(); updateOptions(data, "#id_cycle", exclude=cycle_exclude)},
             error: function(data) {
