@@ -1,0 +1,133 @@
+{%extends "globus-portal-framework/v2/detail-base.html"%}
+{% load static index_template crispy_forms_tags %}
+
+{%block headextras%}
+<link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+<script>
+
+    var collection = "{{collection}}";
+    var path = "{{path}}";
+    var cycle_exclude = {% autoescape off %}{{cycle_exclude}}{% endautoescape %};
+    var qmap_basepath = "/XPCSDATA/partitionMapLibrary/";
+
+    function updateOptions(response, selector, exclude=[], type="dir") {
+        $(selector).empty();
+        return $.each(response.DATA, function(i, p) {
+            if(p.type == type && !exclude.includes(p.name)) {
+                $(selector).append($('<option></option>').val(p.name).html(p.name));
+            }
+        });
+    }
+
+    function getParent() {
+        var cycle = $('#id_cycle').find(":selected").val();
+        var cycle_path = path + '/' + cycle
+        $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + cycle_path + "&service_account=aps8idi-polaris",
+              dataType: "json",
+              success: function(data) {updateOptions(data, "#id_parent")}
+        });
+    }
+
+    function toggleQMAP() {
+        if ($("#div_id_qmap").is(":visible")) {
+          $("#div_id_qmap").hide()
+        } else {
+          $("#div_id_qmap").show()
+          var cycle = $('#id_cycle').find(":selected").val();
+          var qmap_path = qmap_basepath + cycle + '/';
+          var include_only = $('#id_parent').find(":selected").val();
+          $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + qmap_path + "&service_account=aps8idi-polaris",
+              dataType: "json",
+              success: function(data) {
+                var includes = []
+                data.DATA.forEach(item => {
+                  console.log(item.name + " checking " + include_only)
+                  if (item.name.includes(include_only)) {
+                    includes.push(item)
+                  }
+                });
+                console.log(includes)
+                updateOptions({"DATA": includes}, "#id_qmap", [], "file")
+                $('#hint_id_qmap').text("Source: " + qmap_path)
+              }
+          });
+        }
+    }
+
+    $( document ).ready(function() {
+        $("#div_id_qmap").hide()
+
+        $.get({url: "{% url 'xpcs-index:operation-ls' globus_portal_framework.index %}?collection=" + collection + "&path=" + path + "&service_account=aps8idi-polaris",
+            dataType: "json",
+            success: function(data) {data.DATA = data.DATA.reverse(); updateOptions(data, "#id_cycle", exclude=cycle_exclude)},
+            error: function(data) {
+              console.log("Could not query data location")
+              console.log(data)
+              $('#eagle-down').removeAttr("hidden");
+              $('#reprocessing-block').attr("hidden", true);
+              $('#error-text').text(data.responseText)
+            }
+          }).then(getParent)
+        });
+</script>
+{{block.super}}
+{% endblock %}
+
+
+{% block body %}
+
+<div class="row">
+  <div class="col">
+    <h2 class="text-center">{{project_title}}</h2>
+  </div>
+</div>
+
+<div class="row mb-5">
+  <div class="col"></div>
+  <div class="col-10">
+    <div>
+      <h1 class="text-center">{%block checkout_title%}Reprocess Datasets{%endblock%}</h1>
+      <div class="card" id="reprocessing-block">
+        <div class="card-body">
+          {% block manifest_create_form %}
+
+          {% block flow_form %}
+          <form method="post" action="{% block checkout_form_action_url %}{% url 'xpcs-index:compute-transfer' index %}{% endblock %}">
+          <div class="alert alert-info" role="alert">
+            <h5>Dataset Reprocessing</h5>
+          
+            <p>
+                Globus Transfer Dataset Selection
+            </p>
+          
+          </div>
+          {% csrf_token %}
+          {% crispy form %}
+          
+          {% if form.errors %}
+          <div class="alert alert-danger" role="alert">
+          
+            {{form.errors}}
+          
+          </div>
+          {% endif %}
+          </form>
+          {% endblock %}
+          {% endblock %}
+        </div>
+      </div>
+      <div class="card" id="eagle-down" hidden>
+        <div class="alert alert-danger" role="alert">
+          Eagle is curently unavailable, new processing jobs cannot be started.
+
+          <pre id="error-text" style="white-space: pre-wrap;">
+
+          </pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col"></div>
+</div>
+
+{% endblock %}
