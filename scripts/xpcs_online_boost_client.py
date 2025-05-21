@@ -159,9 +159,11 @@ def get_flow_input(deployment, filepaths, boost_corr, skip_transfer_back=False, 
                     'source_collection': deployment.staging_collection.uuid,
                     'source_collection_basepath': str(deployment.staging_collection.path),
                     'destination_collection': str(deployment.pub_collection.uuid),
-                    'index': 'ca60d6ff-e610-43bd-b5fe-415aee6d6794',
-                    # Test index
-                    # 'index': '2ec9cf61-c0c9-4213-8f1c-452c072c4ccc',
+                    # Deprecated, do not use for publishing. We may migrate the metadata in this index
+                    # to the newer format used below
+                    # 'index': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
+                    # Current "XPCS v2 index"
+                    'index': '4428cfe6-611b-48db-81b2-167a7d9710ea',
                     'visible_to': visible_to,
                     # Ingest and Transfer can be disabled for dry-run testing.
                     'enable_publish': True,
