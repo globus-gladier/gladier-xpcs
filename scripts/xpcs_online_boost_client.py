@@ -266,6 +266,8 @@ def get_flow_input(
                         filepaths['qmap']['source'],
                     ]
                 },
+                "organization": deployment.organization,
+                "facility": deployment.facility,
                 **extra_metadata,
 
             },

@@ -26,6 +26,8 @@ class BaseDeployment:
     globus_endpoints = dict()
     compute_endpoints = dict()
     flow_input = dict()
+    organization = ""
+    facility = ""
     # Is this a "service account" that requires confidential client credentials?
     # This means setting GLADIER_CLIENT_ID and GLADIER_CLIENT_SECRET
     service_account = False
@@ -93,6 +95,7 @@ class RyanNERSC(BaseDeployment):
     staging_collection = nersc_permutter
     pub_collection = xpcs_data
     service_account = False
+    organization = "NERSC"
 
     globus_endpoints = {
         # Eagle -- XPCS Data 8-ID APS
@@ -126,6 +129,8 @@ class VoyagerXPCS8Polaris(BaseDeployment):
     staging_collection = apsdataprocessing
     pub_collection = xpcs_data
     service_account = True
+    organization = "ALCF"
+    facility = "Polaris"
 
     globus_endpoints = {
         # Voyager -- APS:DM:XPCS8
@@ -152,6 +157,8 @@ class Voyager8IDIPolaris(BaseDeployment):
     staging_collection = apsdataprocessing
     pub_collection = xpcs_data
     service_account = True
+    organization = "ALCF"
+    facility = "Polaris"
 
     globus_endpoints = {
         # Voyager -- APS:DM:8IDI
