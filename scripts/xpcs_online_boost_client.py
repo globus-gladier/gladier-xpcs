@@ -10,7 +10,7 @@ import time
 import traceback
 
 from gladier_xpcs.flows.flow_boost import XPCSBoost
-from gladier_xpcs.deployments import deployment_map
+from gladier_xpcs.deployments import BaseDeployment, deployment_map
 from gladier_xpcs import log  # noqa Add INFO logging
 
 from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer, FlowsClient
@@ -58,7 +58,12 @@ def arg_parse():
 
     return parser.parse_args()
 
-def get_deployment(args_deployment, args_raw):
+def get_deployment(args_deployment: str, args_raw: str = ""):
+    """
+    Fetch the deployment based on the string given. Also checks service account related variables are set.
+    :param args_deployment: A string denoting the name of the deployment in deployments.py
+    :param args_raw: An optional "input" string to help detect the deployment, if on voyager
+    """
     deployment = deployment_map.get(args_deployment)
     if "/gdata/dm/XPCS8" in args_raw:
         deployment = deployment_map.get('voyager-xpcs8-polaris')
@@ -91,10 +96,41 @@ def determine_cycle(raw: str):
     raise ValueError("Failed to automatically parse the cycle from the given input. Please specify it manually with '-c 2025-1'")
 
 
-def get_filepaths(raw, qmap, output, experiment, deployment, cycle=None):
-    ''' Generate File Pathnames
-        do need to transfer the metadata file because corr will look for it
-        internally even though it is not specified as an argument
+def get_filepaths(raw: str, qmap: str, output: str, experiment: str, deployment: BaseDeployment, cycle: str = None):
+    '''
+    Generate all paths to be used on the staging endpoint deployment as well as the publishing endpoint. Paths
+    are generated using source filenames, mainly ``raw`` and ``qmap``. The file structure on staging is generated
+    to contain 3 folders: 
+
+    input/ -- contains all input files including the hdf metadata file needed by boost_corr
+    output/ -- contains the output of running boost_corr and the plotting tool
+    qmap/ -- Contains the qmap file
+
+    The inputs typically look like this:
+      /2025-1/milliron202503/data/04fsaxs13075_DMF-ethylene-glycol-50mM-salt-blank_a0208_f100000_r00005
+
+    The outputs typically look like this: 
+
+      /xpcs_staging/experiment/dataset_name/output/qmap_file_name/dataset_name/
+        resources/
+        dataset_name_results.hdf
+        boost_corr.log
+
+    Note: dataset_name is repeated twice. Typically, thousands of datasets reside in /xpcs_staging/experiment_name/.
+    ``qmap_file_name/dataset_name/`` differentiates datasets run by different qmap files. This also ingests them into
+    a different location on publishing, if multiple qmap files are used for multiple reprocessing times.
+
+
+    :param raw: The source filename for the 'raw' file passed to boost_corr for processing. This is used to determine
+                the processing directory structure on staging, including the dataset name and the _results.hdf file.
+    :param qmap: The location of the qmap file.
+    :param output: The location of the output file being sent back to voyager
+    :param experiment: describes the experiment being run. Typically the name of the subdirectory under cycle Ex: milliron202503. Can
+                       be customized for testing purposes.
+    :param deployment: A BaseDeployment class which contains information about where to transfer the data and what compute to use.
+    :param cycle: A string like 2025-1. Used for determining where to publish datasets. Can usually be automatically determined
+                  from source files, but may need to be provided if the source file does not contain a cycle.
+    :returns: A dict of info which can be passed to `get_flow_input` for starting the flow.
     '''
     depl_input = deployment.get_input()
     dataset_name = os.path.basename(raw).split('.')[0]  #remove file extension
@@ -146,7 +182,22 @@ def get_filepaths(raw, qmap, output, experiment, deployment, cycle=None):
     }     
     return filepaths
 
-def get_flow_input(deployment, filepaths, boost_corr, skip_transfer_back=False, additional_groups=None, extra_metadata=None):
+def get_flow_input(
+        deployment: BaseDeployment, 
+        filepaths: dict,
+        boost_corr: dict,
+        skip_transfer_back: bool = False,
+        additional_groups: list = None,
+        extra_metadata: dict = None):
+    """
+    Generates input that can be used to start the XPCS Flow. 
+
+    :param deployment: The deployment used in this flow. MUST be the same one used in get_filepaths()
+    :param boost_corr: Parameters to pass to boost_corr directly.
+    :param skip_transfer_back: Skip the transfer back to source.
+    :param additional_groups: Any additional groups to give access to on publish
+    :param extra_metadata: Any other static metadata that should be included when publishing this dataset
+    """
     depl_input = deployment.get_input()
     visible_to = list(set(['urn:globus:groups:id:{g}' for g in additional_groups or []] + [DEVELOPER_GROUP]))
     extra_metadata = extra_metadata or dict()
@@ -251,6 +302,12 @@ def get_boost_corr_arguments(args, filepaths):
     }
 
 def determine_experiment(experiment: str):
+    """
+    Attempts to extract common group names. Experiments typically look like
+    milliron202503, with numbers that denote the cycle. This function removes
+    the cycle info for common experiment names like "milliron" which can be
+    used to group common experiments in the search index.
+    """
     try:
         re.match("([a-zA-Z]+)\d*", experiment).groups()[0]
     except Exception:
@@ -258,12 +315,22 @@ def determine_experiment(experiment: str):
     return experiment
 
 def get_extra_metadata(experiment, cycle=None):
+    """
+    Fetch extra metadata to include in the publishing step.
+
+    :param experiment: Used for grouping common experiments in publishing
+    :param cycle: Used for grouping datasets by cycle
+    """
     return {
         "experiment": determine_experiment(experiment),
         "cycle": cycle or determine_cycle(cycle)
     }
     
 def globus_connection(func, *args, **kwargs):
+    """
+    Used if the connection isn't great at the APS. Sometimes this happens. Hopefully we can remove this in
+    the future...
+    """
     try:
         return func(*args, **kwargs)
     except GlobusConnectionError as e:
@@ -271,12 +338,19 @@ def globus_connection(func, *args, **kwargs):
         time.sleep(1)
         return globus_connection(func, *args, **kwargs)
     
-def start_flow(flow_input, dataset_name, args_experiment):
+def start_flow(flow_input: dict, dataset_name: str, args_experiment: str):
+    """
+    Start an XPCS flow.
+
+    Requires flow input from get_flow_input().
+
+    :param flow_input: Input generated from get_flow_input()
+    :param dataset_name: A filename used for flow labels
+    :param args_experiment: The name of the experiment, used to tag this run
+    """
     corr_flow = XPCSBoost()
-    corr_run_label = dataset_name
-   
     print("Submitting flow to Globus...")
-    flow_run = globus_connection(corr_flow.run_flow, flow_input=flow_input, label=corr_run_label, tags=['aps', 'xpcs', args_experiment])
+    flow_run = globus_connection(corr_flow.run_flow, flow_input=flow_input, label=dataset_name, tags=['aps', 'xpcs', args_experiment])
     print("Flow successfully submitted to Globus.")
 
     actionID = flow_run['action_id']

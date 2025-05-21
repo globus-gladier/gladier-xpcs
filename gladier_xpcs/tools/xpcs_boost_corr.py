@@ -1,6 +1,33 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
 def xpcs_boost_corr(boost_corr: dict, **data):
+    """
+    Run the boost corr tool on the given set of inputs within ``boost_corr``. Runs boost corr with
+    the given inputs, and writes the results to the given 'output' directory listed in boost_corr.output.
+    Additionally, writes a boost_corr.log file containing the stderr output of boost_corr. 
+
+
+    There are multiple types of inputs that Boost Corr supports, and this tooling supports all of them.
+    Typically this is opaque to the flow input, but it will change the type of file in boost_corr["raw"].
+    The different types of input will always reside inside the input/ directory. However, the files within
+    input/ may differ depending on the type of detection being performed. These may look like the following:
+
+        1. eiger4m/lambda2m/rigaku(slow mode) .h5
+        2. lambda750k, legacy .imm file. we no longer use it at the beamline.
+        3. rigaku500k (fast mode), one .bin file
+        4. rigaku3m (fast mode), .bin.xxx file, xxx in [001, ... 006]
+
+    For the last one, the file in boost_corr["raw"] denotes the first of six files, and Corr is smart enough
+    to assume the others are present.
+
+    A metadata file almost always exists inside the input/ directory. This file is never referenced directly
+    by the flow, but is automatically picked up and run by boost_corr.
+    :param boost_corr: A dictionary which MUST contain all required items for running boost_corr,
+                       including 'raw', 'qmap' and 'output' at the very least.
+    :returns: A dict of metadata describing exceution input variables and execution times
+    :raises Exception: If Boost corr failed to run for some reason, including logs that hopefully explain the failure
+
+    """
     import os
     import json
     import time
