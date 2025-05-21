@@ -84,7 +84,7 @@ def determine_cycle(raw: str):
     try:
         cycle = pathlib.Path(raw).relative_to("/gdata/dm/8IDI/").parts[0]
         year, trimester = cycle.split('-')
-        if int(year) in range(2015, 2050) and int(trimester) in range(1, 3):
+        if int(year) in range(2015, 2050) and int(trimester) in range(1, 4):
             return cycle
     except Exception as e:
         print(e)
