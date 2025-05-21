@@ -22,6 +22,7 @@ class BaseDeployment:
     source_collection: SharedCollection = None
     staging_collection: SharedCollection = None
     pub_collection: SharedCollection = None
+    pub_collection_basepath: str = "/XPCSDATA/Automate/"
     globus_endpoints = dict()
     compute_endpoints = dict()
     flow_input = dict()
