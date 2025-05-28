@@ -1,6 +1,33 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
-def xpcs_boost_corr(**data):
+def xpcs_boost_corr(boost_corr: dict, **data):
+    """
+    Run the boost corr tool on the given set of inputs within ``boost_corr``. Runs boost corr with
+    the given inputs, and writes the results to the given 'output' directory listed in boost_corr.output.
+    Additionally, writes a boost_corr.log file containing the stderr output of boost_corr. 
+
+
+    There are multiple types of inputs that Boost Corr supports, and this tooling supports all of them.
+    Typically this is opaque to the flow input, but it will change the type of file in boost_corr["raw"].
+    The different types of input will always reside inside the input/ directory. However, the files within
+    input/ may differ depending on the type of detection being performed. These may look like the following:
+
+        1. eiger4m/lambda2m/rigaku(slow mode) .h5
+        2. lambda750k, legacy .imm file. we no longer use it at the beamline.
+        3. rigaku500k (fast mode), one .bin file
+        4. rigaku3m (fast mode), .bin.xxx file, xxx in [001, ... 006]
+
+    For the last one, the file in boost_corr["raw"] denotes the first of six files, and Corr is smart enough
+    to assume the others are present.
+
+    A metadata file almost always exists inside the input/ directory. This file is never referenced directly
+    by the flow, but is automatically picked up and run by boost_corr.
+    :param boost_corr: A dictionary which MUST contain all required items for running boost_corr,
+                       including 'raw', 'qmap' and 'output' at the very least.
+    :returns: A dict of metadata describing exceution input variables and execution times
+    :raises Exception: If Boost corr failed to run for some reason, including logs that hopefully explain the failure
+
+    """
     import os
     import json
     import time
@@ -9,14 +36,12 @@ def xpcs_boost_corr(**data):
     import pathlib
     from boost_corr import __version__ as boost_version
 
-    if not os.path.exists(data['proc_dir']):
-        raise NameError(f'{data["proc_dir"]} \n Proc dir does not exist!')
+    # Ensure the output path exists for the corr results file
+    pathlib.Path(boost_corr['output']).mkdir(parents=True, exist_ok=True)
+    # Set the CWD for Corr. There is no reason for this, it's simply defensive
+    # in case corr outputs any file we don't expect.
+    os.chdir(boost_corr['output'])
 
-    log_file = os.path.join(data['proc_dir'], 'boost_corr.log')
-
-    os.chdir(data['proc_dir'])
-
-    boost_corr = data['boost_corr']
     # usage: boost_corr [-h] -r RAW_FILENAME [-q QMAP_FILENAME] [-o OUTPUT_DIR] [-s SMOOTH] 
     # [-i GPU_ID] [-b BEGIN_FRAME] [-e END_FRAME] [-f STRIDE_FRAME]
     # [-a AVG_FRAME] [-t TYPE] [-d DQ_SELECTION] [-v] [-G] [-n] [-w] [-c CONFIG_JSON]
@@ -41,43 +66,39 @@ def xpcs_boost_corr(**data):
     corr_start = time.time()
     result = subprocess.run([" ".join(cmd)], shell=True, capture_output=True, text=True)
     execution_time_seconds = round(time.time() - corr_start, 2)
-    pathlib.Path(log_file).write_text(str(result.stderr))
+
+    log_file = pathlib.Path(boost_corr["output"]) / "boost_corr.log"
+    log_file.write_text(str(result.stderr))
 
     metadata = {
-        'executable' : {
+        'tools' : [{
             'name': 'boost_corr',
             'tool_version': str(boost_version),
             'execution_time_seconds': execution_time_seconds,
-            'device': 'gpu' if data['boost_corr'].get('gpu_flag', 0) >= 0 else 'cpu',
+            'device': 'gpu' if boost_corr.get('gpu_flag', 0) >= 0 else 'cpu',
             'source': 'https://pypi.org/project/boost_corr/',
-            }
+            }]
     }
 
-    if data.get('execution_metadata_file'):
-        with open(data['execution_metadata_file'], 'w') as f:
-            f.write(json.dumps(metadata, indent=2))
-    logs = []
-    if os.path.exists(log_file):
-        with open(log_file) as f:
-            logs = f.readlines()
+    if result.returncode != 0:
+        raise Exception(str(result.stderr))
 
     return {
         'result': 'SUCCESS',
-        # 'boost_corr_log': logs,
-        'proc_dir': data['proc_dir'],
-        'boost_corr': data['boost_corr'],
+        'boost_corr': boost_corr,
         'execution_time_seconds': execution_time_seconds,
+        'metadata': metadata,
     }
 
 
 @generate_flow_definition(modifiers={
-    xpcs_boost_corr: {'WaitTime': 7200,
+    xpcs_boost_corr: {'WaitTime': 604800,
                       'ExceptionOnActionFailure': True}
 })
 class BoostCorr(GladierBaseTool):
 
     required_input = [
-        'proc_dir',
+        'boost_corr',
         'compute_endpoint',
     ]
 
