@@ -199,7 +199,7 @@ def get_flow_input(
     :param extra_metadata: Any other static metadata that should be included when publishing this dataset
     """
     depl_input = deployment.get_input()
-    visible_to = list(set(['urn:globus:groups:id:{g}' for g in additional_groups or []] + [DEVELOPER_GROUP]))
+    visible_to = list(set([f'urn:globus:groups:id:{g}' for g in additional_groups or []] + [DEVELOPER_GROUP]))
     extra_metadata = extra_metadata or dict()
     flow_input = {
         'input': {
@@ -369,7 +369,7 @@ if __name__ == '__main__':
     filepaths = get_filepaths(args.raw, args.qmap, args.output, args.experiment, deployment, cycle=args.cycle)
     metadata = get_extra_metadata(args.experiment, args.cycle or determine_cycle(args.raw))
     boost_corr = get_boost_corr_arguments(args, filepaths)
-    flow_input = get_flow_input(deployment, filepaths, boost_corr, skip_transfer_back=args.skip_transfer_back, extra_metadata=metadata)
+    flow_input = get_flow_input(deployment, filepaths, boost_corr, skip_transfer_back=args.skip_transfer_back, additional_groups=[args.group], extra_metadata=metadata)
 
     from pprint import pprint
     pprint(flow_input)
