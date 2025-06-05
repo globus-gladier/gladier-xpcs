@@ -1,4 +1,4 @@
 
 
 def test_placeholder():
-    return True
+    assert True
