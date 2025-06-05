@@ -9,6 +9,7 @@ def make_corr_plots(
     corr_results: str,
     webplot_target_dir: str,
     webplot_extra_metadata: dict = None,
+    corr_timing_output: dict = None,
     **data: dict,
 ):
     """
@@ -52,6 +53,7 @@ def make_corr_plots(
     metadata["start_time"] = xf.start_time
     metadata["plot_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     tools = webplot_extra_metadata.get('tools', [])
+    tools += corr_timing_output.get("tools", [])
     tools += [
         {
             "name": "xpcs_webplot",
