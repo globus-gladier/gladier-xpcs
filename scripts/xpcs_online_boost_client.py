@@ -16,6 +16,7 @@ from gladier_xpcs import log  # noqa Add INFO logging
 from globus_sdk import ConfidentialAppAuthClient, AccessTokenAuthorizer, FlowsClient
 from globus_sdk.exc.convert import GlobusConnectionError
 from gladier.managers.login_manager import CallbackLoginManager
+from gladier import FlowsManager
 
 from typing import List, Mapping, Union
 import traceback
@@ -350,7 +351,9 @@ def start_flow(flow_input: dict, dataset_name: str, args_experiment: str):
     :param dataset_name: A filename used for flow labels
     :param args_experiment: The name of the experiment, used to tag this run
     """
-    corr_flow = XPCSBoost()
+    run_kwargs = {"run_monitors": flow_input["input"]["publishv2"]["visible_to"]}
+    flows_manager = FlowsManager(run_kwargs=run_kwargs)
+    corr_flow = XPCSBoost(flows_manager=flows_manager)
     print("Submitting flow to Globus...")
     flow_run = globus_connection(corr_flow.run_flow, flow_input=flow_input, label=dataset_name, tags=['aps', 'xpcs', args_experiment])
     print("Flow successfully submitted to Globus.")
