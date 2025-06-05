@@ -5,6 +5,7 @@
 import argparse
 import os
 import sys
+import re
 import pathlib
 import time
 import traceback
@@ -311,7 +312,7 @@ def determine_experiment(experiment: str):
     used to group common experiments in the search index.
     """
     try:
-        re.match("([a-zA-Z]+)\d*", experiment).groups()[0]
+        experiment = re.match("([a-zA-Z]+)\d*", experiment).groups()[0]
     except Exception:
         pass
     return experiment
