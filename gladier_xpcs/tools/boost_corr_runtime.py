@@ -14,7 +14,7 @@ class BoostCorrRuntime(GladierBaseTool):
                 "Parameters": {
                     "tools.$": "$.XpcsBoostCorr.details.results[0].output.metadata.tools",
                 },
-                "ResultPath": "$.input.webplot_extra_metadata",
+                "ResultPath": "$.input.corr_timing_output",
                 "End": True
                 }
         }
