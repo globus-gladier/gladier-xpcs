@@ -2,6 +2,25 @@
 
 from typing import Dict, List, Set, Any, TypedDict, Tuple
 
+
+
+##Result parser for XPCS
+def parse_result_files(q_entry, local_path=None):
+    entry_files = q_entry['entries'][0]['content']['files'] ## this is a list
+    result_file = None
+    log_file = None
+    image_files = []
+    globus_url = 'globus://74defd5b-5f61-42fc-bcc4-834c9f376a4f'
+    for file in entry_files:
+        if file['filename'].endswith('results.hdf'):
+            result_file = file['url'] if local_path is None else file['url'].replace(globus_url, local_path)
+        elif file['filename'].endswith('.log'):
+            log_file = file['url'] if local_path is None else file['url'].replace(globus_url, local_path)
+        elif file['filename'].endswith(('.png', '.jpg', '.jpeg')):
+            image_files.append(file['url'] if local_path is None else file['url'].replace(globus_url, local_path))
+    return result_file, log_file, image_files
+    
+
 class MetadataStructure(TypedDict):
     """Type definition for the metadata structure."""
     dc_keys: Set[str]
