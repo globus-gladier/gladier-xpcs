@@ -10,6 +10,7 @@ def make_corr_plots(
     webplot_target_dir: str,
     webplot_extra_metadata: dict = None,
     corr_timing_output: dict = None,
+    webplot_suppress_errors: bool = False,
     **data: dict,
 ):
     """
@@ -31,27 +32,36 @@ def make_corr_plots(
     import json
     import time
     import pathlib
+    import traceback
     from datetime import datetime
     from xpcs_webplot.plot_images import hdf2web_safe, XF, NpEncoder
     from xpcs_webplot import __version__ as webplot_version
 
-    corr_start = time.time()
-    webplot_output = hdf2web_safe(
-        corr_results, target_dir=webplot_target_dir, image_only=True, overwrite=True
-    )
-    execution_time_seconds = round(time.time() - corr_start, 2)
-
-    if webplot_output is None:
-        raise Exception(
-            "Plots failed to generate This is likely a problem with a bad input HDF "
-            f"({corr_results})"
+    errors = None
+    try:
+        corr_start = time.time()
+        webplot_output = hdf2web_safe(
+            corr_results, target_dir=webplot_target_dir, image_only=True, overwrite=True
         )
+        execution_time_seconds = round(time.time() - corr_start, 2)
+
+        if webplot_output is None:
+            raise Exception(
+                "Plots failed to generate This is likely a problem with a bad input HDF "
+                f"({corr_results})"
+            )
+    except Exception as e:
+        errors = traceback.format_exc()
+        if not webplot_suppress_errors:
+            raise
 
     xf = XF(corr_results)
     metadata = xf.get_hdf_info()
     metadata["analysis_type"] = xf.atype
     metadata["start_time"] = xf.start_time
     metadata["plot_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    corr_timing_output = corr_timing_output or dict()
+    webplot_extra_metadata = webplot_extra_metadata or dict()
     tools = webplot_extra_metadata.get('tools', [])
     tools += corr_timing_output.get("tools", [])
     tools += [
@@ -81,6 +91,7 @@ def make_corr_plots(
         "input_hdf": corr_results,
         "webplot_output": webplot_output,
         "execution_time_seconds": execution_time_seconds,
+        "errors": errors,
     }
 
 
@@ -108,13 +119,14 @@ if __name__ == "__main__":
     # * Top level webplot_target_dir/
     #     * HDF_Folder/
     #         * HDF_File.hdf
-    hdf_file = str(input_file)
+    corr_results = str(input_file)
     webplot_target_dir = str(
         input_file.parent / "output" / input_file.stem / "resources"
     )
-    print(f"Plotting {hdf_file} at location {webplot_target_dir}")
+    print(f"Plotting {corr_results} at location {webplot_target_dir}")
     output = make_corr_plots(
-        hdf_file=hdf_file,
+        corr_results=corr_results,
         webplot_target_dir=webplot_target_dir,
+        webplot_suppress_errors=True,
     )
     pprint.pprint(output)
