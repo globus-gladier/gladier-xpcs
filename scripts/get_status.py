@@ -7,6 +7,7 @@ from globus_sdk import FlowsClient, ClientApp
 import datetime
 
 STATES = {
+    "SourceTransfer",
     "XpcsBoostCorr",
     "ResultTransferChoice",
     "ResultTransferDoTransfer",
@@ -124,13 +125,27 @@ def get_or_create_run(
 
 
 def parse_state_name(run_status: dict) -> str:
-    try:
-        return run_status["details"]["state_name"]
-    except Exception as e:
-        # print(f"Error parsing state name: {e}")
-        # from pprint import pprint
-        # pprint(run_status)
-        return None
+    """
+    Attempt to parse the state name from the flow status info
+    """
+
+    if run_status["status"] == "SUCCEEDED":
+        # This is considered "Done" from the DM perspective, enough to be marked as finished for DM
+        # to start the next run.
+        return "ResultTransferDone"
+    elif run_status.get("details", {}).get("code") == "FlowStarting":
+        return "FlowStarting"
+
+    functions = [
+        lambda rs: rs["details"]["action_statuses"][0]["state_name"],
+        lambda rs: rs["details"]["details"]["state_name"],
+    ]
+
+    for func in functions:
+        try:
+            return func(run_status)
+        except Exception as e:
+            pass
 
 
 def get_run_list(session, client):
@@ -159,20 +174,20 @@ def get_manual_runs(session, client):
         if run.status != "ACTIVE":
             continue
         try:
-            print()
             run_data = client.get_run(run.run_id)
             run_obj = get_or_create_run(
                 session,
                 run_data["run_id"],
                 run_data.get("label"),
                 run_data.get("status"),
-                parse_state_name(run),
+                parse_state_name(run_data),
                 run_data.get("start_time"),
                 run_data.get("completion_time"),
                 manual_lookup=True,
             )
             run_obj.last_lookup_time = datetime.datetime.now(datetime.timezone.utc)
         except Exception as e:
+            run.status = "ERROR"
             print(f"Error fetching run {run.run_id}: {e}")
 
 
@@ -187,7 +202,6 @@ def fetch_and_cache_runs():
             get_run_list(session, client)
             print(f"Running manual run lookup...")
             get_manual_runs(session, client)
-            session.commit()
         finally:
             lock.completion_time = datetime.datetime.now(datetime.timezone.utc)
             session.commit()
@@ -273,7 +287,7 @@ if __name__ == "__main__":
             )
 
         if run:
-            if run.status in ["SUCCEEDED", "FAILED"] or run.state_name in DONE_STATES:
+            if run.status in ["SUCCEEDED", "FAILED", "ERROR"] or run.state_name in DONE_STATES:
                 break
         # Pause for 0.2 seconds for DB updates
         time.sleep(0.2)
