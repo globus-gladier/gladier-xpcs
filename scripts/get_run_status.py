@@ -266,13 +266,14 @@ if __name__ == "__main__":
             break
         run = get_run(args.run_id, args.interval)
 
-        if run.state_name and run.state_name not in STATES:
+        if run and run.state_name and run.state_name not in STATES:
             print(
                 f"Warning: Run {args.run_id} state name {run.state_name} not in STATES. Early exit will be unavailable."
             )
 
-        if run.status in ["SUCCEEDED", "FAILED"] or run.state_name in DONE_STATES:
-            break
+        if run:
+            if run.status in ["SUCCEEDED", "FAILED"] or run.state_name in DONE_STATES:
+                break
         # Pause for 0.2 seconds for DB updates
         time.sleep(0.2)
 
