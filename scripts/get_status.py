@@ -133,58 +133,60 @@ def parse_state_name(run_status: dict) -> str:
         return None
 
 
+def get_run_list(session, client):
+    query_params = dict(orderby="start_time DESC", per_page=50)
+    # Fetch recent runs
+    for idx, page in enumerate(client.paginated.list_runs(query_params=query_params)):
+        if idx >= 4:
+            break
+        for run in page["runs"]:
+            run_obj = get_or_create_run(
+                session,
+                run["run_id"],
+                run.get("label"),
+                run.get("status"),
+                parse_state_name(run),
+                run.get("start_time"),
+                run.get("completion_time"),
+            )
+            run_obj.last_lookup_time = datetime.datetime.now(datetime.timezone.utc)
+
+
+def get_manual_runs(session, client):
+    # Fetch runs with manual_lookup=True
+    manual_runs = session.query(Run).filter_by(manual_lookup=True).all()
+    for run in manual_runs:
+        if run.status != "ACTIVE":
+            continue
+        try:
+            print()
+            run_data = client.get_run(run.run_id)
+            run_obj = get_or_create_run(
+                session,
+                run_data["run_id"],
+                run_data.get("label"),
+                run_data.get("status"),
+                parse_state_name(run),
+                run_data.get("start_time"),
+                run_data.get("completion_time"),
+                manual_lookup=True,
+            )
+            run_obj.last_lookup_time = datetime.datetime.now(datetime.timezone.utc)
+        except Exception as e:
+            print(f"Error fetching run {run.run_id}: {e}")
+
+
 def fetch_and_cache_runs():
     client = get_flows_client()
-    query_params = dict(orderby="start_time DESC", per_page=50)
     with SessionLocal() as session:
         lock = Lock(start_time=datetime.datetime.now(datetime.timezone.utc))
         session.add(lock)
         session.commit()
         try:
-            # Fetch recent runs
-            for idx, page in enumerate(
-                client.paginated.list_runs(query_params=query_params)
-            ):
-                if idx >= 4:
-                    break
-                print(f"Found {len(page['runs'])} runs")
-                for run in page["runs"]:
-                    run_obj = get_or_create_run(
-                        session,
-                        run["run_id"],
-                        run.get("label"),
-                        run.get("status"),
-                        parse_state_name(run),
-                        run.get("start_time"),
-                        run.get("completion_time"),
-                    )
-                    run_obj.last_lookup_time = datetime.datetime.now(
-                        datetime.timezone.utc
-                    )
-
-            # Fetch runs with manual_lookup=True
-            manual_runs = session.query(Run).filter_by(manual_lookup=True).all()
-            for run in manual_runs:
-                if run.status != "ACTIVE":
-                    continue
-                try:
-                    run_data = client.get_run(run.run_id)
-                    run_obj = get_or_create_run(
-                        session,
-                        run_data["run_id"],
-                        run_data.get("label"),
-                        run_data.get("status"),
-                        parse_state_name(run),
-                        run_data.get("start_time"),
-                        run_data.get("completion_time"),
-                        manual_lookup=True,
-                    )
-                    run_obj.last_lookup_time = datetime.datetime.now(
-                        datetime.timezone.utc
-                    )
-                except Exception as e:
-                    print(f"Error fetching run {run.run_id}: {e}")
-
+            print(f"Starting lookup of last 200 runs...")
+            get_run_list(session, client)
+            print(f"Running manual run lookup...")
+            get_manual_runs(session, client)
             session.commit()
         finally:
             lock.completion_time = datetime.datetime.now(datetime.timezone.utc)
@@ -197,9 +199,7 @@ def check_update_runs(interval: int = 0):
         lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
         if lock:
             last_lock_time = (datetime.datetime.now() - lock.start_time).total_seconds()
-            print(f"Lock Completion Time: {lock.completion_time}")
             if not lock.completion_time and last_lock_time < 300:
-                print("Lock already acquired and has not expired. Skipping update.")
                 return
 
             if interval and lock.completion_time:
@@ -225,8 +225,9 @@ def get_run(run_id: str, interval: int = 0) -> Run:
             lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
             if lock:
                 get_or_create_run(
-                    session, run_id, None, None, None, None, manual_lookup=True
+                    session, run_id, None, "ACTIVE", None, None, manual_lookup=True
                 )
+                session.commit()
                 print(f"Run {run_id} not found in database. Added to manual_lookup.")
         return run
 
