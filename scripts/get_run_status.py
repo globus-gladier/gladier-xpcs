@@ -7,17 +7,34 @@ from globus_sdk import FlowsClient, ClientApp
 import datetime
 
 STATES = {
-    'XpcsBoostCorr', 'ResultTransferChoice', 'ResultTransferDoTransfer', 
-    'ResultTransferSkipTransfer', 'ResultTransferDone', 'BoostCorrRuntime', 
-    'MakeCorrPlots', 'Publishv2GatherMetadata', 'Publishv2ChoiceTransfer', 
-    'Publishv2Transfer', 'Publishv2SkipTransfer', 'Publishv2ChoiceIngest', 
-    'Publishv2Ingest', 'Publishv2SkipIngest', 'Publishv2Done'
+    "XpcsBoostCorr",
+    "ResultTransferChoice",
+    "ResultTransferDoTransfer",
+    "ResultTransferSkipTransfer",
+    "ResultTransferDone",
+    "BoostCorrRuntime",
+    "MakeCorrPlots",
+    "Publishv2GatherMetadata",
+    "Publishv2ChoiceTransfer",
+    "Publishv2Transfer",
+    "Publishv2SkipTransfer",
+    "Publishv2ChoiceIngest",
+    "Publishv2Ingest",
+    "Publishv2SkipIngest",
+    "Publishv2Done",
 }
 
 DONE_STATES = {
-    'ResultTransferDone', 'MakeCorrPlots', 'Publishv2GatherMetadata', 'Publishv2ChoiceTransfer', 
-    'Publishv2Transfer', 'Publishv2SkipTransfer', 'Publishv2ChoiceIngest', 
-    'Publishv2Ingest', 'Publishv2SkipIngest', 'Publishv2Done'
+    "ResultTransferDone",
+    "MakeCorrPlots",
+    "Publishv2GatherMetadata",
+    "Publishv2ChoiceTransfer",
+    "Publishv2Transfer",
+    "Publishv2SkipTransfer",
+    "Publishv2ChoiceIngest",
+    "Publishv2Ingest",
+    "Publishv2SkipIngest",
+    "Publishv2Done",
 }
 
 # Set up SQLAlchemy
@@ -35,7 +52,9 @@ class Run(Base):
     state_name = Column(String)
     start_time = Column(DateTime)
     completion_time = Column(DateTime)
-    last_lookup_time = Column(DateTime, default=datetime.datetime.now(datetime.timezone.utc))
+    last_lookup_time = Column(
+        DateTime, default=datetime.datetime.now(datetime.timezone.utc)
+    )
     manual_lookup = Column(String, default=False)
 
 
@@ -64,9 +83,20 @@ def get_flows_client():
     return FlowsClient(app=app)
 
 
-def get_or_create_run(session, run_id, label, status, state_name, start_time, completion_time=None, manual_lookup=False):
+def get_or_create_run(
+    session,
+    run_id,
+    label,
+    status,
+    state_name,
+    start_time,
+    completion_time=None,
+    manual_lookup=False,
+):
     if completion_time:
-        completion_time = datetime.datetime.fromisoformat(completion_time.replace("Z", "+00:00"))
+        completion_time = datetime.datetime.fromisoformat(
+            completion_time.replace("Z", "+00:00")
+        )
     if start_time:
         start_time = datetime.datetime.fromisoformat(start_time.replace("Z", "+00:00"))
     existing = session.query(Run).filter_by(run_id=run_id).first()
@@ -120,16 +150,18 @@ def fetch_and_cache_runs():
                 print(f"Found {len(page['runs'])} runs")
                 for run in page["runs"]:
                     run_obj = get_or_create_run(
-                        session, 
-                        run["run_id"], 
-                        run.get("label"), 
-                        run.get("status"), 
+                        session,
+                        run["run_id"],
+                        run.get("label"),
+                        run.get("status"),
                         parse_state_name(run),
-                        run.get("start_time"), 
-                        run.get("completion_time")
+                        run.get("start_time"),
+                        run.get("completion_time"),
                     )
-                    run_obj.last_lookup_time = datetime.datetime.now(datetime.timezone.utc)
-            
+                    run_obj.last_lookup_time = datetime.datetime.now(
+                        datetime.timezone.utc
+                    )
+
             # Fetch runs with manual_lookup=True
             manual_runs = session.query(Run).filter_by(manual_lookup=True).all()
             for run in manual_runs:
@@ -145,12 +177,14 @@ def fetch_and_cache_runs():
                         parse_state_name(run),
                         run_data.get("start_time"),
                         run_data.get("completion_time"),
-                        manual_lookup=True
+                        manual_lookup=True,
                     )
-                    run_obj.last_lookup_time = datetime.datetime.now(datetime.timezone.utc)
+                    run_obj.last_lookup_time = datetime.datetime.now(
+                        datetime.timezone.utc
+                    )
                 except Exception as e:
                     print(f"Error fetching run {run.run_id}: {e}")
-            
+
             session.commit()
         finally:
             lock.completion_time = datetime.datetime.now(datetime.timezone.utc)
@@ -169,11 +203,15 @@ def check_update_runs(interval: int = 0):
                 return
 
             if interval and lock.completion_time:
-                last_lock_completion_time = (datetime.datetime.now() - lock.completion_time).total_seconds()
+                last_lock_completion_time = (
+                    datetime.datetime.now() - lock.completion_time
+                ).total_seconds()
                 if last_lock_completion_time > interval:
-                    print(f"Interval set to {interval} seconds, must wait {last_lock_completion_time - interval} seconds before updating database.")
+                    print(
+                        f"Interval set to {interval} seconds, must wait {last_lock_completion_time - interval} seconds before updating database."
+                    )
                     return
-        
+
         print("No lock found or lock is older than 5 minutes. Updating database...")
         fetch_and_cache_runs()
 
@@ -186,7 +224,9 @@ def get_run(run_id: str, interval: int = 0) -> Run:
         if not run:
             lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
             if lock:
-                get_or_create_run(session, run_id, None, None, None, None, manual_lookup=True)
+                get_or_create_run(
+                    session, run_id, None, None, None, None, manual_lookup=True
+                )
                 print(f"Run {run_id} not found in database. Added to manual_lookup.")
         return run
 
@@ -219,17 +259,21 @@ if __name__ == "__main__":
     args = arg_parse()
     start_time = datetime.datetime.now()
     while True:
-        if datetime.datetime.now() - start_time > datetime.timedelta(seconds=args.max_wait):
+        if datetime.datetime.now() - start_time > datetime.timedelta(
+            seconds=args.max_wait
+        ):
             print(f"Max wait time of {args.max_wait} seconds reached. Exiting.")
             break
         run = get_run(args.run_id, args.interval)
 
         if run.state_name and run.state_name not in STATES:
-            print(f"Warning: Run {args.run_id} state name {run.state_name} not in STATES. Early exit will be unavailable.")
+            print(
+                f"Warning: Run {args.run_id} state name {run.state_name} not in STATES. Early exit will be unavailable."
+            )
 
         if run.status in ["SUCCEEDED", "FAILED"] or run.state_name in DONE_STATES:
             break
         # Pause for 0.2 seconds for DB updates
-        time.sleep(.2)
+        time.sleep(0.2)
 
     print(f"Run {args.run_id} status: {run.status}")
