@@ -1,0 +1,9 @@
+# Requirements for XPCS Notebooks
+numpy>=1.20.0
+matplotlib>=3.5.0
+h5py>=3.7.0
+globus-sdk>=3.0.0
+jupyter>=1.0.0
+ipykernel>=6.0.0
+ipywidgets>=7.6.0
+requests>=2.25.0
