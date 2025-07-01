@@ -212,17 +212,21 @@ def check_update_runs(interval: int = 0):
         # Check if there is a lock and the last one is older than 5 minutes
         lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
         if lock:
-            last_lock_time = (datetime.datetime.now() - lock.start_time).total_seconds()
+            l_start_time = lock.start_time.replace(tzinfo=datetime.timezone.utc)
+            last_lock_time = (datetime.datetime.now(datetime.timezone.utc) - l_start_time).total_seconds()
             if not lock.completion_time and last_lock_time < 300:
+                # print(f"Last Lock not completed, and override still has {300 - last_lock_time} seconds remaining. {last_lock_time}")
                 return
 
-            if interval and lock.completion_time:
-                last_lock_completion_time = (
-                    datetime.datetime.now() - lock.completion_time
+            l_completion_time = lock.completion_time.replace(tzinfo=datetime.timezone.utc)
+            if interval and l_completion_time:
+                last_lock_completion_time_seconds = (
+                    datetime.datetime.now(datetime.timezone.utc) - l_completion_time
                 ).total_seconds()
-                if last_lock_completion_time > interval:
+
+                if last_lock_completion_time_seconds < interval:
                     print(
-                        f"Interval set to {interval} seconds, must wait {last_lock_completion_time - interval} seconds before updating database."
+                        f"Interval set to {interval} seconds, must wait {interval - last_lock_completion_time_seconds} seconds before updating database."
                     )
                     return
 
