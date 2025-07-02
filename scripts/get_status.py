@@ -1,6 +1,7 @@
 import os
 import time
 import argparse
+import sqlalchemy
 from sqlalchemy import create_engine, Column, String, DateTime, Integer
 from sqlalchemy.orm import declarative_base, sessionmaker
 from globus_sdk import FlowsClient, ClientApp
@@ -40,8 +41,6 @@ DONE_STATES = {
 
 # Set up SQLAlchemy
 Base = declarative_base()
-engine = create_engine("sqlite:///run_status_cache.sqlite")
-SessionLocal = sessionmaker(bind=engine)
 
 
 class Run(Base):
@@ -64,9 +63,6 @@ class Lock(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     start_time = Column(DateTime, nullable=False)
     completion_time = Column(DateTime)
-
-
-Base.metadata.create_all(engine)
 
 
 def get_flows_client():
@@ -148,12 +144,17 @@ def parse_state_name(run_status: dict) -> str:
             pass
 
 
+def client_list_runs(client, query_params):
+    return client.paginated.list_runs(query_params=query_params)
+
+
 def get_run_list(session, client):
     query_params = dict(orderby="start_time DESC", per_page=50)
     # Fetch recent runs
-    for idx, page in enumerate(client.paginated.list_runs(query_params=query_params)):
+    for idx, page in enumerate(client_list_runs(client, query_params)):
         if idx >= 4:
             break
+        print(idx, flush=True)
         for run in page["runs"]:
             run_obj = get_or_create_run(
                 session,
@@ -191,63 +192,94 @@ def get_manual_runs(session, client):
             print(f"Error fetching run {run.run_id}: {e}")
 
 
-def fetch_and_cache_runs():
+class LockException(Exception):
+    pass
+
+
+def check_lock(session, lock):
+    locks = (
+        session.query(Lock)
+        .order_by(Lock.start_time.desc())
+        .where("completion_time" == None)
+        .all()
+    )
+    if len(locks) > 1:
+        raise LockException(
+            f"Lock {lock.id}: Number of active locks are greator than 1!"
+        )
+
+
+def get_lock(session):
+    lock = Lock(start_time=datetime.datetime.now(datetime.timezone.utc))
+    session.add(lock)
+    session.commit()
+    print(f"Lock acquired: {lock.id}")
+    return lock
+
+
+def release_lock(session, lock):
+    lock.completion_time = datetime.datetime.now(datetime.timezone.utc)
+    session.commit()
+    print(f"Lock released: {lock.id}")
+
+
+def fetch_and_cache_runs(session):
     client = get_flows_client()
-    with SessionLocal() as session:
-        lock = Lock(start_time=datetime.datetime.now(datetime.timezone.utc))
-        session.add(lock)
-        session.commit()
-        try:
-            print(f"Starting lookup of last 200 runs...")
-            get_run_list(session, client)
-            print(f"Running manual run lookup...")
-            get_manual_runs(session, client)
-        finally:
-            lock.completion_time = datetime.datetime.now(datetime.timezone.utc)
-            session.commit()
+
+    lock = get_lock(session)
+    try:
+        check_lock(session, lock)
+        print(f"Starting lookup of last 200 runs...")
+        get_run_list(session, client)
+        check_lock(session, lock)
+        print(f"Running manual run lookup...")
+        get_manual_runs(session, client)
+    except LockException as e:
+        print(e)
+    finally:
+        release_lock(session, lock)
 
 
-def check_update_runs(interval: int = 0):
-    with SessionLocal() as session:
-        # Check if there is a lock and the last one is older than 5 minutes
-        lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
-        if lock:
-            l_start_time = lock.start_time.replace(tzinfo=datetime.timezone.utc)
-            last_lock_time = (datetime.datetime.now(datetime.timezone.utc) - l_start_time).total_seconds()
-            if not lock.completion_time and last_lock_time < 300:
-                # print(f"Last Lock not completed, and override still has {300 - last_lock_time} seconds remaining. {last_lock_time}")
+def check_update_runs(session, interval: int = 0):
+    # Check if there is a lock and the last one is older than 5 minutes
+    lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
+    if lock:
+        l_start_time = lock.start_time.replace(tzinfo=datetime.timezone.utc)
+        last_lock_time = (
+            datetime.datetime.now(datetime.timezone.utc) - l_start_time
+        ).total_seconds()
+        if not lock.completion_time and last_lock_time < 300:
+            return
+
+        l_completion_time = lock.completion_time.replace(tzinfo=datetime.timezone.utc)
+        if interval and l_completion_time:
+            last_lock_completion_time_seconds = (
+                datetime.datetime.now(datetime.timezone.utc) - l_completion_time
+            ).total_seconds()
+
+            if last_lock_completion_time_seconds < interval:
+                print(
+                    f"Interval set to {interval} seconds, must wait {interval - last_lock_completion_time_seconds} seconds before updating database."
+                )
                 return
 
-            l_completion_time = lock.completion_time.replace(tzinfo=datetime.timezone.utc)
-            if interval and l_completion_time:
-                last_lock_completion_time_seconds = (
-                    datetime.datetime.now(datetime.timezone.utc) - l_completion_time
-                ).total_seconds()
-
-                if last_lock_completion_time_seconds < interval:
-                    print(
-                        f"Interval set to {interval} seconds, must wait {interval - last_lock_completion_time_seconds} seconds before updating database."
-                    )
-                    return
-
-        print("No lock found or lock is older than 5 minutes. Updating database...")
-        fetch_and_cache_runs()
+    print("No lock set, attempting fetch...")
+    fetch_and_cache_runs(session)
 
 
-def get_run(run_id: str, interval: int = 0) -> Run:
-    check_update_runs(interval=interval)
-
-    with SessionLocal() as session:
-        run = session.query(Run).filter_by(run_id=run_id).first()
-        if not run:
-            lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
-            if lock:
-                get_or_create_run(
-                    session, run_id, None, "ACTIVE", None, None, manual_lookup=True
-                )
-                session.commit()
-                print(f"Run {run_id} not found in database. Added to manual_lookup.")
-        return run
+def get_run_with_session(session, run_id: str, interval: int = 0) -> Run:
+    check_update_runs(session, interval=interval)
+    run = session.query(Run).filter_by(run_id=run_id).first()
+    if not run:
+        lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
+        if lock:
+            print(interval)
+            get_or_create_run(
+                session, run_id, None, "ACTIVE", None, None, manual_lookup=True
+            )
+            session.commit()
+            print(f"Run {run_id} not found in database. Added to manual_lookup.")
+    return run
 
 
 def arg_parse():
@@ -270,20 +302,39 @@ def arg_parse():
         # 1 week
         default=60 * 60 * 24 * 7,
     )
+    parser.add_argument(
+        "--filename",
+        help="The filename to use for the cache",
+        default=os.path.abspath("run_status_cache.sqlite"),
+    )
     args = parser.parse_args()
     return args
+
+
+def get_run(run_id, interval, cache_filename):
+    engine = create_engine(f"sqlite:///{cache_filename}")
+    Base.metadata.create_all(engine)
+    SessionLocal = sessionmaker(bind=engine)
+
+    with SessionLocal() as session:
+        try:
+            return get_run_with_session(session, run_id, interval)
+        except sqlalchemy.exc.IntegrityError as ie:
+            print(f"Multiprocess failure, skipping check this time around...")
+            print(ie)
 
 
 if __name__ == "__main__":
     args = arg_parse()
     start_time = datetime.datetime.now()
+
     while True:
         if datetime.datetime.now() - start_time > datetime.timedelta(
             seconds=args.max_wait
         ):
             print(f"Max wait time of {args.max_wait} seconds reached. Exiting.")
             break
-        run = get_run(args.run_id, args.interval)
+        run = get_run(args.run_id, args.interval, args.filename)
 
         if run and run.state_name and run.state_name not in STATES:
             print(
@@ -291,7 +342,10 @@ if __name__ == "__main__":
             )
 
         if run:
-            if run.status in ["SUCCEEDED", "FAILED", "ERROR"] or run.state_name in DONE_STATES:
+            if (
+                run.status in ["SUCCEEDED", "FAILED", "ERROR"]
+                or run.state_name in DONE_STATES
+            ):
                 break
         # Pause for 0.2 seconds for DB updates
         time.sleep(0.2)
