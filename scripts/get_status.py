@@ -2,10 +2,14 @@ import os
 import time
 import argparse
 import sqlalchemy
+import logging
+import logging.config
 from sqlalchemy import create_engine, Column, String, DateTime, Integer
 from sqlalchemy.orm import declarative_base, sessionmaker
 from globus_sdk import FlowsClient, ClientApp
 import datetime
+
+log = logging.getLogger(__name__)
 
 STATES = {
     "SourceTransfer",
@@ -38,6 +42,26 @@ DONE_STATES = {
     "Publishv2SkipIngest",
     "Publishv2Done",
 }
+
+LOGGING ={
+    "version": 1,
+    "formatters": {
+        "basic": {
+            "format": "[%(levelname)s - %(process)d - %(created)f] %(funcName)s() %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "basic",
+        }
+    },
+    "loggers": {
+        __name__: {"level": "DEBUG", "handlers": ["console"]},
+    },
+}
+
 
 # Set up SQLAlchemy
 Base = declarative_base()
@@ -154,7 +178,7 @@ def get_run_list(session, client):
     for idx, page in enumerate(client_list_runs(client, query_params)):
         if idx >= 4:
             break
-        print(idx, flush=True)
+        log.debug("Fetching page {idx} of run list...")
         for run in page["runs"]:
             run_obj = get_or_create_run(
                 session,
@@ -189,7 +213,7 @@ def get_manual_runs(session, client):
             run_obj.last_lookup_time = datetime.datetime.now(datetime.timezone.utc)
         except Exception as e:
             run.status = "ERROR"
-            print(f"Error fetching run {run.run_id}: {e}")
+            log.info(f"Error fetching run {run.run_id}: {e}")
 
 
 class LockException(Exception):
@@ -213,14 +237,14 @@ def get_lock(session):
     lock = Lock(start_time=datetime.datetime.now(datetime.timezone.utc))
     session.add(lock)
     session.commit()
-    print(f"Lock acquired: {lock.id}")
+    log.debug(f"Lock acquired: {lock.id}")
     return lock
 
 
 def release_lock(session, lock):
     lock.completion_time = datetime.datetime.now(datetime.timezone.utc)
     session.commit()
-    print(f"Lock released: {lock.id}")
+    log.debug(f"Lock released: {lock.id}")
 
 
 def fetch_and_cache_runs(session):
@@ -229,13 +253,13 @@ def fetch_and_cache_runs(session):
     lock = get_lock(session)
     try:
         check_lock(session, lock)
-        print(f"Starting lookup of last 200 runs...")
+        log.debug(f"Starting lookup of last 200 runs...")
         get_run_list(session, client)
         check_lock(session, lock)
-        print(f"Running manual run lookup...")
+        log.debug(f"Running manual run lookup...")
         get_manual_runs(session, client)
     except LockException as e:
-        print(e)
+        log.error(e)
     finally:
         release_lock(session, lock)
 
@@ -258,12 +282,12 @@ def check_update_runs(session, interval: int = 0):
             ).total_seconds()
 
             if last_lock_completion_time_seconds < interval:
-                print(
+                log.debug(
                     f"Interval set to {interval} seconds, must wait {interval - last_lock_completion_time_seconds} seconds before updating database."
                 )
                 return
 
-    print("No lock set, attempting fetch...")
+    log.debug("No lock set, attempting fetch...")
     fetch_and_cache_runs(session)
 
 
@@ -273,12 +297,12 @@ def get_run_with_session(session, run_id: str, interval: int = 0) -> Run:
     if not run:
         lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
         if lock:
-            print(interval)
+            log.debug(f"Acquiring lock with interval {interval}")
             get_or_create_run(
                 session, run_id, None, "ACTIVE", None, None, manual_lookup=True
             )
             session.commit()
-            print(f"Run {run_id} not found in database. Added to manual_lookup.")
+            log.debug(f"Run {run_id} not found in database. Added to manual_lookup.")
     return run
 
 
@@ -303,6 +327,17 @@ def arg_parse():
         default=60 * 60 * 24 * 7,
     )
     parser.add_argument(
+        "--verbose",
+        help="Show more verbose logging",
+        action='store_true',
+    )
+    parser.add_argument(
+        "--quiet",
+        help="Show less logging",
+        action='store_true',
+    )
+
+    parser.add_argument(
         "--filename",
         help="The filename to use for the cache",
         default=os.path.abspath("run_status_cache.sqlite"),
@@ -320,24 +355,33 @@ def get_run(run_id, interval, cache_filename):
         try:
             return get_run_with_session(session, run_id, interval)
         except sqlalchemy.exc.IntegrityError as ie:
-            print(f"Multiprocess failure, skipping check this time around...")
-            print(ie)
+            log.error(f"Multiprocess failure, skipping check this time around...")
+            log.error(ie)
 
 
 if __name__ == "__main__":
     args = arg_parse()
     start_time = datetime.datetime.now()
+    if args.verbose:
+        log_level = "DEBUG"
+    elif args.quiet:
+        log_level = "CRITICAL"
+    else:
+        log_level = "INFO"
+    LOGGING["handlers"]["console"]["level"] = log_level
+    logging.config.dictConfig(LOGGING)
+
 
     while True:
         if datetime.datetime.now() - start_time > datetime.timedelta(
             seconds=args.max_wait
         ):
-            print(f"Max wait time of {args.max_wait} seconds reached. Exiting.")
+            log.info(f"Max wait time of {args.max_wait} seconds reached. Exiting.")
             break
         run = get_run(args.run_id, args.interval, args.filename)
 
         if run and run.state_name and run.state_name not in STATES:
-            print(
+            log.warning(
                 f"Warning: Run {args.run_id} state name {run.state_name} not in STATES. Early exit will be unavailable."
             )
 
