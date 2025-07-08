@@ -43,7 +43,7 @@ DONE_STATES = {
     "Publishv2Done",
 }
 
-LOGGING ={
+LOGGING = {
     "version": 1,
     "formatters": {
         "basic": {
@@ -178,7 +178,7 @@ def get_run_list(session, client):
     for idx, page in enumerate(client_list_runs(client, query_params)):
         if idx >= 4:
             break
-        log.debug("Fetching page {idx} of run list...")
+        log.debug(f"Fetching page {idx} of run list...")
         for run in page["runs"]:
             run_obj = get_or_create_run(
                 session,
@@ -220,17 +220,78 @@ class LockException(Exception):
     pass
 
 
-def check_lock(session, lock):
+
+def handle_max_lock_timeouts(session, interval=0):
+    max_lock_timeout = interval * 3 or 15
+
     locks = (
         session.query(Lock)
         .order_by(Lock.start_time.desc())
-        .where("completion_time" == None)
+        .filter(Lock.completion_time.is_(None))
         .all()
     )
+    log.debug(f"Locks: {locks}")
+    # locks_engaged = len(locks)
+    if  len(locks) > 1:
+        log.warning("Multiple locks engaged at the same time!")
+
+    for lock in locks:
+        l_start_time = lock.start_time.replace(tzinfo=datetime.timezone.utc)
+        lock_time = (
+            datetime.datetime.now(datetime.timezone.utc) - l_start_time
+        ).total_seconds()
+        if not lock.completion_time:
+            if lock_time > max_lock_timeout:
+                log.warning(f"Lock {lock.id} overstepped max lock time {lock_time}/{max_lock_timeout} without disengaging, closing lock...")
+                lock.completion_time = datetime.datetime.now(datetime.timezone.utc)
+                session.commit()
+
+    open_locks = [lock for lock in locks if not lock.completion_time]
+    log.debug(f"Open Locks: {open_locks}")
+    if len(open_locks) > 1:
+        log.warning("Multiple live locks currenly active!")
+
+    return open_locks
+
+def is_locked(session, lock: Lock = None, interval: int = 0):
+    """
+    
+    """
+    locks = handle_max_lock_timeouts(session, interval)
     if len(locks) > 1:
-        raise LockException(
-            f"Lock {lock.id}: Number of active locks are greator than 1!"
-        )
+        return True
+
+    if lock:
+        lock = session.query(Lock).filter_by(id=lock.id).first()
+
+    max_lock_timeout = interval * 3 or 15
+    # Check if there is a lock
+    last_lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
+    if last_lock:
+        if lock and last_lock.id == lock.id:
+            log.debug("Current lock matches this one, we're good!")
+            return False
+
+        l_start_time = last_lock.start_time.replace(tzinfo=datetime.timezone.utc)
+        last_lock_time = (
+            datetime.datetime.now(datetime.timezone.utc) - l_start_time
+        ).total_seconds()
+        if not last_lock.completion_time:
+            log.info(f"Last lock not completed, waiting...")
+            return True
+
+        l_completion_time = last_lock.completion_time.replace(tzinfo=datetime.timezone.utc)
+        if interval and l_completion_time:
+            last_lock_completion_time_seconds = (
+                datetime.datetime.now(datetime.timezone.utc) - l_completion_time
+            ).total_seconds()
+
+            if last_lock_completion_time_seconds < interval:
+                log.debug(
+                    f"Interval set to {interval} seconds, must wait {interval - last_lock_completion_time_seconds} seconds before updating database."
+                )
+                return True
+    return False
 
 
 def get_lock(session):
@@ -242,67 +303,62 @@ def get_lock(session):
 
 
 def release_lock(session, lock):
+    lock = session.query(Lock).filter_by(id=lock.id).first()
     lock.completion_time = datetime.datetime.now(datetime.timezone.utc)
     session.commit()
     log.debug(f"Lock released: {lock.id}")
 
 
-def fetch_and_cache_runs(session):
+def fetch_and_cache_runs(SessionLocal):
     client = get_flows_client()
 
-    lock = get_lock(session)
+    with SessionLocal() as session:
+        if is_locked(session):
+            log.debug("Lock already established, skipping!")
+            return
+        lock = get_lock(session)
+
+    log.debug("Got to fetch cache runs")
+
     try:
-        check_lock(session, lock)
+        with SessionLocal() as session:
+            lock_set = is_locked(session, lock)
+            if lock_set:
+                log.info("ABORT! Lock is already set")
+                release_lock(session, lock)
+                return
         log.debug(f"Starting lookup of last 200 runs...")
+
+
         get_run_list(session, client)
-        check_lock(session, lock)
-        log.debug(f"Running manual run lookup...")
+        # check_lock(session, lock)
+        # log.debug(f"Running manual run lookup...")
         get_manual_runs(session, client)
     except LockException as e:
         log.error(e)
     finally:
-        release_lock(session, lock)
+        with SessionLocal() as session:
+            release_lock(session, lock)
 
 
-def check_update_runs(session, interval: int = 0):
-    # Check if there is a lock and the last one is older than 5 minutes
-    lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
-    if lock:
-        l_start_time = lock.start_time.replace(tzinfo=datetime.timezone.utc)
-        last_lock_time = (
-            datetime.datetime.now(datetime.timezone.utc) - l_start_time
-        ).total_seconds()
-        if not lock.completion_time and last_lock_time < 300:
-            return
-
-        l_completion_time = lock.completion_time.replace(tzinfo=datetime.timezone.utc)
-        if interval and l_completion_time:
-            last_lock_completion_time_seconds = (
-                datetime.datetime.now(datetime.timezone.utc) - l_completion_time
-            ).total_seconds()
-
-            if last_lock_completion_time_seconds < interval:
-                log.debug(
-                    f"Interval set to {interval} seconds, must wait {interval - last_lock_completion_time_seconds} seconds before updating database."
-                )
-                return
-
-    log.debug("No lock set, attempting fetch...")
-    fetch_and_cache_runs(session)
-
-
-def get_run_with_session(session, run_id: str, interval: int = 0) -> Run:
-    check_update_runs(session, interval=interval)
-    run = session.query(Run).filter_by(run_id=run_id).first()
-    if not run:
-        lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
-        if lock:
-            log.debug(f"Acquiring lock with interval {interval}")
-            get_or_create_run(
-                session, run_id, None, "ACTIVE", None, None, manual_lookup=True
-            )
-            session.commit()
-            log.debug(f"Run {run_id} not found in database. Added to manual_lookup.")
+def get_run_with_session(SessionLocal, run_id: str, interval: int = 0) -> Run:
+    # log.debug("Got to fetch cache runs")
+    # with SessionLocal() as session:
+    #     lock_set = is_locked(session, interval=interval)
+    # if not lock_set:
+    #     log.debug("No lock set, attempting to update cache...")
+    fetch_and_cache_runs(SessionLocal)
+    with SessionLocal() as session:
+        run = session.query(Run).filter_by(run_id=run_id).first()
+    # if not run:
+    #     lock = session.query(Lock).order_by(Lock.start_time.desc()).first()
+    #     if lock:
+    #         log.debug(f"Acquiring lock with interval {interval}")
+    #         get_or_create_run(
+    #             session, run_id, None, "ACTIVE", None, None, manual_lookup=True
+    #         )
+    #         session.commit()
+    #         log.debug(f"Run {run_id} not found in database. Added to manual_lookup.")
     return run
 
 
@@ -346,17 +402,26 @@ def arg_parse():
     return args
 
 
-def get_run(run_id, interval, cache_filename):
+def get_run(run_id, interval, cache_filename, debug_logging=False):
     engine = create_engine(f"sqlite:///{cache_filename}")
     Base.metadata.create_all(engine)
     SessionLocal = sessionmaker(bind=engine)
 
-    with SessionLocal() as session:
-        try:
-            return get_run_with_session(session, run_id, interval)
-        except sqlalchemy.exc.IntegrityError as ie:
-            log.error(f"Multiprocess failure, skipping check this time around...")
-            log.error(ie)
+    if debug_logging:
+        LOGGING["handlers"]["console"]["level"] = "DEBUG"
+        logging.config.dictConfig(LOGGING)
+
+    return get_run_with_session(SessionLocal, run_id, interval)
+
+    # with SessionLocal() as session:
+    #     try:
+    #         return get_run_with_session(session, run_id, interval)
+    #     except sqlalchemy.exc.OperationalError as e:
+    #         log.error(f"Operational Error, locked database. Waiting...")
+    #         # log.error(e)
+    #     except sqlalchemy.exc.IntegrityError as ie:
+    #         log.error(f"Multiprocess failure, skipping check this time around...")
+    #         log.error(ie)
 
 
 if __name__ == "__main__":
@@ -371,6 +436,7 @@ if __name__ == "__main__":
     LOGGING["handlers"]["console"]["level"] = log_level
     logging.config.dictConfig(LOGGING)
 
+    log.debug(f"Writing to {args.filename}")
 
     while True:
         if datetime.datetime.now() - start_time > datetime.timedelta(
