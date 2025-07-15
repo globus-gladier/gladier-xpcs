@@ -4,12 +4,12 @@ from unittest.mock import Mock
 import gladier
 
 
-@pytest.fixture(autouse=True)
-def mock_gladier_client(monkeypatch):
-    monkeypatch.setattr(gladier.GladierBaseClient, 'is_logged_in', Mock(return_value=True))
-    monkeypatch.setattr(gladier.GladierBaseClient, 'get_input',
-                        Mock(return_value={'input': {}}))
-    return gladier.GladierBaseClient
+# @pytest.fixture(autouse=True)
+# def mock_gladier_client(monkeypatch):
+#     monkeypatch.setattr(gladier.GladierBaseClient, 'is_logged_in', Mock(return_value=True))
+#     monkeypatch.setattr(gladier.GladierBaseClient, 'get_input',
+#                         Mock(return_value={'input': {}}))
+#     return gladier.GladierBaseClient
 
 
 @pytest.fixture
