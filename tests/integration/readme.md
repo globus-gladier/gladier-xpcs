@@ -21,11 +21,12 @@ https://app.globus.org/file-manager?origin_id=74defd5b-5f61-42fc-bcc4-834c9f376a
 Suggest running with the following:
 
 ```
-    pytest tests/integration -o log_cli=true -m integration -n 6
+    pytest -o log_cli=true -m integration --integration -n 8
 ```
 
 Notes on this command:
 
 * `-o log_cli=true` will show live output on datasets
-* `-m integration` will only select the integration tests
-* `-n 6` will use 6 workers (using pytest-xdist), so that tests are run in paralell.
+* `--integration` Required to run integration tests
+* `-n 8` will use 8 workers (using pytest-xdist), so that tests are run in paralell.
+* `-m integration` Will only run integration tests (Optional)
