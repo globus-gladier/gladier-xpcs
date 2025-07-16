@@ -23,39 +23,65 @@ DATASETS = [
         "type": "Multitau",
         "raw": "/gdata/dm/8IDI/2025-1/milliron202503/data/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001.bin.000",
         "qmap": "/gdata/dm/8IDI/2025-1/milliron202503/data/rigaku_qmap_Sq360_Dq36_Lin_0501.hdf",
-        "experiment": "milliron202503",
-        "cycle": "2025-1",
+        "experiment": "integration-test202507",
+        "cycle": "2025-2",
     },
-    # {
-    #     "dataset_type": "Eiger4m",
-    #     "raw": "/gdata/dm/8IDI/2025-2/olsen202506b/data/Da0194_P4-5wv-35C_a0008_f004000_r00001/",
-    #     "qmap": "/gdata/dm/8IDI/2025-2/olsen202506b/data/eiger4m_qmap_S360_D36_Lin.hdf"
-    # }
+    {
+        "dataset_type": "Rigaku3m",
+        "type": "Twotime",
+        "raw": "/gdata/dm/8IDI/2025-1/milliron202503/data/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001.bin.000",
+        "qmap": "/gdata/dm/8IDI/2025-1/milliron202503/data/rigaku_qmap_Sq360_Dq36_Lin_0501.hdf",
+        "experiment": "integration-test202507",
+        "cycle": "2025-2",
+    },
+    {
+        "dataset_type": "Eiger4m",
+        "type": "Multitau",
+        "raw": "/gdata/dm/8IDI/2025-2/olsen202506b/data/Da0194_P4-5wv-35C_a0008_f004000_r00001/",
+        "qmap": "/gdata/dm/8IDI/2025-2/olsen202506b/data/eiger4m_qmap_S360_D36_Lin.hdf",
+        "experiment": "integration-test202507",
+        "cycle": "2025-2",
+    },
+    {
+        "dataset_type": "Eiger4m",
+        "type": "Twotime",
+        "raw": "/gdata/dm/8IDI/2025-2/olsen202506b/data/Da0194_P4-5wv-35C_a0008_f004000_r00001/",
+        "qmap": "/gdata/dm/8IDI/2025-2/olsen202506b/data/eiger4m_qmap_S360_D36_Lin.hdf",
+        "experiment": "integration-test202507",
+        "cycle": "2025-2",
+    },
 ]
 
 
 @pytest.fixture
 def boost_corr_arguments():
+    """
+    Boost Corr Arguments mostly come from the input section, and is something we can't easily mock.
+
+    The main things we overwrite from these values are 'raw', 'qmap', and 'type'. Output typically isn't
+    used since we don't want to transfer these back to Voyager.
+
+    Other values we don't tend to change.
+    """
     return {
         "avg_frame": 1,
         "begin_frame": 0,
         "dq_selection": "all",
         "end_frame": -1,
         "gpu_id": 0,
-        # 'output': '/eagle/APSDataProcessing/aps8idi/xpcs_staging/milliron202503/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001/output/rigaku_qmap_Sq360_Dq36_Lin_0501/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001',
+        # "output": "",
         "overwrite": True,
-        # 'qmap': '/eagle/APSDataProcessing/aps8idi/xpcs_staging/milliron202503/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001/qmap/rigaku_qmap_Sq360_Dq36_Lin_0501.hdf',
-        # 'raw': '/eagle/APSDataProcessing/aps8idi/xpcs_staging/milliron202503/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001/input/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001.bin.000',
+        # "qmap": "",
+        # "raw": "",
         "save_g2": False,
         "smooth": "sqmap",
         "stride_frame": 1,
-        "type": "Multitau",
+        # "type": "",
         "verbose": True,
     }
 
 
 def _get_flow_input(dataset, boost_corr_arguments):
-
     deployment = get_deployment(DEPLOYMENT, dataset["raw"])
     filepaths = get_filepaths(
         dataset["raw"],
@@ -71,6 +97,7 @@ def _get_flow_input(dataset, boost_corr_arguments):
             "qmap": filepaths["qmap"]["compute"],
             "raw": filepaths["raw"]["compute"],
             "output": filepaths["output"]["compute"]["directory"],
+            "type": dataset["type"],
         }
     )
 
