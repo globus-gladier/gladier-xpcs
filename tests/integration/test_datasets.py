@@ -16,6 +16,11 @@ import logging
 log = logging.getLogger(__name__)
 
 
+def get_dataset_label(dataset):
+    cpu = "CPU" if dataset.get("gpu_id") == -1 else ""
+    return f"{dataset['dataset_type']} -- {dataset['type']} {dataset.get('size', '')} {cpu}"
+
+
 DEPLOYMENT = "voyager-8idi-polaris"
 DATASETS = [
     {
@@ -26,18 +31,21 @@ DATASETS = [
         "experiment": "integration-test202507",
         "cycle": "2025-2",
     },
-    {
-        "dataset_type": "Rigaku3m",
-        "type": "Twotime",
-        "raw": "/gdata/dm/8IDI/2025-1/milliron202503/data/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001/01bsaxs12959_PA-pEG-ITO-A_a0208_f100000_r00001.bin.000",
-        "qmap": "/gdata/dm/8IDI/2025-1/milliron202503/data/rigaku_qmap_Sq360_Dq36_Lin_0501.hdf",
-        "experiment": "integration-test202507",
-        "cycle": "2025-2",
-    },
+    # Currently fails due to Twotime sizes being too large.
+    # {
+    #     "dataset_type": "Rigaku3m",
+    #     "type": "Twotime",
+    #     "gpu_id": -1,
+    #     "size": "11.4 MB",
+    #     "raw": "/gdata/dm/8IDI/2025-1/milliron202503/data/01fsaxs13072_toluene-blank_a0208_f100000_r00001/01fsaxs13072_toluene-blank_a0208_f100000_r00001.bin.000",
+    #     "qmap": "/gdata/dm/8IDI/2025-1/milliron202503/data/rigaku_qmap_Sq360_Dq36_Lin_0501.hdf",
+    #     "experiment": "integration-test202507",
+    #     "cycle": "2025-2",
+    # },
     {
         "dataset_type": "Eiger4m",
         "type": "Multitau",
-        "raw": "/gdata/dm/8IDI/2025-2/olsen202506b/data/Da0194_P4-5wv-35C_a0008_f004000_r00001/",
+        "raw": "/gdata/dm/8IDI/2025-2/olsen202506b/data/Da0194_P4-5wv-35C_a0008_f004000_r00001/Da0194_P4-5wv-35C_a0008_f004000_r00001.h5",
         "qmap": "/gdata/dm/8IDI/2025-2/olsen202506b/data/eiger4m_qmap_S360_D36_Lin.hdf",
         "experiment": "integration-test202507",
         "cycle": "2025-2",
@@ -45,11 +53,35 @@ DATASETS = [
     {
         "dataset_type": "Eiger4m",
         "type": "Twotime",
-        "raw": "/gdata/dm/8IDI/2025-2/olsen202506b/data/Da0194_P4-5wv-35C_a0008_f004000_r00001/",
-        "qmap": "/gdata/dm/8IDI/2025-2/olsen202506b/data/eiger4m_qmap_S360_D36_Lin.hdf",
+        "size": "397 MB",
+        "raw": "/gdata/dm/8IDI/2025-2/weichen202506/data/A0195_P52_quiescent_a0005_f002000_r00001/A0195_P52_quiescent_a0005_f002000_r00001.h5",
+        "qmap": "/gdata/dm/8IDI/2025-2/weichen202506/data/eiger4m_qmap_default.hdf",
         "experiment": "integration-test202507",
         "cycle": "2025-2",
     },
+    {
+        "dataset_type": "Eiger4m",
+        "type": "Twotime",
+        "size": "404 MB",
+        "gpu_id": -1,
+        "raw": "/gdata/dm/8IDI/2025-2/weichen202506/data/A0067_SIO2_P50_Load1_att_10_5_2_1_Quiescent_a0005_f002000_r00001/A0067_SIO2_P50_Load1_att_10_5_2_1_Quiescent_a0005_f002000_r00001.h5",
+        "qmap": "/gdata/dm/8IDI/2025-2/weichen202506/data/eiger4m_qmap_default.hdf",
+        "experiment": "integration-test202507",
+        "cycle": "2025-2",
+    },
+    # NOTE! This dataset is pretty large and so is pretty slow. Not recommended unless you really want to.
+    # {
+    #     "dataset_type": "Eiger4m",
+    #     "type": "Twotime",
+    #     "size": "1.4 GB",
+    #     # Failed on GPU. Error: Tried to allocate 132.01 GiB. GPU 0 has a total capacity of 39.39 GiB of which 38.91 GiB is free.
+    #     # When run on CPU, this runs fine.
+    #     "gpu_id": -1,
+    #     "raw": "/gdata/dm/8IDI/2025-2/weichen202506/data/A0160_G48_attenuation_test_a0027_f010000_r00001/A0160_G48_attenuation_test_a0027_f010000_r00001.h5",
+    #     "qmap": "/gdata/dm/8IDI/2025-2/weichen202506/data/eiger4m_qmap_default.hdf",
+    #     "experiment": "integration-test202507",
+    #     "cycle": "2025-2",
+    # },
 ]
 
 
@@ -68,7 +100,7 @@ def boost_corr_arguments():
         "begin_frame": 0,
         "dq_selection": "all",
         "end_frame": -1,
-        "gpu_id": 0,
+        # "gpu_id": 0,
         # "output": "",
         "overwrite": True,
         # "qmap": "",
@@ -98,6 +130,8 @@ def _get_flow_input(dataset, boost_corr_arguments):
             "raw": filepaths["raw"]["compute"],
             "output": filepaths["output"]["compute"]["directory"],
             "type": dataset["type"],
+            # By default use GPU. -1 for CPU
+            "gpu_id": dataset.get("gpu_id", 0),
         }
     )
 
@@ -116,7 +150,7 @@ def _get_flow_input(dataset, boost_corr_arguments):
 
 @pytest.mark.integration
 @pytest.mark.parametrize(
-    "dataset", DATASETS, ids=lambda d: f"{d['dataset_type']} -- {d['type']}"
+    "dataset", DATASETS, ids=lambda d: get_dataset_label(d)
 )
 def test_datasets(dataset, boost_corr_arguments):
 
@@ -126,12 +160,11 @@ def test_datasets(dataset, boost_corr_arguments):
     flows_manager = FlowsManager(run_kwargs=run_kwargs)
 
     corr_flow = XPCSBoost(flows_manager=flows_manager)
-    dataset_name = f"{dataset['dataset_type']} -- {dataset['type']}"
 
     assert corr_flow.get_flow_id()
     assert "xpcs_boost_corr_function_id" in corr_flow.get_input()["input"]
     result = corr_flow.run_flow(
-        flow_input=flow_input, label=dataset_name, tags=["test", "integration-test"]
+        flow_input=flow_input, label=get_dataset_label(dataset), tags=["test", "integration-test"]
     )
     corr_flow.progress(result["run_id"], lambda x: print(f"Status: {x}"))
     status = corr_flow.get_status(result["run_id"])
