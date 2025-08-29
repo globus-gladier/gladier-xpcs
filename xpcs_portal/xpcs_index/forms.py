@@ -4,12 +4,51 @@ import os
 from django import forms
 from django.utils import timezone
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, Submit, HTML
+from crispy_forms.layout import Layout, Fieldset, Submit, HTML, Field
 from xpcs_portal.xpcs_index import models
 from xpcs_portal.xpcs_index.apps import AVAILABLE_DEPLOYMENTS
 
+XPCS_ANALYSIS_TYPES = ["Multitau", "Twotime", "Both"]
 
 log = logging.getLogger(__name__)
+
+class CollectionSelectionForm(forms.Form):
+
+    facility = forms.ChoiceField(choices=[(k, k.upper()) for k in AVAILABLE_DEPLOYMENTS], initial="APS8IDI-POLARIS")
+    cycle = forms.CharField(widget=forms.Select, initial="2019-1")
+    parent = forms.CharField(widget=forms.Select)
+    custom_qmap = forms.BooleanField(required=False, initial=False, help_text="Use a custom QMAP file")
+    qmap = forms.CharField(widget=forms.Select, help_text="If blank, the default qmap in cluster_results/ will be used for each dataset", required=False)
+    # multitau = forms.BooleanField(required=False, initial=True, help_text="The simpler version of the Corr analysis type")
+    # twotime = forms.BooleanField(required=False, initial=False, help_text="The more process-intensive Corr analysis type")
+    analysis_type = forms.ChoiceField(choices=zip(XPCS_ANALYSIS_TYPES, XPCS_ANALYSIS_TYPES), initial="Both",
+        help_text="Type of Corr analysis to perform. Multitau is simple, twotime is more complex.")
+    computation = forms.ChoiceField(choices=((0, 'GPU'), (-1, 'CPU')), initial="GPU", help_text="Method Corr will use to compute data, GPU preferred if supported by the Globus Endpoint")
+    batch_size = forms.IntegerField(initial=256, help_text="Size of gpu corr processing batch")
+    verbose = forms.BooleanField(required=False, initial=False, help_text="Add extra output to logs")
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                "Select a path below",
+                "facility",
+                Field("cycle", onchange="getParent()"),
+                "parent",
+                HTML("""{% include 'xpcs/compute-selection-stats.html' %}"""),
+                HTML("""<hr><h3>Compute Options</h3>"""),
+                Field("custom_qmap", onchange="toggleQMAP()"),
+                "qmap",
+                "analysis_type",
+                "computation",
+                "batch_size",
+                "verbose",
+            ),
+            Submit('submit', 'Submit', css_class='button white'),
+        )
+
 
 
 class ReprocessDatasetsCheckoutForm(forms.Form):
