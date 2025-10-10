@@ -35,6 +35,9 @@ def make_corr_plots(
     from xpcs_webplot.plot_images import hdf2web_safe, XF, NpEncoder
     from xpcs_webplot import __version__ as webplot_version
 
+    webplot_extra_metadata = webplot_extra_metadata or dict()
+    corr_timing_output = corr_timing_output or dict()
+
     corr_start = time.time()
     webplot_output = hdf2web_safe(
         corr_results, target_dir=webplot_target_dir, image_only=True, overwrite=True
