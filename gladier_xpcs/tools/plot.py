@@ -108,13 +108,13 @@ if __name__ == "__main__":
     # * Top level webplot_target_dir/
     #     * HDF_Folder/
     #         * HDF_File.hdf
-    hdf_file = str(input_file)
+    corr_results = str(input_file)
     webplot_target_dir = str(
         input_file.parent / "output" / input_file.stem / "resources"
     )
-    print(f"Plotting {hdf_file} at location {webplot_target_dir}")
+    print(f"Plotting {corr_results} at location {webplot_target_dir}")
     output = make_corr_plots(
-        hdf_file=hdf_file,
+        corr_results=corr_results,
         webplot_target_dir=webplot_target_dir,
     )
     pprint.pprint(output)
