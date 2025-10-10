@@ -10,6 +10,7 @@ def make_corr_plots(
     webplot_target_dir: str,
     webplot_extra_metadata: dict = None,
     corr_timing_output: dict = None,
+    webplot_enabled: bool = True,
     **data: dict,
 ):
     """
@@ -37,18 +38,28 @@ def make_corr_plots(
 
     webplot_extra_metadata = webplot_extra_metadata or dict()
     corr_timing_output = corr_timing_output or dict()
+    webplot_tool_metadata = dict()
+    webplot_output = None
 
-    corr_start = time.time()
-    webplot_output = hdf2web_safe(
-        corr_results, target_dir=webplot_target_dir, image_only=True, overwrite=True
-    )
-    execution_time_seconds = round(time.time() - corr_start, 2)
-
-    if webplot_output is None:
-        raise Exception(
-            "Plots failed to generate This is likely a problem with a bad input HDF "
-            f"({corr_results})"
+    if webplot_enabled:
+        corr_start = time.time()
+        webplot_output = hdf2web_safe(
+            corr_results, target_dir=webplot_target_dir, image_only=True, overwrite=True
         )
+        execution_time_seconds = round(time.time() - corr_start, 2)
+
+        if webplot_output is None:
+            raise Exception(
+                "Plots failed to generate This is likely a problem with a bad input HDF "
+                f"({corr_results})"
+            )
+        webplot_tool_metadata = {
+            "name": "xpcs_webplot",
+            "tool_version": str(webplot_version),
+            "execution_time_seconds": execution_time_seconds,
+            "device": "cpu",
+            "source": "https://github.com/AZjk/xpcs_webplot",
+        }
 
     xf = XF(corr_results)
     metadata = xf.get_hdf_info()
@@ -57,15 +68,8 @@ def make_corr_plots(
     metadata["plot_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     tools = webplot_extra_metadata.get('tools', [])
     tools += corr_timing_output.get("tools", [])
-    tools += [
-        {
-            "name": "xpcs_webplot",
-            "tool_version": str(webplot_version),
-            "execution_time_seconds": execution_time_seconds,
-            "device": "cpu",
-            "source": "https://github.com/AZjk/xpcs_webplot",
-        }
-    ]
+    if webplot_tool_metadata:
+        tools += [webplot_tool_metadata]
     metadata["tools"] = tools
     metadata.update(webplot_extra_metadata or {})
     save_dir = (
@@ -73,6 +77,7 @@ def make_corr_plots(
         / f"{pathlib.Path(corr_results).stem}"
         / "metadata.json"
     )
+    save_dir.parent.mkdir(parents=True, exist_ok=True)
     with open(save_dir, "w") as f:
         json.dump({"project_metadata": metadata}, f, indent=4, cls=NpEncoder)
 
@@ -83,7 +88,9 @@ def make_corr_plots(
         "images_directory": str(webplot_target_dir),
         "input_hdf": corr_results,
         "webplot_output": webplot_output,
-        "execution_time_seconds": execution_time_seconds,
+        "execution_time_seconds": webplot_tool_metadata.get("execution_time_seconds", -1),
+        "metadata": str(save_dir),
+        "webplot_enabled": webplot_enabled
     }
 
 
@@ -104,8 +111,9 @@ class MakeCorrPlots(GladierBaseTool):
 if __name__ == "__main__":
     # This will pick up logging in the webplot tool
     logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print("Usage: python plot.py my_file.hdf")
+        sys.exit(-1)
     input_file = pathlib.Path(sys.argv[1]).absolute()
     # Create the 'expected' processing directory, which should look like this:
     # * Top level webplot_target_dir/
@@ -119,5 +127,6 @@ if __name__ == "__main__":
     output = make_corr_plots(
         corr_results=corr_results,
         webplot_target_dir=webplot_target_dir,
+        webplot_enabled=True,
     )
     pprint.pprint(output)
