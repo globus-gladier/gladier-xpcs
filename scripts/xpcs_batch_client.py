@@ -10,18 +10,23 @@ from gladier_xpcs.flows.flow_boost import XPCSBoost
 from gladier import FlowsManager
 from gladier_xpcs.tools.xpcs_boost_corr import xpcs_boost_corr
 from gladier_xpcs.flows.flow_boost_batch import XPCSBoostBatch
-
+from gladier_xpcs.deployments import BaseDeployment, deployment_map
 
 from scripts import xpcs_online_boost_client
 
 
 "aa2b18e8-e248-4265-985c-7e2e59765539:/8IDI/2025-2/zhang202506/data"
+# /eagle/APSDataProcessing/aps8idi/
 
 # Voyager
-collection = "aa2b18e8-e248-4265-985c-7e2e59765539"
+deployment = deployment_map["voyager-8idi-polaris"]
+# collection = "aa2b18e8-e248-4265-985c-7e2e59765539"
+# source_path = pathlib.Path(deployment.source_collection.to_globus("/system/test/s8iddm_boost_corr_test/data/"))
+source_path = pathlib.Path(deployment.source_collection.to_globus("/8IDI/2025-2/tempus202507-merge/data/converted/Ha0277_PO2_a0002_f2000000/"))
+
 # source_path = pathlib.Path("/8IDI/2025-2/zhang202506/data")
-source_path = pathlib.Path("/system/test/s8iddm_boost_corr_test/data/")
-staging_path = pathlib.Path("/xpcs_staging/batch-test-2025-09-02/comm202410")
+# source_path = pathlib.Path("/system/test/s8iddm_boost_corr_test/data/")
+staging_path = pathlib.Path(deployment.get_input()["input"]["staging_dir"]) / "batch-test-2025-10-22/tempus202507-merge"
 run_kwargs = {"run_monitors": [f"urn:globus:auth:identity:3b843349-4d4d-4ef3-916d-2a465f9740a9"],
               "run_managers": [f"urn:globus:auth:identity:3b843349-4d4d-4ef3-916d-2a465f9740a9"]}
 
@@ -31,9 +36,9 @@ app = globus_sdk.ClientApp("scripting", client_id=os.getenv("GLOBUS_CLI_CLIENT_I
 transfer_client = globus_sdk.TransferClient(app=app)
 
 
-data = transfer_client.operation_ls(collection, path=source_path)
+data = transfer_client.operation_ls(deployment.source_collection.uuid, path=source_path)
 
-first_hundred = [d["name"] for d in data["DATA"] if d["type"] == "dir"][:1]
+first_hundred = [d["name"] for d in data["DATA"] if d["type"] == "dir"][:2]
 transfer_items = [
     {
         "source_path": str(source_path / item),
@@ -42,12 +47,15 @@ transfer_items = [
     }
     for item in first_hundred
 ]
-staging_qmap = str(staging_path / "qmaps/eiger4m_qmap_1018_hongrui_d36.h5")
+# staging_qmap = str(staging_path / "qmaps/eiger4m_qmap_1018_hongrui_d36.h5")
+staging_qmap = str(staging_path / "eiger4m_qmap_1018_hongrui_d36.h5")
+
 qmap = {
     'destination_path': staging_qmap,
     'recursive': False,
     # 'source_path': '/8IDI/2024-3/comm202410/data/eiger4m_qmap_1018_hongrui_d36.h5'
-    'source_path': '/system/test/s8iddm_boost_corr_test/data/rigaku_qmap_Sq360_Dq36_Lin_0501.hdf',
+    # 'source_path': str(deployment.source_collection.to_globus('/system/test/s8iddm_boost_corr_test/data/rigaku_qmap_Sq360_Dq36_Lin_0501.hdf')),
+    'source_path': str(deployment.source_collection.to_globus('/8IDI/2025-2/tempus202507-merge/data/timepix_Sq90_Dq9_log.hdf')),
 }
 transfer_items.append(qmap)
 
@@ -128,7 +136,9 @@ from pprint import pprint
 flows_manager = FlowsManager(run_kwargs=run_kwargs)
 batch_flow = XPCSBoostBatch(flows_manager=flows_manager)
 fids = batch_flow.get_compute_function_ids()
-pprint(fids)
+# pprint(fids)
+if not fids.get("xpcs_boost_corr_function_id"):
+    print("WARNING: No xpcs_boost_corr_function_id function found!")
 # See if we can pack 100 datasets into a transfer
 flow_input = {
     "input": {
@@ -166,7 +176,8 @@ flow_input = {
 
 pprint(batch_flow.get_flow_definition())
 pprint(flow_input)
-run = batch_flow.run_flow(flow_input=flow_input, label="comm202410", tags=['aps', 'xpcs', 'batch-test'])
+label = f"{source_path.parts[3]}-test"
+run = batch_flow.run_flow(flow_input=flow_input, label=label, tags=['aps', 'xpcs', 'batch-test'])
 status = batch_flow.progress(run["run_id"])
 pprint(batch_flow.get_status(run["run_id"]))
 pprint(status)

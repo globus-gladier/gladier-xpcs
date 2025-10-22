@@ -9,7 +9,7 @@ class SharedCollection:
         self.name = name or self.__class__.__name__
 
     def to_posix(self, shared_globus_path:str):
-        assert shared_globus_path.startswith('/'), 'Paths must start at the root share path "/"'
+        assert str(shared_globus_path).startswith('/'), 'Paths must start at the root share path "/"'
         return self.path / shared_globus_path
 
     def to_globus(self, posix_path):

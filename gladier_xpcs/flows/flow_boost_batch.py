@@ -2,8 +2,8 @@ from gladier import GladierBaseClient, generate_flow_definition
 import gladier.tests
 
 @generate_flow_definition(modifiers={
-    # "xpcs_boost_corr": {
-        # "tasks": "$.input.xpcs_boost_corr_tasks",
+    "xpcs_boost_corr": {
+        "tasks": "$.input.xpcs_boost_corr_tasks",
         #     "tasks": [
         #     {
         #         'function_id.$': '$.input.xpcs_boost_corr_function_id',
@@ -14,7 +14,7 @@ import gladier.tests
         #         'kwargs': {'dir.$': '$.input.source_transfer.transfer_items[1].destination_path'},
         #     },
         # ]
-    # }
+    }
 })
 class XPCSBoostBatch(GladierBaseClient):
     # globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
