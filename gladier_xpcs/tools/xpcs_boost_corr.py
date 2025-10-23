@@ -96,7 +96,7 @@ def xpcs_boost_corr(boost_corr: dict = None, corr_input_file: str = None, **data
                 }]
         }
 
-        metadata_file = pathlib.Path(boost_corr["output"]) / "corr_metadata_output.log"
+        metadata_file = pathlib.Path(boost_corr["output"]) / "corr_metadata_output.json"
         metadata = {
             'boost_corr': boost_corr,
             'execution_time_seconds': execution_time_seconds,
