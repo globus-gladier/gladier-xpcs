@@ -16,7 +16,7 @@ from gladier_xpcs.deployments import BaseDeployment, deployment_map
 
 from scripts import xpcs_online_boost_client
 
-globus_app = globus_sdk.ClientApp("scripting", client_id=os.getenv("GLOBUS_CLI_CLIENT_ID"), client_secret=os.getenv("GLOBUS_CLI_CLIENT_SECRET"))
+globus_app = globus_sdk.ClientApp("scripting", client_id=os.getenv("GLADIER_CLIENT_ID"), client_secret=os.getenv("GLADIER_CLIENT_SECRET"))
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_enable=False)
 
 # To run silently as nick only
@@ -137,19 +137,25 @@ def get_boost_corr_defaults():
     }
 
 @app.command()
-def generate_batches():
+def generate_batches(
+        limit: int = 0,
+        batch_size: int = 200,
+):
     batches = generate_batches_from_source(limit=10, batch_size=1)
     from pprint import pprint
     pprint(batches)
 
 
 @app.command()
-def run_batches():
+def run_batches(
+        limit: int = 0,
+        batch_size: int = 200,
+):
 
     flows_manager = FlowsManager(run_kwargs=run_kwargs)
     batch_flow = XPCSBoostBatch(flows_manager=flows_manager)
 
-    batches = generate_batches_from_source(limit=0, batch_size=150)
+    batches = generate_batches_from_source(limit=limit, batch_size=batch_size)
     for batch in batches:
 
         # pprint(batch_flow.get_flow_definition())
