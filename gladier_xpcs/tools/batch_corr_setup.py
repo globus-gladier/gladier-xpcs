@@ -58,12 +58,6 @@ def batch_corr_setup(xpcs_boost_corr_tasks: str = None, boost_corr: dict = None,
     batch_corr_setup: {
         'WaitTime': 604800,
         'ExceptionOnActionFailure': True,
-        # "tasks": "$.input.xpcs_boost_corr_tasks",
-        "user_endpoint_config": {
-                # "queue": "demand",
-                "queue": "debug",
-                # "queue": "preemptable",
-        }
     }
 })
 class BatchCorrSetup(GladierBaseTool):

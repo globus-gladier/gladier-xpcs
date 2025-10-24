@@ -9,22 +9,23 @@ import os
 from gladier_xpcs.flows.flow_boost import XPCSBoost
 from gladier import FlowsManager
 from gladier_xpcs.tools.xpcs_boost_corr import xpcs_boost_corr
-from gladier_xpcs.flows.flow_boost_batch import XPCSBoostBatch
+from gladier_xpcs.flows.flow_boost_batch import XPCSBoostBatch, QUEUE
 from gladier_xpcs.deployments import BaseDeployment, deployment_map
 
 from scripts import xpcs_online_boost_client
 
+batch_size = 225
 # Voyager
 deployment = deployment_map["voyager-8idi-polaris"]
 source_path = pathlib.Path(deployment.source_collection.to_globus("/8IDI/2025-2/tempus202507-merge/data/converted/Ha0277_PO2_a0002_f2000000/"))
 
-staging_dir = "batch-test-2025-10-22/tempus202507-merge"
+staging_dir = "batch-test-2025-10-22-batch-2/tempus202507-merge"
 staging_path = pathlib.Path(deployment.get_input()["input"]["staging_dir"]) / staging_dir
 
 # To run silently as nick only
 # run_kwargs = {"run_monitors": [f"urn:globus:auth:identity:3b843349-4d4d-4ef3-916d-2a465f9740a9"],
 #               "run_managers": [f"urn:globus:auth:identity:3b843349-4d4d-4ef3-916d-2a465f9740a9"]}
-
+run_kwargs = {}
 
 app = globus_sdk.ClientApp("scripting", client_id=os.getenv("GLOBUS_CLI_CLIENT_ID"), client_secret=os.getenv("GLOBUS_CLI_CLIENT_SECRET"))
 transfer_client = globus_sdk.TransferClient(app=app)
@@ -32,7 +33,7 @@ transfer_client = globus_sdk.TransferClient(app=app)
 
 data = transfer_client.operation_ls(deployment.source_collection.uuid, path=source_path)
 
-first_hundred = [d["name"] for d in data["DATA"] if d["type"] == "dir"][:20]
+first_hundred = [d["name"] for d in data["DATA"] if d["type"] == "dir"][:batch_size]
 transfer_items = [
     {
         "source_path": str(source_path / item),
@@ -121,7 +122,7 @@ flow_input = {
 
 pprint(batch_flow.get_flow_definition())
 pprint(flow_input)
-label = f"{source_path.parts[3]}-test"
+label = f"{source_path.parts[3]}-test-{batch_size}-{QUEUE}"
 run = batch_flow.run_flow(flow_input=flow_input, label=label, tags=['aps', 'xpcs', 'batch-test'])
 status = batch_flow.progress(run["run_id"])
 pprint(batch_flow.get_status(run["run_id"]))

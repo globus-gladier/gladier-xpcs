@@ -118,11 +118,6 @@ def xpcs_boost_corr(boost_corr: dict = None, corr_input_file: str = None, **data
         'WaitTime': 604800,
         "tasks": "$.input.xpcs_boost_corr_tasks",
         'ExceptionOnActionFailure': True,
-                "user_endpoint_config": {
-                # "queue": "demand",
-                "queue": "debug",
-                # "queue": "preemptable",
-        }
     }
 })
 class BoostCorr(GladierBaseTool):

@@ -1,10 +1,22 @@
 from gladier import GladierBaseClient, generate_flow_definition
 import gladier.tests
 
+# QUEUE = "preemptable"
+QUEUE = "debug"
+
+
 @generate_flow_definition(modifiers={
+    "batch_corr_setup": {
+        "user_endpoint_config": {
+                "queue": QUEUE,
+        }
+    },
     "xpcs_boost_corr": {
         "tasks": "$.input.xpcs_boost_corr_tasks",
-    }
+        "user_endpoint_config": {
+            "queue": QUEUE
+        }
+    },
 })
 class XPCSBoostBatch(GladierBaseClient):
     globus_group = '368beb47-c9c5-11e9-b455-0efb3ba9a670'
@@ -13,6 +25,7 @@ class XPCSBoostBatch(GladierBaseClient):
     gladier_tools = [
         'gladier_xpcs.tools.source_transfer.SourceTransfer',
         'gladier_xpcs.tools.batch_corr_setup.BatchCorrSetup',
+        'gladier_xpcs.tools.source_transfer_cleanup.SourceTransferCleanup',
         'gladier_xpcs.tools.xpcs_boost_corr.BoostCorr',
         # These items are not supported yet. Batching produces a ton of outputs spread across directories
         # All of the tools below need to be rewritten to handle the batch of directories created
