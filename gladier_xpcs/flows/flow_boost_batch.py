@@ -1,20 +1,17 @@
 from gladier import GladierBaseClient, generate_flow_definition
 import gladier.tests
 
-# QUEUE = "preemptable"
-QUEUE = "debug"
-
 
 @generate_flow_definition(modifiers={
     "batch_corr_setup": {
         "user_endpoint_config": {
-                "queue": QUEUE,
+                "queue.$": "$.input.compute_queue",
         }
     },
     "xpcs_boost_corr": {
         "tasks": "$.input.xpcs_boost_corr_tasks",
         "user_endpoint_config": {
-            "queue": QUEUE
+            "queue.$": "$.input.compute_queue",
         }
     },
 })

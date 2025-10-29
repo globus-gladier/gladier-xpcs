@@ -11,10 +11,12 @@ import typer
 from gladier_xpcs.flows.flow_boost import XPCSBoost
 from gladier import FlowsManager
 from gladier_xpcs.tools.xpcs_boost_corr import xpcs_boost_corr
-from gladier_xpcs.flows.flow_boost_batch import XPCSBoostBatch, QUEUE
+from gladier_xpcs.flows.flow_boost_batch import XPCSBoostBatch
 from gladier_xpcs.deployments import BaseDeployment, deployment_map
 
 from scripts import xpcs_online_boost_client
+
+SUPPORTED_QUEUES = ["debug", "preemptable", "prod", "demand"]
 
 globus_app = globus_sdk.ClientApp("scripting", client_id=os.getenv("GLADIER_CLIENT_ID"), client_secret=os.getenv("GLADIER_CLIENT_SECRET"))
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_enable=False)
@@ -28,6 +30,7 @@ def generate_batches_from_source(
         source: str = "/8IDI/2025-2/tempus202507-merge/data/converted/Ha0277_PO2_a0002_f2000000/",
         qmap: str = "/8IDI/2025-2/tempus202507-merge/data/timepix_Sq90_Dq9_log.hdf",
         staging_dir: str = "batch-test-2025-10-22-batch-2/tempus202507-merge",
+        queue: str = "preemptable",
         batch_size: int = 100,
         limit: int = 0):
 
@@ -66,9 +69,13 @@ def generate_batches_from_source(
         }
         transfer_items.append(qmap_transfer_item)
 
+        if queue not in SUPPORTED_QUEUES:
+            raise ValueError(f"Invalid Queue {queue}, must be in list: {SUPPPORTED_QUEUES}")
+
         # See if we can pack 100 datasets into a transfer
         flow_input = {
             "input": {
+                "compute_queue": queue,
                 "compute_endpoint": "d88919ea-026a-493e-9124-fe3c46defa54",
                 "staging_base_path": str(staging_path),
                 "staging_qmap": qmap_transfer_item["destination_path"],
@@ -140,8 +147,9 @@ def get_boost_corr_defaults():
 def generate_batches(
         limit: int = 0,
         batch_size: int = 200,
+        queue: str = "preemptable",
 ):
-    batches = generate_batches_from_source(limit=10, batch_size=1)
+    batches = generate_batches_from_source(limit=limit, batch_size=batch_size, queue=queue)
     from pprint import pprint
     pprint(batches)
 
@@ -150,17 +158,19 @@ def generate_batches(
 def run_batches(
         limit: int = 0,
         batch_size: int = 200,
+        queue: str = "preemptable",
 ):
 
     flows_manager = FlowsManager(run_kwargs=run_kwargs)
     batch_flow = XPCSBoostBatch(flows_manager=flows_manager)
 
-    batches = generate_batches_from_source(limit=limit, batch_size=batch_size)
+    batches = generate_batches_from_source(limit=limit, batch_size=batch_size, queue=queue)
     for batch in batches:
 
         # pprint(batch_flow.get_flow_definition())
         # pprint(flow_input)
-        label = f"exp-test-{batch['batch_size']}-{QUEUE}-{batch['batch_id'] + 1}-of-{len(batches)}"
+        queue = batch["flow_input"]["input"]["compute_queue"]
+        label = f"exp-test-{batch['batch_size']}-{queue}-{batch['batch_id'] + 1}-of-{len(batches)}"
         run = batch_flow.run_flow(flow_input=batch["flow_input"], label=label, tags=['aps', 'xpcs', 'batch-test'])
         print(run["run_id"])
         # status = batch_flow.progress(run["run_id"])
