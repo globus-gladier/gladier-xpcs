@@ -13,8 +13,10 @@ apsdataprocessing = SharedCollection('98d26f35-e5d5-4edd-becf-a75520656c64',
                                      '/eagle/APSDataProcessing/aps8idi/', name='APS8IDI')
 voyagerXPCS8 = SharedCollection('d2dce3ad-0550-4c90-a2a9-6c6812b7d845', 
                                      '/gdata/dm/XPCS8/', name='APS:DM-TEST:XPCS8 Guest')
-voyager8IDI = SharedCollection('dc86d51b-81d1-4827-81be-2b5e64ba7dc1', 
-                                     '/gdata/dm/8IDI/', name='APS:DM:8IDI Guest')
+# voyager8IDI = SharedCollection('dc86d51b-81d1-4827-81be-2b5e64ba7dc1', 
+#                                      '/', name='APS:DM:8IDI Guest')
+voyager8IDI = SharedCollection('aa2b18e8-e248-4265-985c-7e2e59765539',
+                                     '/', name='APS:DM:8IDI Guest')
 nersc_permutter = SharedCollection('6bdc7956-fc0f-4ad2-989c-7aa5ee643a79', 
                                      '/', name='NERSC#Perlmutter')
 
