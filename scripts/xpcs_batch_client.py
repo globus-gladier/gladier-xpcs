@@ -18,6 +18,7 @@ from scripts import xpcs_online_boost_client
 
 SUPPORTED_QUEUES = ["debug", "preemptable", "prod", "demand"]
 DEPLOYMENT = deployment_map["voyager-8idi-polaris"]
+SOURCE_ENDPOINT_BASE_PATH = pathlib.Path("/8IDI")
 
 globus_app = globus_sdk.ClientApp("scripting", client_id=os.getenv("GLADIER_CLIENT_ID"), client_secret=os.getenv("GLADIER_CLIENT_SECRET"))
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_enable=False)
@@ -136,14 +137,28 @@ def get_boost_corr_defaults():
         "smooth": "sqmap",
         "stride_frame": 1,
         "verbose": True,
-
         "type": "Multitau",
         "gpu_id": 0,
         # "output": "",
     }
 
 
-def fetch_dataset_directories(source: str = "/8IDI/2025-2/tempus202507-merge/data/converted/"):
+def fetch_source_directory(
+    path: str, collection_uuid: str = None, filter_type: str = "dir"
+):
+    collection_uuid = collection_uuid or DEPLOYMENT.source_collection.uuid
+    transfer_client = globus_sdk.TransferClient(app=globus_app)
+    source_path = pathlib.Path(DEPLOYMENT.source_collection.to_globus(path))
+    data = transfer_client.operation_ls(collection_uuid, path=source_path)
+    source_directories = [
+        source_path / d["name"]
+        for d in data["DATA"]
+        if d["type"] is None or d["type"] == filter_type
+    ]
+    return source_directories
+
+
+def fetch_dataset_directories(source: str = "/8IDI/2025-2/tempus202507-merge/data/converted/",):
     transfer_client = globus_sdk.TransferClient(app=globus_app)
     source_path = pathlib.Path(DEPLOYMENT.source_collection.to_globus(source))
     data = transfer_client.operation_ls(DEPLOYMENT.source_collection.uuid, path=source_path)
@@ -177,6 +192,67 @@ def generate_batches(
 
     experiment.write_text(json.dumps(experiment_data, indent=2))
     print(f"Wrote file {experiment}, Datasets: {num_datasets}")
+
+
+@app.command()
+def list_cycles():
+    print(f"Listing Cycles for endpoint {DEPLOYMENT.source_collection.uuid}, path {SOURCE_ENDPOINT_BASE_PATH}:")
+    for cycle in fetch_source_directory(path=SOURCE_ENDPOINT_BASE_PATH):
+        print(f" - {cycle}")
+
+
+@app.command()
+def list_experiments(cycle: str = "2025-2"):
+    path = SOURCE_ENDPOINT_BASE_PATH / cycle
+    print(f"Listing Experiments in {DEPLOYMENT.source_collection.uuid}{path}:")
+    for exp in fetch_source_directory(path=path):
+        print(f" - {exp}")
+
+
+@app.command()
+def list_experiment_subdirectories(
+        experiment: str = None,
+        cycle: str = "2025-2",
+        count_subfolders: bool = False,
+        path: str = None,
+):
+    if not experiment and not path:
+        print("Must provide either experiment or path!")
+        return
+
+    if path:
+        path = pathlib.Path(path)
+        experiment_parts = path.relative_to(SOURCE_ENDPOINT_BASE_PATH).parts
+        cycle = experiment_parts[0]
+        experiment = experiment_parts[1]
+    else:
+        path = SOURCE_ENDPOINT_BASE_PATH / cycle / experiment / "data"
+
+    csv_path = pathlib.Path(f"{cycle}_{experiment}_subfolder_counts.csv")
+    if csv_path.exists():
+        print(csv_path.read_text())
+        return
+    print(
+        f"Listing Experiment Subdirectories in {DEPLOYMENT.source_collection.uuid}{path}:"
+    )
+    counted_subfolders = dict()
+
+    for ddir in fetch_source_directory(path=path):
+        if count_subfolders:
+            subfolders = len(
+                list(fetch_source_directory(path=path / ddir, filter_type="dir"))
+            )
+            counted_subfolders[str(path / ddir)] = subfolders
+            print(f" - {ddir} (subfolders: {subfolders})")
+        else:
+            print(f" - {ddir}")
+
+    if count_subfolders:
+        csv = "path,subfolder_count\n"
+        for k, v in counted_subfolders.items():
+            csv += f"{k},{v}\n"
+        csv_path.write_text(csv)
+        print(f"Wrote subfolder counts to {csv_path}")
 
 
 @app.command()
@@ -275,17 +351,24 @@ def run_batches(
     batch_flow = XPCSBoostBatch(flows_manager=flows_manager)
 
     batches = generate_batches_from_source(limit=limit, batch_size=batch_size, queue=queue)
-    for batch in batches:
+    for batch in batches[0:1]:
 
-        # pprint(batch_flow.get_flow_definition())
-        # pprint(flow_input)
+        pprint(batch_flow.get_flow_definition())
+        pprint(batch)
         queue = batch["flow_input"]["input"]["compute_queue"]
+        pprint(batch["flow_input"])
         label = f"exp-test-{batch['batch_size']}-{queue}-{batch['batch_id'] + 1}-of-{len(batches)}"
-        run = batch_flow.run_flow(flow_input=batch["flow_input"], label=label, tags=['aps', 'xpcs', 'batch-test'])
-        print(run["run_id"])
+        run = batch_flow.run_flow(
+            flow_input=batch["flow_input"],
+            label=label,
+            tags=["aps", "xpcs", "batch-test"],
+        )
+        # print(run["run_id"])
+        print(f"https://app.globus.org/runs/{run['run_id']}/logs")
         # status = batch_flow.progress(run["run_id"])
         # pprint(batch_flow.get_status(run["run_id"]))
         # pprint(status)
+
 
 if __name__ == "__main__":
     app()
