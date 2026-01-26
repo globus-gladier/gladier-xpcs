@@ -7,6 +7,8 @@ import sys
 import functools
 import os
 import typer
+import enum
+from typing import Annotated
 
 from gladier_xpcs.flows.flow_boost import XPCSBoost
 from gladier import FlowsManager
@@ -22,6 +24,97 @@ SOURCE_ENDPOINT_BASE_PATH = pathlib.Path("/8IDI")
 
 globus_app = globus_sdk.ClientApp("scripting", client_id=os.getenv("GLADIER_CLIENT_ID"), client_secret=os.getenv("GLADIER_CLIENT_SECRET"))
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_enable=False)
+
+class CorrType(str, enum.Enum):
+    Multitau = "Multitau"
+    Twotime = "Twotime"
+    Both = "Both"
+
+
+PROCESSING_ARGS = dict(
+    group=typer.Option(
+            help="Visibility in Search",
+            rich_help_panel="Processing Options",
+        ),
+    deployment=typer.Option(
+            help="Deployment configs.",
+            rich_help_panel="Processing Options",
+            # default="voyager-8idi-polaris",
+            show_choices=list(deployment_map.keys()),
+        ),
+    experiment=typer.Option(
+            help="Experiment name for the dataset. Ex: tempus202507-merge",
+            rich_help_panel="Processing Options",
+        ),
+    skip_transfer_back=typer.Option(
+        help="Skip transfer of processed data to source collection. "
+        "Should not be skipped in normal operation. Use this option only for testing or reprocessing old data.",
+        rich_help_panel="Processing Options",
+        ),
+    output=typer.Option(
+        help='This is the "transfer back" output directory on source, where the results corr file will be transferred.',
+        rich_help_panel="Processing Options",
+    )
+)
+
+CORR_ARGS = dict(
+    qmap=typer.Option("--qmap", "-q",
+            help="Path to the qmap file",
+            rich_help_panel="Corr Options",
+        ),
+    cycle=typer.Option("--cycle", "-c",
+            help="cycle for the dataset. Ex: 2025-1. Determines publish location.",
+            rich_help_panel="Corr Options",
+        ),
+    type=typer.Option("--type", "-t",
+            help="Analysis type to be performed.",
+            rich_help_panel="Corr Options",
+        ),
+    gpu_id=typer.Option("--gpu-id", "-i",
+            help="Choose which GPU to use. if the input is -1, then CPU is used",
+            rich_help_panel="Corr Options",
+        ),
+    batch_size=typer.Option(
+            help="Size of gpu corr processing batch",
+            rich_help_panel="Corr Options",
+        ),
+    verbose=typer.Option("--verbose", "-v",
+            help="Verbose output",
+            rich_help_panel="Corr Options",
+        ),
+    smooth=typer.Option("--smooth", "-s",
+        help="Smooth method to be used in Twotime correlation.",
+        rich_help_panel="Corr Options",
+        ),
+    save_g2=typer.Option("--save-g2", "-G",
+            help="Save G2, IP, and IF to file.",
+            rich_help_panel="Corr Options",
+        ),
+    avg_frame=typer.Option("--avg-frame", "-a",
+        help="Defines the number of frames to be averaged before the correlation.",
+        rich_help_panel="Corr Options",
+        ),
+    begin_frame=typer.Option("--begin-frame", "-b",
+            help="Specifies which frame to begin with for the correlation. ",
+            rich_help_panel="Corr Options",
+        ),
+    end_frame=typer.Option("--end-frame", "-e",
+        help="Specifies the last frame used for the correlation.",
+        rich_help_panel="Corr Options",
+        ),
+    stride_frame=typer.Option("--stride-frame", "-f",
+        help="Defines the stride.",
+        rich_help_panel="Corr Options",
+        ),
+    overwrite=typer.Option("--overwrite", "-w",
+        help="Overwrite the existing result file.",
+        rich_help_panel="Corr Options",
+        ),
+    dq_selection=typer.Option("--dq-selection", "-d",
+        help="A string that selects the dq list, eg. '1, 2, 5-7' selects [1,2,5,6,7]",
+        rich_help_panel="Corr Options",
+        ),
+)
 
 # To run silently as nick only
 # run_kwargs = {"run_monitors": [f"urn:globus:auth:identity:3b843349-4d4d-4ef3-916d-2a465f9740a9"],
@@ -115,6 +208,18 @@ def get_function_id(name: str):
     return fids[name]
 
 
+def get_experiment_and_cycle_from_path(path: str):
+    path_parts = pathlib.Path(path).parts
+    try:
+        cycle = path_parts[1]
+        year, trimester = cycle.split('-')
+        if not int(year) in range(2015, 2050) or not int(trimester) in range(1, 4):
+            raise ValueError(f"Invalid cycle {cycle} from path {path}")
+    except Exception:
+        raise ValueError(f"Failed to parse cycle from path {path}")
+    experiment = path_parts[2]
+    return experiment, cycle
+
 
 def get_boost_corr_defaults():
     """
@@ -143,19 +248,21 @@ def get_boost_corr_defaults():
     }
 
 
-def fetch_source_directory(
+def fetch_source_directory_metadata(
     path: str, collection_uuid: str = None, filter_type: str = "dir"
 ):
     collection_uuid = collection_uuid or DEPLOYMENT.source_collection.uuid
     transfer_client = globus_sdk.TransferClient(app=globus_app)
     source_path = pathlib.Path(DEPLOYMENT.source_collection.to_globus(path))
     data = transfer_client.operation_ls(collection_uuid, path=source_path)
-    source_directories = [
-        source_path / d["name"]
-        for d in data["DATA"]
-        if d["type"] is None or d["type"] == filter_type
-    ]
-    return source_directories
+    return [f for f in data["DATA"] if filter_type is None or f["type"] == filter_type]
+
+
+def fetch_source_directory(
+    path: str, collection_uuid: str = None, filter_type: str = "dir"
+):
+    source_path = pathlib.Path(DEPLOYMENT.source_collection.to_globus(path))
+    return [source_path/d["name"] for d in fetch_source_directory_metadata(path, collection_uuid, filter_type)]
 
 
 def fetch_dataset_directories(source: str = "/8IDI/2025-2/tempus202507-merge/data/converted/",):
@@ -210,6 +317,20 @@ def list_experiments(cycle: str = "2025-2"):
 
 
 @app.command()
+def list_qmaps(
+        experiment: str,
+        cycle: str = "2025-2",
+):
+    path = SOURCE_ENDPOINT_BASE_PATH / cycle / experiment / "data"
+    print(f"Listing Qmaps in {DEPLOYMENT.source_collection.uuid}{path}:")
+    qmaps = fetch_source_directory_metadata(path=path, filter_type="file")
+    qmaps = [q for q in qmaps if q["name"].endswith(".hdf")]
+    qmaps.sort(key=lambda x: x["last_modified"])
+    for qmap in qmaps:
+        print(f"    - {path / qmap['name']} (last modified: {qmap['last_modified']})")
+
+
+@app.command()
 def list_experiment_subdirectories(
         experiment: str = None,
         cycle: str = "2025-2",
@@ -253,6 +374,44 @@ def list_experiment_subdirectories(
             csv += f"{k},{v}\n"
         csv_path.write_text(csv)
         print(f"Wrote subfolder counts to {csv_path}")
+
+
+@app.command()
+def run_experiment_subdirectory(
+    path: str,
+    qmap: Annotated[str, CORR_ARGS["qmap"]],
+    cycle: Annotated[str, CORR_ARGS["cycle"]] = None,
+    experiment: Annotated[str, PROCESSING_ARGS["experiment"]] = None,
+    deployment: Annotated[str, PROCESSING_ARGS["deployment"]] = "voyager-8idi-polaris",
+    group: Annotated[str, PROCESSING_ARGS["group"]] = "368beb47-c9c5-11e9-b455-0efb3ba9a670",
+    type: Annotated[CorrType, CORR_ARGS["type"]] = CorrType.Multitau,
+    gpu_id: Annotated[int, CORR_ARGS["gpu_id"]] = 0,
+    batch_size: Annotated[int, CORR_ARGS["batch_size"]] = 256,
+    verbose: Annotated[bool, CORR_ARGS["verbose"]] = True,
+    smooth: Annotated[str, CORR_ARGS["smooth"]] = "sqmap",
+    save_g2: Annotated[bool, CORR_ARGS["save_g2"]] = False,
+    avg_frame: Annotated[int, CORR_ARGS["avg_frame"]] = 1,
+    begin_frame: Annotated[int, CORR_ARGS["begin_frame"]] = 0,
+    end_frame: Annotated[int, CORR_ARGS["end_frame"]] = -1,
+    stride_frame: Annotated[int, CORR_ARGS["stride_frame"]] = 1,
+    overwrite: Annotated[bool, CORR_ARGS["overwrite"]] = True,
+    dq_selection: Annotated[str, CORR_ARGS["dq_selection"]] = "all",
+):
+    if not experiment or not cycle:
+        try:
+            experiment, cycle = get_experiment_and_cycle_from_path(path)
+        except ValueError as e:
+            print(str(e))
+            print("Must provide experiment and cycle if they cannot be parsed from path!")
+
+    return 
+    flows_manager = FlowsManager(run_kwargs=run_kwargs)
+    batch_flow_client = XPCSBoostBatch(flows_manager=flows_manager)
+
+    for dataset_directory in e_data:
+        if dataset_directory["directory"] == subdirectory:
+            _run_batches(batch_flow_client, dataset_directory["batches"])
+            break
 
 
 @app.command()
@@ -371,4 +530,8 @@ def run_batches(
 
 
 if __name__ == "__main__":
-    app()
+    try:
+        app()
+    except globus_sdk.TransferAPIError as e:
+        print(f"Globus Transfer API Error: {e.message}")
+        sys.exit(1)
