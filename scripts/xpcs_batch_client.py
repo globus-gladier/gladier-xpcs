@@ -137,42 +137,48 @@ CORR_ARGS = dict(
 #               "run_managers": [f"urn:globus:auth:identity:3b843349-4d4d-4ef3-916d-2a465f9740a9"]}
 run_kwargs = {}
 
-def generate_batches_from_source(
-        source: str, # = "/8IDI/2025-2/tempus202507-merge/data/converted/Ha0277_PO2_a0002_f2000000/",
-        qmap: str, # = "/8IDI/2025-2/tempus202507-merge/data/timepix_Sq90_Dq9_log.hdf",
+
+def get_flow_batch_input(
+        source_files: str,
+        qmap: str,
         staging_dir: str,
-        # staging_dir: str = "batch-test-2026-1-27/tempus202507-merge",
         queue: str = "preemptable",
         flow_batch_size: int = 150,
-        dataset_limit: int = 0,
         boost_corr_args: dict = None,):
 
-    print(source)
-    source_path = pathlib.Path(DEPLOYMENT.source_collection.to_globus(source))
+    """
+    Get a list of batches to process from source files. Each batch contains flow input for starting a flow.
+
+    Args:
+        source_files (str): List of source file paths to process. Each directory must contain data files.
+            Example: ["/8IDI/2025-2/tempus202507-merge/data/converted/Ha0277_PO2_a0002_f2000000/Eb0082_D20_a0011_f2000000_r00001_t76ns/", ...]
+        qmap (str): Path to the qmap file.
+            Example: "/8IDI/2025-2/tempus202507-merge/data/timepix_Sq90_Dq9_log.hdf"
+        staging_dir (str): Staging directory path.
+            Example: "2025-2/tempus202507-merge"
+        queue (str): Compute queue to use.
+            Example: "preemptable"
+        flow_batch_size (int): Number of datasets per flow batch.
+        boost_corr_args (dict): Arguments for boost_corr tool. See CORR_ARGS for details.
+    """
+
+    if not source_files:
+        return list()
+
+    source_base = pathlib.Path(source_files[0]).parent
+    source_paths = [pathlib.Path(DEPLOYMENT.source_collection.to_globus(f)) for f in source_files]
     staging_path = pathlib.Path(DEPLOYMENT.get_input()["input"]["staging_dir"]) / staging_dir
 
-    print(f"Staging path: {staging_path}")
-
-    # transfer_client = globus_sdk.TransferClient(app=globus_app)
-    # data = transfer_client.operation_ls(DEPLOYMENT.source_collection.uuid, path=source_path)
-    # files = [d["name"] for d in data["DATA"] if d["type"] == "dir"]
-    files = fetch_source_directory(path=source, filter_type="dir")
-    files = [f.relative_to(source_path) for f in files]
-    print(f"Files: {files}")
-
-    if dataset_limit:
-        files = files[0:dataset_limit]
-        print(f"WARNING: Capped total amount of files to {dataset_limit}")
+    # Chunk the files into batches, using relative paths from source base
+    files = [f.relative_to(source_base) for f in source_paths]
     batches = [list(files[i: i + flow_batch_size]) for i in range(0, len(files), flow_batch_size)]
 
-
-    print(batches)
     finalized_batches = list()
     for idx, file_batch in enumerate(batches):
 
         transfer_items = [
             {
-                "source_path": str(source / item),
+                "source_path": str(source_base / item),
                 "destination_path": str(pathlib.Path(DEPLOYMENT.staging_collection.to_globus(staging_path)) / item / "input"),
                 "recursive": True
             }
@@ -261,42 +267,6 @@ def fetch_source_directory(
 ):
     source_path = pathlib.Path(DEPLOYMENT.source_collection.to_globus(path))
     return [source_path/d["name"] for d in fetch_source_directory_metadata(path, collection_uuid, filter_type)]
-
-
-# def fetch_dataset_directories(source: str = "/8IDI/2025-2/tempus202507-merge/data/converted/",):
-#     transfer_client = globus_sdk.TransferClient(app=globus_app)
-#     source_path = pathlib.Path(DEPLOYMENT.source_collection.to_globus(source))
-#     data = transfer_client.operation_ls(DEPLOYMENT.source_collection.uuid, path=source_path)
-#     dataset_directories = [source_path / d["name"] for d in data["DATA"] if d["type"] == "dir"]
-#     return dataset_directories
-
-
-# @app.command()
-# def generate_batches(
-#         limit: int = 0,
-#         batch_size: int = 200,
-#         queue: str = "preemptable",
-# ):
-
-#     dataset_directories = fetch_dataset_directories()
-
-
-#     experiment = pathlib.Path("tempus202507-merge.json")
-#     experiment_data = []
-#     num_datasets = 0
-
-#     for d_dir in dataset_directories:
-#         batches_file = pathlib.Path(d_dir.name)
-#         d_data = generate_batches_from_source(limit=limit, batch_size=batch_size, queue=queue, source=d_dir)
-
-#         experiment_data.append({
-#             "directory": str(d_dir),
-#             "batches": d_data,
-#         })
-#         num_datasets += sum(b["batch_size"] for b in d_data)
-
-#     experiment.write_text(json.dumps(experiment_data, indent=2))
-#     print(f"Wrote file {experiment}, Datasets: {num_datasets}")
 
 
 @app.command()
@@ -412,13 +382,16 @@ def run_experiment_subdirectory(
     flows_manager = FlowsManager(run_kwargs=run_kwargs)
     batch_flow_client = XPCSBoostBatch(flows_manager=flows_manager)
 
-    batches = generate_batches_from_source(
-        source=path,
+    source_files = fetch_source_directory(path=path, filter_type="dir")
+    if dataset_limit > 0:
+        source_files = source_files[:dataset_limit]
+
+    batches = get_flow_batch_input(
+        source_files=source_files,
         qmap=qmap,
         staging_dir=f"batch-test-2026-01-27-{cycle}-{experiment}",
         queue=queue.value,
         flow_batch_size=flow_batch_size,
-        dataset_limit=dataset_limit,
         boost_corr_args=dict(
             type=type.value,
             gpu_id=gpu_id,
