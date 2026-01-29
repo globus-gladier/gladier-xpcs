@@ -317,39 +317,25 @@ def list_experiment_subdirectories(
         print("Must provide either experiment or path!")
         return
 
-    if path:
-        path = pathlib.Path(path)
-        experiment_parts = path.relative_to(SOURCE_ENDPOINT_BASE_PATH).parts
-        cycle = experiment_parts[0]
-        experiment = experiment_parts[1]
-    else:
-        path = SOURCE_ENDPOINT_BASE_PATH / cycle / experiment / "data"
+    if not experiment or not cycle:
+        try:
+            experiment, cycle = get_experiment_and_cycle_from_path(path)
+        except ValueError as e:
+            print(str(e))
+            print("Must provide experiment and cycle if they cannot be parsed from path!")
+            return
 
-    csv_path = pathlib.Path(f"{cycle}_{experiment}_subfolder_counts.csv")
-    if csv_path.exists():
-        print(csv_path.read_text())
-        return
-    print(
-        f"Listing Experiment Subdirectories in {DEPLOYMENT.source_collection.uuid}{path}:"
+    path = path or SOURCE_ENDPOINT_BASE_PATH / cycle / experiment / "data"
+    manifest_file = get_manifest_file_path(experiment, cycle)
+    manifest = get_experiment_manifest(
+        experiment_data_path=pathlib.Path(path),
+        manifest_file=manifest_file,
     )
-    counted_subfolders = dict()
 
-    for ddir in fetch_source_directory(path=path):
-        if count_subfolders:
-            subfolders = len(
-                list(fetch_source_directory(path=path / ddir, filter_type="dir"))
-            )
-            counted_subfolders[str(path / ddir)] = subfolders
-            print(f" - {ddir} (subfolders: {subfolders})")
-        else:
-            print(f" - {ddir}")
-
-    if count_subfolders:
-        csv = "path,subfolder_count\n"
-        for k, v in counted_subfolders.items():
-            csv += f"{k},{v}\n"
-        csv_path.write_text(csv)
-        print(f"Wrote subfolder counts to {csv_path}")
+    parent_paths = [str(pathlib.Path(p["path"]).parent) for p in manifest.get("datasets", [])]
+    uniq_parent_paths = set(parent_paths)
+    for p in uniq_parent_paths:
+        print(f" - {p} -- {parent_paths.count(p)} datasets")
 
 
 @app.command()
@@ -414,12 +400,13 @@ def run_experiment_subdirectory(
 
     for idx, batch in enumerate(batches):
         label = f"exp-test-{batch['batch_size']}-{queue.value}-{idx + 1}-of-{len(batches)}"
-        from pprint import pprint
-        pprint(batch["flow_input"])
         run = batch_flow_client.run_flow(flow_input=batch["flow_input"], label=label, tags=['aps', 'xpcs', 'batch-test', 'test'])
         batch["run_id"] = run["run_id"]
-
         print(f"Started run with {batch['batch_size']} datasets. https://app.globus.org/runs/{run['run_id']}/logs")
+
+
+def get_manifest_file_path(experiment: str, cycle: str):
+    return pathlib.Path(f"manifest-{cycle}-{experiment}.json")
 
 
 def get_experiment_manifest(
@@ -511,7 +498,7 @@ def run_experiment(
                 print(str(e))
                 print("Must provide experiment and cycle if they cannot be parsed from path!")
                 return
-        manifest_file = pathlib.Path(f"manifest-{cycle}-{experiment}.json")
+        manifest_file = get_manifest_file_path(experiment, cycle)
         manifest = get_experiment_manifest(
             experiment_data_path=pathlib.Path(path),
             manifest_file=manifest_file,
