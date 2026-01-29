@@ -63,12 +63,16 @@ PROCESSING_ARGS = dict(
         help='This is the "transfer back" output directory on source, where the results corr file will be transferred.',
         rich_help_panel="Processing Options",
     ),
-    flow_batch_size=typer.Option(
+    run_batch_size=typer.Option(
         help="Number of datasets to process in a single flow batch.",
         rich_help_panel="Processing Options",
     ),
     dataset_limit=typer.Option(
         help="Limit number of datasets to process overall.",
+        rich_help_panel="Processing Options",
+    ),
+    active_runs_limit=typer.Option(
+        help="Maximum number of active runs to allow before starting a new run.",
         rich_help_panel="Processing Options",
     ),
 )
@@ -143,7 +147,7 @@ def get_flow_batch_input(
         qmap: str,
         staging_dir: str,
         queue: str = "preemptable",
-        flow_batch_size: int = 150,
+        run_batch_size: int = 150,
         boost_corr_args: dict = None,):
 
     """
@@ -158,20 +162,20 @@ def get_flow_batch_input(
             Example: "2025-2/tempus202507-merge"
         queue (str): Compute queue to use.
             Example: "preemptable"
-        flow_batch_size (int): Number of datasets per flow batch.
+        run_batch_size (int): Number of datasets per flow batch.
         boost_corr_args (dict): Arguments for boost_corr tool. See CORR_ARGS for details.
     """
 
     if not source_files:
         return list()
 
-    source_base = pathlib.Path(source_files[0]).parent
+    source_base = pathlib.Path(source_files[0]).parent.parent
     source_paths = [pathlib.Path(DEPLOYMENT.source_collection.to_globus(f)) for f in source_files]
     staging_path = pathlib.Path(DEPLOYMENT.get_input()["input"]["staging_dir"]) / staging_dir
 
     # Chunk the files into batches, using relative paths from source base
     files = [f.relative_to(source_base) for f in source_paths]
-    batches = [list(files[i: i + flow_batch_size]) for i in range(0, len(files), flow_batch_size)]
+    batches = [list(files[i: i + run_batch_size]) for i in range(0, len(files), run_batch_size)]
 
     finalized_batches = list()
     for idx, file_batch in enumerate(batches):
@@ -357,7 +361,7 @@ def run_experiment_subdirectory(
     deployment: Annotated[str, PROCESSING_ARGS["deployment"]] = "voyager-8idi-polaris",
     group: Annotated[str, PROCESSING_ARGS["group"]] = "368beb47-c9c5-11e9-b455-0efb3ba9a670",
     queue: Annotated[PolarisQueues, PROCESSING_ARGS["queue"]] = PolarisQueues.preemptable,
-    flow_batch_size: Annotated[int, PROCESSING_ARGS["flow_batch_size"]] = 200,
+    run_batch_size: Annotated[int, PROCESSING_ARGS["run_batch_size"]] = 200,
     dataset_limit: Annotated[int, PROCESSING_ARGS["dataset_limit"]] = 0,
     type: Annotated[CorrType, CORR_ARGS["type"]] = CorrType.Multitau,
     gpu_id: Annotated[int, CORR_ARGS["gpu_id"]] = 0,
@@ -391,7 +395,7 @@ def run_experiment_subdirectory(
         qmap=qmap,
         staging_dir=f"batch-test-2026-01-27-{cycle}-{experiment}",
         queue=queue.value,
-        flow_batch_size=flow_batch_size,
+        run_batch_size=run_batch_size,
         boost_corr_args=dict(
             type=type.value,
             gpu_id=gpu_id,
@@ -420,45 +424,20 @@ def run_experiment_subdirectory(
 
 def get_experiment_manifest(
     experiment_data_path: pathlib.Path,
-    qmap: str,
-    cycle: str,
-    experiment: str,
-    deployment: str,
-    group: str,
-    queue: str,
-    flow_batch_size: int,
-    dataset_limit: int,
-    boost_corr_args: dict,
+    manifest_file: pathlib.Path,
 ):
-    manifest_file = pathlib.Path(f"manifest-{cycle}-{experiment}.json")
     if manifest_file.exists():
         print(f"Loading existing manifest from {manifest_file}")
         return json.loads(manifest_file.read_text())
 
-    manifest = dict(
-            path=str(experiment_data_path),
-            experiment=experiment,
-            cycle=cycle,
-            experiment_subdirectories={},
-            deployment=deployment,
-            group=group,
-            dataset_limit=dataset_limit,
-            queue=queue,
-            flow_batch_size=flow_batch_size,
-            boost_corr_args=boost_corr_args,
-            filename=str(manifest_file),
-        )
+    print("Building experiment manifest...")
+    manifest = dict(datasets=list())
     for exp_subdir in fetch_source_directory(path=experiment_data_path, filter_type="dir"):
-        print(f"Processing subdirectory {exp_subdir}")
-        batches = generate_batches_from_source(
-            source=str(experiment_data_path / exp_subdir),
-            qmap=qmap,
-            queue=queue,
-            flow_batch_size=flow_batch_size,
-            dataset_limit=dataset_limit,
-            boost_corr_args=boost_corr_args,
-        )
-        manifest["experiment_subdirectories"][str(experiment_data_path / exp_subdir)] = batches
+        datasets = fetch_source_directory(path=experiment_data_path / exp_subdir, filter_type="dir")
+        print(f"Adding {len(datasets)} datasets from subdirectory {exp_subdir}")
+        for dataset in datasets:
+            manifest["datasets"].append({"path": str(experiment_data_path / exp_subdir / dataset)})
+
     manifest_file.write_text(json.dumps(manifest, indent=2))
     print(f"Wrote manifest to {manifest_file}")
     return manifest
@@ -477,28 +456,27 @@ def get_run_list(session, client):
     return runs
 
 
-def update_manifest(manifest: dict, updates: dict = None):
+def update_manifest(manifest: dict, manifest_file: pathlib.Path, updates: dict = None):
     run_list = get_run_list(globus_app, globus_sdk.FlowsClient)
 
     updates = updates or dict()
-    active_runs = 0
-    for exp_subdir, batches in manifest["experiment_subdirectories"].items():
-        for idx, batch in enumerate(batches):
-            # Update run ID if provided
-            new_run = updates.get((exp_subdir, idx))
-            if new_run:
-                batch["run_id"] = new_run
+    active_runs = set()
+    for dataset in manifest["datasets"]:
+        # Update run ID if provided
+        new_run = updates.get(dataset["path"])
+        if new_run:
+            dataset["run_id"] = new_run
+            dataset["run_status"] = "ACTIVE"
 
-            # Update run status
-            run_id = batch.get("run_id")
-            if run_id and run_id not in run_list:
-                raise Exception(f"Run ID {run_id} not found in recent runs!")
-            elif run_id:
-                batch["run_status"] = run_list[run_id]["status"]
-                active_runs += 1 if batch["run_status"] == "ACTIVE" else 0
-    manifest_file = pathlib.Path(manifest["filename"])
+        # Update run status
+        run_id = dataset.get("run_id")
+        if run_id and run_id not in run_list:
+            raise Exception(f"Run ID {run_id} not found in recent runs!")
+        elif run_id:
+            dataset["run_status"] = run_list[run_id]["status"]
+            active_runs.add(dataset["run_id"]) if dataset["run_status"] == "ACTIVE" else None
     manifest_file.write_text(json.dumps(manifest, indent=2))
-    return active_runs
+    return len(active_runs)
             
 
 @app.command()
@@ -510,7 +488,8 @@ def run_experiment(
         deployment: Annotated[str, PROCESSING_ARGS["deployment"]] = "voyager-8idi-polaris",
         group: Annotated[str, PROCESSING_ARGS["group"]] = "368beb47-c9c5-11e9-b455-0efb3ba9a670",
         queue: Annotated[PolarisQueues, PROCESSING_ARGS["queue"]] = PolarisQueues.preemptable,
-        flow_batch_size: Annotated[int, PROCESSING_ARGS["flow_batch_size"]] = 200,
+        run_batch_size: Annotated[int, PROCESSING_ARGS["run_batch_size"]] = 200,
+        active_runs_limit: Annotated[int, PROCESSING_ARGS["active_runs_limit"]] = 20,
         dataset_limit: Annotated[int, PROCESSING_ARGS["dataset_limit"]] = 0,
         type: Annotated[CorrType, CORR_ARGS["type"]] = CorrType.Multitau,
         gpu_id: Annotated[int, CORR_ARGS["gpu_id"]] = 0,
@@ -532,17 +511,26 @@ def run_experiment(
                 print(str(e))
                 print("Must provide experiment and cycle if they cannot be parsed from path!")
                 return
-
+        manifest_file = pathlib.Path(f"manifest-{cycle}-{experiment}.json")
         manifest = get_experiment_manifest(
             experiment_data_path=pathlib.Path(path),
+            manifest_file=manifest_file,
+        )
+
+        datasets = [d for d in manifest["datasets"] if not d.get("run_id")]
+        print(f"Found {len(datasets)} unprocessed datasets in experiment {experiment} cycle {cycle}.")
+        if dataset_limit > 0:
+            datasets = datasets[:dataset_limit]
+            print(f"Limiting to {dataset_limit} datasets.")
+
+        work_queue = SimpleQueue()
+
+        batches = get_flow_batch_input(
+            source_files=[d["path"] for d in datasets],
             qmap=qmap,
-            cycle=cycle,
-            experiment=experiment,
-            deployment=deployment,
-            group=group,
+            staging_dir=f"batch-test-2026-01-27-{cycle}-{experiment}",
             queue=queue.value,
-            flow_batch_size=flow_batch_size,
-            dataset_limit=dataset_limit,
+            run_batch_size=run_batch_size,
             boost_corr_args=dict(
                 type=type.value,
                 gpu_id=gpu_id,
@@ -556,42 +544,34 @@ def run_experiment(
                 stride_frame=stride_frame,
                 overwrite=overwrite,
                 dq_selection=dq_selection,
-            ),
+            )
         )
-
-        work_queue = SimpleQueue()
-        for exp_subdir, batches in manifest["experiment_subdirectories"].items():
-            for idx, batch in enumerate(batches):
-                if batch.get("run_id"):
-                    print(f"Batch {idx + 1}/{len(batches)} in {exp_subdir} already has run ID {batch['run_id']}. Skipping...")
-                    continue
-
-                work_item = {
-                    "experiment_subdirectory": exp_subdir,
-                    "batch_index": idx,
-                    "flow_data": {
-                        "flow_input": batch["flow_input"],
-                        "label": f"exp-test-{batch['batch_size']}-{queue.value}-{idx + 1}-of-{len(batches)}",
-                        "tags": ['aps', 'xpcs', 'batch-test', 'test'],
-                    }
+        for idx, batch in enumerate(batches):
+            work_item = {
+                "batch_index": idx,
+                "flow_data": {
+                    "flow_input": batch["flow_input"],
+                    "label": f"exp-test-{run_batch_size}-{queue.value}-{idx + 1}-of-{len(batches)}",
+                    "tags": ['aps', 'xpcs', 'batch-test', 'test'],
                 }
-                work_queue.put(work_item)
+            }
+            work_queue.put(work_item)
 
         flows_manager = FlowsManager(run_kwargs=run_kwargs)
         batch_flow_client = XPCSBoostBatch(flows_manager=flows_manager)
-        runs_limit = 1
-        active_runs = update_manifest(manifest)
+        active_runs = update_manifest(manifest, manifest_file)
         initial_queue_size = work_queue.qsize()
-        print(f"Starting processing of {initial_queue_size} batches with max concurrency {runs_limit}...")
+        print(f"Starting processing of {initial_queue_size} batches with max concurrency {active_runs_limit}...")
         while not work_queue.empty():
-            num_runs_to_start = runs_limit - active_runs
-            run_updates = {}
+            num_runs_to_start = active_runs_limit - active_runs
+            dataset_updates = {}
             for _ in range(num_runs_to_start):
                 work_item = work_queue.get()
                 run = batch_flow_client.run_flow(**work_item["flow_data"])
                 print(f"Started {work_item['flow_data']['label']} with run ID {run['run_id']}")
-                run_updates[(work_item["experiment_subdirectory"], work_item["batch_index"])] = run["run_id"]
-            active_runs = update_manifest(manifest, run_updates)
+                source_paths = [ti["source_path"] for ti in work_item["flow_data"]["flow_input"]["input"]["source_transfer"]["transfer_items"]]
+                dataset_updates.update({p: run["run_id"] for p in source_paths})
+            active_runs = update_manifest(manifest, manifest_file, dataset_updates)
             print(f"Active runs: {active_runs}, Batches remaining: {work_queue.qsize()}/{initial_queue_size}")
 
 
