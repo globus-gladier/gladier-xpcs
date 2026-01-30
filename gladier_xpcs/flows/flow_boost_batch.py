@@ -6,12 +6,18 @@ import gladier.tests
     "batch_corr_setup": {
         "user_endpoint_config": {
                 "queue.$": "$.input.compute_queue",
+                "walltime.$": "$.input.compute_walltime",
+                "nodes_per_block.$": "$.input.compute_nodes_per_block",
+                "max_blocks.$": "$.input.compute_max_blocks",
         }
     },
     "xpcs_boost_corr": {
         "tasks": "$.input.xpcs_boost_corr_tasks",
         "user_endpoint_config": {
             "queue.$": "$.input.compute_queue",
+            "walltime.$": "$.input.compute_walltime",
+            "nodes_per_block.$": "$.input.compute_nodes_per_block",
+            "max_blocks.$": "$.input.compute_max_blocks",
         }
     },
 })

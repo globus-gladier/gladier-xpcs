@@ -33,6 +33,7 @@ class CorrType(str, enum.Enum):
 
 class PolarisQueues(str, enum.Enum):
     debug = "debug"
+    debug_scaling = "debug-scaling"
     preemptable = "preemptable"
     prod = "prod"
     demand = "demand"
@@ -40,6 +41,11 @@ class PolarisQueues(str, enum.Enum):
 
 PROCESSING_ARGS = dict(
     queue=typer.Option(help="Compute queue to use.", rich_help_panel="Processing Options", show_choices=list(PolarisQueues)),
+    walltime=typer.Option(help="Walltime for compute jobs (HH:MM:SS).", rich_help_panel="Processing Options"),
+    nodes_per_block=typer.Option(help="Number of nodes to acquire per block.", rich_help_panel="Processing Options"),
+    max_blocks=typer.Option(help="Maximum number of compute node blocks to acquire.", rich_help_panel="Processing Options"),
+    staging_dir=typer.Option(help="Staging directory for processing.", rich_help_panel="Processing Options"),
+    clear_manifest=typer.Option(help="Clear existing manifest and start from scratch", rich_help_panel="Processing Options"),
     group=typer.Option(
             help="Visibility in Search",
             rich_help_panel="Processing Options",
@@ -71,6 +77,7 @@ PROCESSING_ARGS = dict(
         help="Limit number of datasets to process overall.",
         rich_help_panel="Processing Options",
     ),
+    dataset_limit_to_first=typer.Option(help="Limit processing to first N datasets.", rich_help_panel="Processing Options"),
     active_runs_limit=typer.Option(
         help="Maximum number of active runs to allow before starting a new run.",
         rich_help_panel="Processing Options",
@@ -147,6 +154,9 @@ def get_flow_batch_input(
         qmap: str,
         staging_dir: str,
         queue: str = "preemptable",
+        walltime: str = "1:00:00",
+        nodes_per_block: int = 1,
+        max_blocks: int = 10,
         run_batch_size: int = 150,
         boost_corr_args: dict = None,):
 
@@ -202,6 +212,9 @@ def get_flow_batch_input(
             "input": {
                 "compute_queue": queue,
                 "compute_endpoint": "d88919ea-026a-493e-9124-fe3c46defa54",
+                "compute_walltime": walltime,
+                "compute_nodes_per_block": nodes_per_block,
+                "max_blocks": max_blocks,
                 "staging_base_path": str(staging_path),
                 "staging_qmap": qmap_transfer_item["destination_path"],
                 # "boost_corr": get_boost_corr_defaults(),
@@ -339,6 +352,21 @@ def list_experiment_subdirectories(
 
 
 @app.command()
+def update_manifest_status(
+        experiment: Annotated[str, PROCESSING_ARGS["experiment"]],
+        cycle: Annotated[str, CORR_ARGS["cycle"]],
+    ):
+    manifest_file = get_manifest_file_path(experiment, cycle)
+    manifest = json.loads(pathlib.Path(manifest_file).read_text())
+    while True:
+        active = update_manifest(manifest=manifest, manifest_file=manifest_file)
+        failed = [d for d in manifest.get("datasets", []) if d.get("run_status") == "FAILED"]
+        succeeded = [d for d in manifest.get("datasets", []) if d.get("run_status") == "SUCCEEDED"]
+        print(f"Active runs: {active}, Failed datasets: {len(failed)}, Succeeded datasets: {len(succeeded)}, total: {len(manifest.get('datasets', []))}")
+        if active == 0:
+            break
+
+@app.command()
 def run_experiment_subdirectory(
     path: str,
     qmap: Annotated[str, CORR_ARGS["qmap"]],
@@ -473,11 +501,16 @@ def run_experiment(
         cycle: Annotated[str, CORR_ARGS["cycle"]] = None,
         experiment: Annotated[str, PROCESSING_ARGS["experiment"]] = None,
         deployment: Annotated[str, PROCESSING_ARGS["deployment"]] = "voyager-8idi-polaris",
+        staging_dir: Annotated[str, PROCESSING_ARGS["staging_dir"]] = None,
         group: Annotated[str, PROCESSING_ARGS["group"]] = "368beb47-c9c5-11e9-b455-0efb3ba9a670",
         queue: Annotated[PolarisQueues, PROCESSING_ARGS["queue"]] = PolarisQueues.preemptable,
+        walltime: Annotated[str, PROCESSING_ARGS["walltime"]] = "1:00:00",
+        nodes_per_block: Annotated[int, PROCESSING_ARGS["nodes_per_block"]] = 1,
         run_batch_size: Annotated[int, PROCESSING_ARGS["run_batch_size"]] = 200,
         active_runs_limit: Annotated[int, PROCESSING_ARGS["active_runs_limit"]] = 20,
         dataset_limit: Annotated[int, PROCESSING_ARGS["dataset_limit"]] = 0,
+        dataset_limit_to_first: Annotated[int, PROCESSING_ARGS["dataset_limit_to_first"]] = 0,
+        clear_manifest: Annotated[bool, PROCESSING_ARGS["clear_manifest"]] = False,
         type: Annotated[CorrType, CORR_ARGS["type"]] = CorrType.Multitau,
         gpu_id: Annotated[int, CORR_ARGS["gpu_id"]] = 0,
         batch_size: Annotated[int, CORR_ARGS["batch_size"]] = 256,
@@ -504,6 +537,22 @@ def run_experiment(
             manifest_file=manifest_file,
         )
 
+        if dataset_limit_to_first > 0:
+            manifest["datasets"] = manifest["datasets"][:dataset_limit_to_first]
+            print(f"Limiting to first {dataset_limit_to_first} datasets.")
+        
+        if clear_manifest:
+            print("Clearing existing manifest run IDs...")
+            for d in manifest["datasets"]:
+                d.pop("run_id", None)
+                d.pop("run_status", None)
+            manifest_file.write_text(json.dumps(manifest, indent=2))
+        
+        for d in manifest["datasets"]:
+            if d.get("run_status") in ["SUCCEEDED", "ACTIVE"]:
+                d.pop("run_id", None)
+                d.pop("run_status", None)
+
         datasets = [d for d in manifest["datasets"] if not d.get("run_id")]
         print(f"Found {len(datasets)} unprocessed datasets in experiment {experiment} cycle {cycle}.")
         if dataset_limit > 0:
@@ -512,11 +561,15 @@ def run_experiment(
 
         work_queue = SimpleQueue()
 
+        staging_dir = staging_dir or f"{queue.value}-{cycle}-{experiment}-{len(datasets)}"
+
         batches = get_flow_batch_input(
             source_files=[d["path"] for d in datasets],
             qmap=qmap,
-            staging_dir=f"batch-test-2026-01-27-{cycle}-{experiment}",
+            staging_dir=staging_dir,
             queue=queue.value,
+            walltime=walltime,
+            nodes_per_block=nodes_per_block,
             run_batch_size=run_batch_size,
             boost_corr_args=dict(
                 type=type.value,
