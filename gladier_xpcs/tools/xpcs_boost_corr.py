@@ -1,6 +1,6 @@
 from gladier import GladierBaseTool, generate_flow_definition
 
-def xpcs_boost_corr(boost_corr: dict = None, corr_input_file: str = None, **data):
+def xpcs_boost_corr(boost_corr: dict = None, corr_input_file: str = None, flow_debug: bool=False, **data):
     """
     Run the boost corr tool on the given set of inputs within ``boost_corr``. Runs boost corr with
     the given inputs, and writes the results to the given 'output' directory listed in boost_corr.output.
@@ -108,10 +108,19 @@ def xpcs_boost_corr(boost_corr: dict = None, corr_input_file: str = None, **data
         error_log.write_text(traceback.format_exc())
 
 
-    return {
-        'result': 'SUCCESS' if returncode == 0 else "FAILED",
+    dataset_subdir = pathlib.Path(boost_corr["raw"]).parent.parent.parent.name
+    dataset_name = pathlib.Path(boost_corr["raw"]).parent.parent.name
+    dataset_id = str(pathlib.Path(dataset_subdir) / dataset_name)
+    return_val = {
+        "result": "SUCCEEDED" if returncode == 0 else "FAILED",
+        "id": dataset_id,
     }
-
+    if flow_debug:
+        return_val["stderr"] = str(result.stderr)[-2000:]
+        return_val["stderr_len"] = len(str(result.stderr))
+        return_val["stdout"] = str(result.stdout)[-1000:]
+        return_val["stdout_len"] = len(str(result.stdout))
+    return return_val
 
 @generate_flow_definition(modifiers={
     xpcs_boost_corr: {

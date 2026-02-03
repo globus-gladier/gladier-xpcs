@@ -82,6 +82,7 @@ PROCESSING_ARGS = dict(
         help="Maximum number of active runs to allow before starting a new run.",
         rich_help_panel="Processing Options",
     ),
+    flow_debug=typer.Option(help="Enable flow debug output.", rich_help_panel="Processing Options"),
 )
 
 CORR_ARGS = dict(
@@ -156,7 +157,8 @@ def get_flow_batch_input(
         queue: str = "preemptable",
         walltime: str = "1:00:00",
         nodes_per_block: int = 1,
-        max_blocks: int = 10,
+        max_blocks: int = 5,
+        flow_debug: bool = False,
         run_batch_size: int = 150,
         boost_corr_args: dict = None,):
 
@@ -190,15 +192,29 @@ def get_flow_batch_input(
     finalized_batches = list()
     for idx, file_batch in enumerate(batches):
 
-        transfer_items = [
-            {
-                "source_path": str(source_base / item),
-                "destination_path": str(pathlib.Path(DEPLOYMENT.staging_collection.to_globus(staging_path)) / item / "input"),
-                "recursive": True
-            }
-            for item in file_batch
-        ]
+        transfer_items = list()
+        xpcs_boost_corr_tasks = list()
+        for item in file_batch:
+            input_dataset = str(pathlib.Path(DEPLOYMENT.staging_collection.to_globus(staging_path)) / item / "input")
+            transfer_items.append(
+                {
+                    "source_path": str(source_base / item),
+                    "destination_path": input_dataset,
+                    "recursive": True
+                }
+            )
 
+
+            task_kwargs = {"corr_input_file": "/eagle/APSDataProcessing/aps8idi/" + input_dataset}
+            if flow_debug:
+                task_kwargs["flow_debug"] = flow_debug
+            task = {
+                "function_id": get_function_id("xpcs_boost_corr_function_id"),
+                "kwargs": task_kwargs,
+            }
+            xpcs_boost_corr_tasks.append(task)
+
+        # Append qmap transfer item
         qmap = pathlib.Path(qmap)
         qmap_transfer_item = {
             'destination_path': str(pathlib.Path(DEPLOYMENT.staging_collection.to_globus(staging_path)) / qmap.name),
@@ -214,18 +230,13 @@ def get_flow_batch_input(
                 "compute_endpoint": "d88919ea-026a-493e-9124-fe3c46defa54",
                 "compute_walltime": walltime,
                 "compute_nodes_per_block": nodes_per_block,
-                "max_blocks": max_blocks,
+                "compute_max_blocks": max_blocks,
                 "staging_base_path": str(staging_path),
                 "staging_qmap": qmap_transfer_item["destination_path"],
                 # "boost_corr": get_boost_corr_defaults(),
                 "boost_corr": boost_corr_args,
                 "qmap": "/eagle/APSDataProcessing/aps8idi" + qmap_transfer_item["destination_path"],
-                "xpcs_boost_corr_tasks": [
-                    {
-                        "function_id": get_function_id("xpcs_boost_corr_function_id"),
-                        'kwargs': {'corr_input_file': "/eagle/APSDataProcessing/aps8idi/" + d["destination_path"]},
-                    } for d in transfer_items[:-1]
-                ],
+                "xpcs_boost_corr_tasks": xpcs_boost_corr_tasks,
                 'source_transfer': {
                     'destination_endpoint_id': '98d26f35-e5d5-4edd-becf-a75520656c64',
                     'source_endpoint_id': 'aa2b18e8-e248-4265-985c-7e2e59765539',
@@ -376,6 +387,7 @@ def run_experiment_subdirectory(
     group: Annotated[str, PROCESSING_ARGS["group"]] = "368beb47-c9c5-11e9-b455-0efb3ba9a670",
     queue: Annotated[PolarisQueues, PROCESSING_ARGS["queue"]] = PolarisQueues.preemptable,
     run_batch_size: Annotated[int, PROCESSING_ARGS["run_batch_size"]] = 200,
+    flow_debug: Annotated[bool, PROCESSING_ARGS["flow_debug"]] = False,
     dataset_limit: Annotated[int, PROCESSING_ARGS["dataset_limit"]] = 0,
     type: Annotated[CorrType, CORR_ARGS["type"]] = CorrType.Multitau,
     gpu_id: Annotated[int, CORR_ARGS["gpu_id"]] = 0,
@@ -404,12 +416,18 @@ def run_experiment_subdirectory(
     if dataset_limit > 0:
         source_files = source_files[:dataset_limit]
 
+    if flow_debug:
+        source_files = source_files[:1]
+        queue = PolarisQueues.debug
+        print("Flow debug enabled, limiting to 1 dataset on the debug queue.")
+
     batches = get_flow_batch_input(
         source_files=source_files,
         qmap=qmap,
         staging_dir=f"batch-test-2026-01-27-{cycle}-{experiment}",
         queue=queue.value,
         run_batch_size=run_batch_size,
+        flow_debug=flow_debug,
         boost_corr_args=dict(
             type=type.value,
             gpu_id=gpu_id,
@@ -506,7 +524,9 @@ def run_experiment(
         queue: Annotated[PolarisQueues, PROCESSING_ARGS["queue"]] = PolarisQueues.preemptable,
         walltime: Annotated[str, PROCESSING_ARGS["walltime"]] = "1:00:00",
         nodes_per_block: Annotated[int, PROCESSING_ARGS["nodes_per_block"]] = 1,
+        max_blocks: Annotated[int, PROCESSING_ARGS["max_blocks"]] = 5,
         run_batch_size: Annotated[int, PROCESSING_ARGS["run_batch_size"]] = 200,
+        flow_debug: Annotated[bool, PROCESSING_ARGS["flow_debug"]] = False,
         active_runs_limit: Annotated[int, PROCESSING_ARGS["active_runs_limit"]] = 20,
         dataset_limit: Annotated[int, PROCESSING_ARGS["dataset_limit"]] = 0,
         dataset_limit_to_first: Annotated[int, PROCESSING_ARGS["dataset_limit_to_first"]] = 0,
@@ -536,6 +556,10 @@ def run_experiment(
             experiment_data_path=pathlib.Path(path),
             manifest_file=manifest_file,
         )
+
+        if flow_debug:
+            dataset_limit = 1
+            print("Flow debug enabled, limiting to 1 dataset.")
 
         if dataset_limit_to_first > 0:
             manifest["datasets"] = manifest["datasets"][:dataset_limit_to_first]
@@ -570,6 +594,8 @@ def run_experiment(
             queue=queue.value,
             walltime=walltime,
             nodes_per_block=nodes_per_block,
+            max_blocks=max_blocks,
+            flow_debug=flow_debug,
             run_batch_size=run_batch_size,
             boost_corr_args=dict(
                 type=type.value,
