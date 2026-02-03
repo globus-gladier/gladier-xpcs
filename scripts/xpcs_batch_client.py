@@ -23,8 +23,13 @@ from scripts import xpcs_online_boost_client
 DEPLOYMENT = deployment_map["voyager-8idi-polaris"]
 SOURCE_ENDPOINT_BASE_PATH = pathlib.Path("/8IDI")
 
-globus_app = globus_sdk.ClientApp("scripting", client_id=os.getenv("GLADIER_CLIENT_ID"), client_secret=os.getenv("GLADIER_CLIENT_SECRET"))
+globus_app = globus_sdk.ClientApp(
+    "scripting",
+    client_id=os.getenv("GLADIER_CLIENT_ID"),
+    client_secret=os.getenv("GLADIER_CLIENT_SECRET"),
+)
 app = typer.Typer(no_args_is_help=True, pretty_exceptions_enable=False)
+
 
 class CorrType(str, enum.Enum):
     Multitau = "Multitau"
@@ -41,31 +46,49 @@ class PolarisQueues(str, enum.Enum):
 
 
 PROCESSING_ARGS = dict(
-    queue=typer.Option(help="Compute queue to use.", rich_help_panel="Processing Options", show_choices=list(PolarisQueues)),
-    walltime=typer.Option(help="Walltime for compute jobs (HH:MM:SS).", rich_help_panel="Processing Options"),
-    nodes_per_block=typer.Option(help="Number of nodes to acquire per block.", rich_help_panel="Processing Options"),
-    max_blocks=typer.Option(help="Maximum number of compute node blocks to acquire.", rich_help_panel="Processing Options"),
-    staging_dir=typer.Option(help="Staging directory for processing.", rich_help_panel="Processing Options"),
-    clear_manifest=typer.Option(help="Clear existing manifest and start from scratch", rich_help_panel="Processing Options"),
+    queue=typer.Option(
+        help="Compute queue to use.",
+        rich_help_panel="Processing Options",
+        show_choices=list(PolarisQueues),
+    ),
+    walltime=typer.Option(
+        help="Walltime for compute jobs (HH:MM:SS).",
+        rich_help_panel="Processing Options",
+    ),
+    nodes_per_block=typer.Option(
+        help="Number of nodes to acquire per block.",
+        rich_help_panel="Processing Options",
+    ),
+    max_blocks=typer.Option(
+        help="Maximum number of compute node blocks to acquire.",
+        rich_help_panel="Processing Options",
+    ),
+    staging_dir=typer.Option(
+        help="Staging directory for processing.", rich_help_panel="Processing Options"
+    ),
+    clear_manifest=typer.Option(
+        help="Clear existing manifest and start from scratch",
+        rich_help_panel="Processing Options",
+    ),
     group=typer.Option(
-            help="Visibility in Search",
-            rich_help_panel="Processing Options",
-        ),
+        help="Visibility in Search",
+        rich_help_panel="Processing Options",
+    ),
     deployment=typer.Option(
-            help="Deployment configs.",
-            rich_help_panel="Processing Options",
-            # default="voyager-8idi-polaris",
-            show_choices=list(deployment_map.keys()),
-        ),
+        help="Deployment configs.",
+        rich_help_panel="Processing Options",
+        # default="voyager-8idi-polaris",
+        show_choices=list(deployment_map.keys()),
+    ),
     experiment=typer.Option(
-            help="Experiment name for the dataset. Ex: tempus202507-merge",
-            rich_help_panel="Processing Options",
-        ),
+        help="Experiment name for the dataset. Ex: tempus202507-merge",
+        rich_help_panel="Processing Options",
+    ),
     skip_transfer_back=typer.Option(
         help="Skip transfer of processed data to source collection. "
         "Should not be skipped in normal operation. Use this option only for testing or reprocessing old data.",
         rich_help_panel="Processing Options",
-        ),
+    ),
     output=typer.Option(
         help='This is the "transfer back" output directory on source, where the results corr file will be transferred.',
         rich_help_panel="Processing Options",
@@ -78,71 +101,102 @@ PROCESSING_ARGS = dict(
         help="Limit number of datasets to process overall.",
         rich_help_panel="Processing Options",
     ),
-    dataset_limit_to_first=typer.Option(help="Limit processing to first N datasets.", rich_help_panel="Processing Options"),
+    dataset_limit_to_first=typer.Option(
+        help="Limit processing to first N datasets.",
+        rich_help_panel="Processing Options",
+    ),
     active_runs_limit=typer.Option(
         help="Maximum number of active runs to allow before starting a new run.",
         rich_help_panel="Processing Options",
     ),
-    flow_debug=typer.Option(help="Enable flow debug output.", rich_help_panel="Processing Options"),
+    flow_debug=typer.Option(
+        help="Enable flow debug output.", rich_help_panel="Processing Options"
+    ),
 )
 
 CORR_ARGS = dict(
-    qmap=typer.Option("--qmap", "-q",
-            help="Path to the qmap file",
-            rich_help_panel="Corr Options",
-        ),
-    cycle=typer.Option("--cycle", "-c",
-            help="cycle for the dataset. Ex: 2025-1. Determines publish location.",
-            rich_help_panel="Corr Options",
-        ),
-    type=typer.Option("--type", "-t",
-            help="Analysis type to be performed.",
-            rich_help_panel="Corr Options",
-        ),
-    gpu_id=typer.Option("--gpu-id", "-i",
-            help="Choose which GPU to use. if the input is -1, then CPU is used",
-            rich_help_panel="Corr Options",
-        ),
+    qmap=typer.Option(
+        "--qmap",
+        "-q",
+        help="Path to the qmap file",
+        rich_help_panel="Corr Options",
+    ),
+    cycle=typer.Option(
+        "--cycle",
+        "-c",
+        help="cycle for the dataset. Ex: 2025-1. Determines publish location.",
+        rich_help_panel="Corr Options",
+    ),
+    type=typer.Option(
+        "--type",
+        "-t",
+        help="Analysis type to be performed.",
+        rich_help_panel="Corr Options",
+    ),
+    gpu_id=typer.Option(
+        "--gpu-id",
+        "-i",
+        help="Choose which GPU to use. if the input is -1, then CPU is used",
+        rich_help_panel="Corr Options",
+    ),
     batch_size=typer.Option(
-            help="Size of gpu corr processing batch",
-            rich_help_panel="Corr Options",
-        ),
-    verbose=typer.Option("--verbose", "-v",
-            help="Verbose output",
-            rich_help_panel="Corr Options",
-        ),
-    smooth=typer.Option("--smooth", "-s",
+        help="Size of gpu corr processing batch",
+        rich_help_panel="Corr Options",
+    ),
+    verbose=typer.Option(
+        "--verbose",
+        "-v",
+        help="Verbose output",
+        rich_help_panel="Corr Options",
+    ),
+    smooth=typer.Option(
+        "--smooth",
+        "-s",
         help="Smooth method to be used in Twotime correlation.",
         rich_help_panel="Corr Options",
-        ),
-    save_g2=typer.Option("--save-g2", "-G",
-            help="Save G2, IP, and IF to file.",
-            rich_help_panel="Corr Options",
-        ),
-    avg_frame=typer.Option("--avg-frame", "-a",
+    ),
+    save_g2=typer.Option(
+        "--save-g2",
+        "-G",
+        help="Save G2, IP, and IF to file.",
+        rich_help_panel="Corr Options",
+    ),
+    avg_frame=typer.Option(
+        "--avg-frame",
+        "-a",
         help="Defines the number of frames to be averaged before the correlation.",
         rich_help_panel="Corr Options",
-        ),
-    begin_frame=typer.Option("--begin-frame", "-b",
-            help="Specifies which frame to begin with for the correlation. ",
-            rich_help_panel="Corr Options",
-        ),
-    end_frame=typer.Option("--end-frame", "-e",
+    ),
+    begin_frame=typer.Option(
+        "--begin-frame",
+        "-b",
+        help="Specifies which frame to begin with for the correlation. ",
+        rich_help_panel="Corr Options",
+    ),
+    end_frame=typer.Option(
+        "--end-frame",
+        "-e",
         help="Specifies the last frame used for the correlation.",
         rich_help_panel="Corr Options",
-        ),
-    stride_frame=typer.Option("--stride-frame", "-f",
+    ),
+    stride_frame=typer.Option(
+        "--stride-frame",
+        "-f",
         help="Defines the stride.",
         rich_help_panel="Corr Options",
-        ),
-    overwrite=typer.Option("--overwrite", "-w",
+    ),
+    overwrite=typer.Option(
+        "--overwrite",
+        "-w",
         help="Overwrite the existing result file.",
         rich_help_panel="Corr Options",
-        ),
-    dq_selection=typer.Option("--dq-selection", "-d",
+    ),
+    dq_selection=typer.Option(
+        "--dq-selection",
+        "-d",
         help="A string that selects the dq list, eg. '1, 2, 5-7' selects [1,2,5,6,7]",
         rich_help_panel="Corr Options",
-        ),
+    ),
 )
 
 # To run silently as nick only
@@ -152,17 +206,17 @@ run_kwargs = {}
 
 
 def get_flow_batch_input(
-        source_files: str,
-        qmap: str,
-        staging_dir: str,
-        queue: str = "preemptable",
-        walltime: str = "1:00:00",
-        nodes_per_block: int = 1,
-        max_blocks: int = 5,
-        flow_debug: bool = False,
-        run_batch_size: int = 150,
-        boost_corr_args: dict = None,):
-
+    source_files: str,
+    qmap: str,
+    staging_dir: str,
+    queue: str = "preemptable",
+    walltime: str = "1:00:00",
+    nodes_per_block: int = 1,
+    max_blocks: int = 5,
+    flow_debug: bool = False,
+    run_batch_size: int = 150,
+    boost_corr_args: dict = None,
+):
     """
     Get a list of batches to process from source files. Each batch contains flow input for starting a flow.
 
@@ -183,12 +237,19 @@ def get_flow_batch_input(
         return list()
 
     source_base = pathlib.Path(source_files[0]).parent.parent
-    source_paths = [pathlib.Path(DEPLOYMENT.source_collection.to_globus(f)) for f in source_files]
-    staging_path = pathlib.Path(DEPLOYMENT.get_input()["input"]["staging_dir"]) / staging_dir
+    source_paths = [
+        pathlib.Path(DEPLOYMENT.source_collection.to_globus(f)) for f in source_files
+    ]
+    staging_path = (
+        pathlib.Path(DEPLOYMENT.get_input()["input"]["staging_dir"]) / staging_dir
+    )
 
     # Chunk the files into batches, using relative paths from source base
     files = [f.relative_to(source_base) for f in source_paths]
-    batches = [list(files[i: i + run_batch_size]) for i in range(0, len(files), run_batch_size)]
+    batches = [
+        list(files[i : i + run_batch_size])
+        for i in range(0, len(files), run_batch_size)
+    ]
 
     finalized_batches = list()
     for idx, file_batch in enumerate(batches):
@@ -196,17 +257,22 @@ def get_flow_batch_input(
         transfer_items = list()
         xpcs_boost_corr_tasks = list()
         for item in file_batch:
-            input_dataset = str(pathlib.Path(DEPLOYMENT.staging_collection.to_globus(staging_path)) / item / "input")
+            input_dataset = str(
+                pathlib.Path(DEPLOYMENT.staging_collection.to_globus(staging_path))
+                / item
+                / "input"
+            )
             transfer_items.append(
                 {
                     "source_path": str(source_base / item),
                     "destination_path": input_dataset,
-                    "recursive": True
+                    "recursive": True,
                 }
             )
 
-
-            task_kwargs = {"corr_input_file": "/eagle/APSDataProcessing/aps8idi/" + input_dataset}
+            task_kwargs = {
+                "corr_input_file": "/eagle/APSDataProcessing/aps8idi/" + input_dataset
+            }
             if flow_debug:
                 task_kwargs["flow_debug"] = flow_debug
             task = {
@@ -218,9 +284,12 @@ def get_flow_batch_input(
         # Append qmap transfer item
         qmap = pathlib.Path(qmap)
         qmap_transfer_item = {
-            'destination_path': str(pathlib.Path(DEPLOYMENT.staging_collection.to_globus(staging_path)) / qmap.name),
-            'recursive': False,
-            'source_path': str(DEPLOYMENT.source_collection.to_globus(str(qmap))),
+            "destination_path": str(
+                pathlib.Path(DEPLOYMENT.staging_collection.to_globus(staging_path))
+                / qmap.name
+            ),
+            "recursive": False,
+            "source_path": str(DEPLOYMENT.source_collection.to_globus(str(qmap))),
         }
         transfer_items.append(qmap_transfer_item)
 
@@ -236,12 +305,13 @@ def get_flow_batch_input(
                 "staging_qmap": qmap_transfer_item["destination_path"],
                 # "boost_corr": get_boost_corr_defaults(),
                 "boost_corr": boost_corr_args,
-                "qmap": "/eagle/APSDataProcessing/aps8idi" + qmap_transfer_item["destination_path"],
+                "qmap": "/eagle/APSDataProcessing/aps8idi"
+                + qmap_transfer_item["destination_path"],
                 "xpcs_boost_corr_tasks": xpcs_boost_corr_tasks,
-                'source_transfer': {
-                    'destination_endpoint_id': '98d26f35-e5d5-4edd-becf-a75520656c64',
-                    'source_endpoint_id': 'aa2b18e8-e248-4265-985c-7e2e59765539',
-                    'transfer_items': transfer_items
+                "source_transfer": {
+                    "destination_endpoint_id": "98d26f35-e5d5-4edd-becf-a75520656c64",
+                    "source_endpoint_id": "aa2b18e8-e248-4265-985c-7e2e59765539",
+                    "transfer_items": transfer_items,
                 },
             },
         }
@@ -271,7 +341,7 @@ def get_experiment_and_cycle_from_path(path: str):
     try:
         cycle = path_parts[0]
         print("parsing cycle:", cycle)
-        year, trimester = cycle.split('-')
+        year, trimester = cycle.split("-")
         if not int(year) in range(2015, 2050) or not int(trimester) in range(1, 4):
             raise ValueError(f"Invalid cycle {cycle} from path {path}")
     except Exception as e:
@@ -295,12 +365,17 @@ def fetch_source_directory(
     path: str, collection_uuid: str = None, filter_type: str = "dir"
 ):
     source_path = pathlib.Path(DEPLOYMENT.source_collection.to_globus(path))
-    return [source_path/d["name"] for d in fetch_source_directory_metadata(path, collection_uuid, filter_type)]
+    return [
+        source_path / d["name"]
+        for d in fetch_source_directory_metadata(path, collection_uuid, filter_type)
+    ]
 
 
 @app.command()
 def list_cycles():
-    print(f"Listing Cycles for endpoint {DEPLOYMENT.source_collection.uuid}, path {SOURCE_ENDPOINT_BASE_PATH}:")
+    print(
+        f"Listing Cycles for endpoint {DEPLOYMENT.source_collection.uuid}, path {SOURCE_ENDPOINT_BASE_PATH}:"
+    )
     for cycle in fetch_source_directory(path=SOURCE_ENDPOINT_BASE_PATH):
         print(f" - {cycle}")
 
@@ -315,9 +390,9 @@ def list_experiments(cycle: str = "2025-2"):
 
 @app.command()
 def list_qmaps(
-        path: str = None,
-        experiment: str = None,
-        cycle: str = "2025-2",
+    path: str = None,
+    experiment: str = None,
+    cycle: str = "2025-2",
 ):
     if not path and (not experiment or not cycle):
         print("Must provide either path or experiment and cycle!")
@@ -333,10 +408,10 @@ def list_qmaps(
 
 @app.command()
 def list_experiment_subdirectories(
-        experiment: str = None,
-        cycle: str = "2025-2",
-        count_subfolders: bool = False,
-        path: str = None,
+    experiment: str = None,
+    cycle: str = "2025-2",
+    count_subfolders: bool = False,
+    path: str = None,
 ):
     if not experiment and not path:
         print("Must provide either experiment or path!")
@@ -347,7 +422,9 @@ def list_experiment_subdirectories(
             experiment, cycle = get_experiment_and_cycle_from_path(path)
         except ValueError as e:
             print(str(e))
-            print("Must provide experiment and cycle if they cannot be parsed from path!")
+            print(
+                "Must provide experiment and cycle if they cannot be parsed from path!"
+            )
             return
 
     path = path or SOURCE_ENDPOINT_BASE_PATH / cycle / experiment / "data"
@@ -357,7 +434,9 @@ def list_experiment_subdirectories(
         manifest_file=manifest_file,
     )
 
-    parent_paths = [str(pathlib.Path(p["path"]).parent) for p in manifest.get("datasets", [])]
+    parent_paths = [
+        str(pathlib.Path(p["path"]).parent) for p in manifest.get("datasets", [])
+    ]
     uniq_parent_paths = set(parent_paths)
     for p in uniq_parent_paths:
         print(f" - {p} -- {parent_paths.count(p)} datasets")
@@ -365,29 +444,47 @@ def list_experiment_subdirectories(
 
 @app.command()
 def update_manifest_status(
-        experiment: Annotated[str, PROCESSING_ARGS["experiment"]],
-        cycle: Annotated[str, CORR_ARGS["cycle"]],
-    ):
+    experiment: Annotated[str, PROCESSING_ARGS["experiment"]],
+    cycle: Annotated[str, CORR_ARGS["cycle"]],
+):
     manifest_file = get_manifest_file_path(experiment, cycle)
     manifest = json.loads(pathlib.Path(manifest_file).read_text())
     while True:
         active = update_manifest(manifest=manifest, manifest_file=manifest_file)
-        failed = [d for d in manifest.get("datasets", []) if d.get("run_status") == "FAILED"]
-        succeeded = [d for d in manifest.get("datasets", []) if d.get("run_status") == "SUCCEEDED"]
-        print(f"Active runs: {active}, Failed datasets: {len(failed)}, Succeeded datasets: {len(succeeded)}, total: {len(manifest.get('datasets', []))}")
+        failed = [
+            d for d in manifest.get("datasets", []) if d.get("run_status") == "FAILED"
+        ]
+        succeeded = [
+            d
+            for d in manifest.get("datasets", [])
+            if d.get("run_status") == "SUCCEEDED"
+        ]
+        print(
+            f"Active runs: {active}, Failed datasets: {len(failed)}, Succeeded datasets: {len(succeeded)}, total: {len(manifest.get('datasets', []))}"
+        )
         if active == 0:
             break
 
+
 @app.command()
 def run_experiment_subdirectory(
-    path: Annotated[str, typer.Argument(help="Path to the experiment subdirectory to process. Example: /8IDI/2025-2/tempus202507-merge/data/converted/Cb0164_D100_a0060_f2000000")],
+    path: Annotated[
+        str,
+        typer.Argument(
+            help="Path to the experiment subdirectory to process. Example: /8IDI/2025-2/tempus202507-merge/data/converted/Cb0164_D100_a0060_f2000000"
+        ),
+    ],
     qmap: Annotated[str, CORR_ARGS["qmap"]],
     cycle: Annotated[str, CORR_ARGS["cycle"]] = None,
     experiment: Annotated[str, PROCESSING_ARGS["experiment"]] = None,
     deployment: Annotated[str, PROCESSING_ARGS["deployment"]] = "voyager-8idi-polaris",
     staging_dir: Annotated[str, PROCESSING_ARGS["staging_dir"]] = None,
-    group: Annotated[str, PROCESSING_ARGS["group"]] = "368beb47-c9c5-11e9-b455-0efb3ba9a670",
-    queue: Annotated[PolarisQueues, PROCESSING_ARGS["queue"]] = PolarisQueues.preemptable,
+    group: Annotated[
+        str, PROCESSING_ARGS["group"]
+    ] = "368beb47-c9c5-11e9-b455-0efb3ba9a670",
+    queue: Annotated[
+        PolarisQueues, PROCESSING_ARGS["queue"]
+    ] = PolarisQueues.preemptable,
     walltime: Annotated[str, PROCESSING_ARGS["walltime"]] = "1:00:00",
     nodes_per_block: Annotated[int, PROCESSING_ARGS["nodes_per_block"]] = 1,
     max_blocks: Annotated[int, PROCESSING_ARGS["max_blocks"]] = 5,
@@ -426,7 +523,9 @@ def run_experiment_subdirectory(
             experiment, cycle = get_experiment_and_cycle_from_path(path)
         except ValueError as e:
             print(str(e))
-            print("Must provide experiment and cycle if they cannot be parsed from path!")
+            print(
+                "Must provide experiment and cycle if they cannot be parsed from path!"
+            )
 
     flows_manager = FlowsManager(run_kwargs=run_kwargs)
     batch_flow_client = XPCSBoostBatch(flows_manager=flows_manager)
@@ -440,7 +539,10 @@ def run_experiment_subdirectory(
         queue = PolarisQueues.debug
         print("Flow debug enabled, limiting to 1 dataset on the debug queue.")
 
-    staging_dir = staging_dir or f"{queue.value}-{datetime.date.today().isoformat()}-{cycle}-{experiment}-{len(source_files)}"
+    staging_dir = (
+        staging_dir
+        or f"{queue.value}-{datetime.date.today().isoformat()}-{cycle}-{experiment}-{len(source_files)}"
+    )
 
     batches = get_flow_batch_input(
         source_files=source_files,
@@ -470,9 +572,15 @@ def run_experiment_subdirectory(
 
     for idx, batch in enumerate(batches):
         label = f"{batch['batch_size']}-{queue.value}-{idx + 1}-of-{len(batches)}-{pathlib.Path(path).name}"
-        run = batch_flow_client.run_flow(flow_input=batch["flow_input"], label=label, tags=['aps', 'xpcs', 'batch-test', 'test'])
+        run = batch_flow_client.run_flow(
+            flow_input=batch["flow_input"],
+            label=label,
+            tags=["aps", "xpcs", "batch-test", "test"],
+        )
         batch["run_id"] = run["run_id"]
-        print(f"Started run with {batch['batch_size']} datasets. https://app.globus.org/runs/{run['run_id']}/logs")
+        print(
+            f"Started run with {batch['batch_size']} datasets. https://app.globus.org/runs/{run['run_id']}/logs"
+        )
 
 
 def get_manifest_file_path(experiment: str, cycle: str):
@@ -489,22 +597,31 @@ def get_experiment_manifest(
 
     print("Building experiment manifest...")
     manifest = dict(datasets=list())
-    for exp_subdir in fetch_source_directory(path=experiment_data_path, filter_type="dir"):
-        datasets = fetch_source_directory(path=experiment_data_path / exp_subdir, filter_type="dir")
+    for exp_subdir in fetch_source_directory(
+        path=experiment_data_path, filter_type="dir"
+    ):
+        datasets = fetch_source_directory(
+            path=experiment_data_path / exp_subdir, filter_type="dir"
+        )
         print(f"Adding {len(datasets)} datasets from subdirectory {exp_subdir}")
         for dataset in datasets:
-            manifest["datasets"].append({"path": str(experiment_data_path / exp_subdir / dataset)})
+            manifest["datasets"].append(
+                {"path": str(experiment_data_path / exp_subdir / dataset)}
+            )
 
     manifest_file.write_text(json.dumps(manifest, indent=2))
     print(f"Wrote manifest to {manifest_file}")
     return manifest
+
 
 def get_run_list(session, client):
     flows_client = globus_sdk.FlowsClient(app=globus_app)
     query_params = dict(orderby="start_time DESC", per_page=50)
     runs = {}
     # Fetch recent runs
-    for idx, page in enumerate(flows_client.paginated.list_runs(query_params=query_params)):
+    for idx, page in enumerate(
+        flows_client.paginated.list_runs(query_params=query_params)
+    ):
         if idx >= 4:
             break
         # print(f"Fetching page {idx} of run list...")
@@ -531,138 +648,163 @@ def update_manifest(manifest: dict, manifest_file: pathlib.Path, updates: dict =
             raise Exception(f"Run ID {run_id} not found in recent runs!")
         elif run_id:
             dataset["run_status"] = run_list[run_id]["status"]
-            active_runs.add(dataset["run_id"]) if dataset["run_status"] == "ACTIVE" else None
+            (
+                active_runs.add(dataset["run_id"])
+                if dataset["run_status"] == "ACTIVE"
+                else None
+            )
     manifest_file.write_text(json.dumps(manifest, indent=2))
     return len(active_runs)
-            
+
 
 @app.command()
 def run_experiment(
-        path: str,
-        qmap: Annotated[str, CORR_ARGS["qmap"]],
-        cycle: Annotated[str, CORR_ARGS["cycle"]] = None,
-        experiment: Annotated[str, PROCESSING_ARGS["experiment"]] = None,
-        deployment: Annotated[str, PROCESSING_ARGS["deployment"]] = "voyager-8idi-polaris",
-        staging_dir: Annotated[str, PROCESSING_ARGS["staging_dir"]] = None,
-        group: Annotated[str, PROCESSING_ARGS["group"]] = "368beb47-c9c5-11e9-b455-0efb3ba9a670",
-        queue: Annotated[PolarisQueues, PROCESSING_ARGS["queue"]] = PolarisQueues.preemptable,
-        walltime: Annotated[str, PROCESSING_ARGS["walltime"]] = "1:00:00",
-        nodes_per_block: Annotated[int, PROCESSING_ARGS["nodes_per_block"]] = 1,
-        max_blocks: Annotated[int, PROCESSING_ARGS["max_blocks"]] = 5,
-        run_batch_size: Annotated[int, PROCESSING_ARGS["run_batch_size"]] = 200,
-        flow_debug: Annotated[bool, PROCESSING_ARGS["flow_debug"]] = False,
-        active_runs_limit: Annotated[int, PROCESSING_ARGS["active_runs_limit"]] = 20,
-        dataset_limit: Annotated[int, PROCESSING_ARGS["dataset_limit"]] = 0,
-        dataset_limit_to_first: Annotated[int, PROCESSING_ARGS["dataset_limit_to_first"]] = 0,
-        clear_manifest: Annotated[bool, PROCESSING_ARGS["clear_manifest"]] = False,
-        type: Annotated[CorrType, CORR_ARGS["type"]] = CorrType.Multitau,
-        gpu_id: Annotated[int, CORR_ARGS["gpu_id"]] = 0,
-        batch_size: Annotated[int, CORR_ARGS["batch_size"]] = 256,
-        verbose: Annotated[bool, CORR_ARGS["verbose"]] = True,
-        smooth: Annotated[str, CORR_ARGS["smooth"]] = "sqmap",
-        save_g2: Annotated[bool, CORR_ARGS["save_g2"]] = False,
-        avg_frame: Annotated[int, CORR_ARGS["avg_frame"]] = 1,
-        begin_frame: Annotated[int, CORR_ARGS["begin_frame"]] = 0,
-        end_frame: Annotated[int, CORR_ARGS["end_frame"]] = -1,
-        stride_frame: Annotated[int, CORR_ARGS["stride_frame"]] = 1,
-        overwrite: Annotated[bool, CORR_ARGS["overwrite"]] = True,
-        dq_selection: Annotated[str, CORR_ARGS["dq_selection"]] = "all",
-    ):
-        if not experiment or not cycle:
-            try:
-                experiment, cycle = get_experiment_and_cycle_from_path(path)
-            except ValueError as e:
-                print(str(e))
-                print("Must provide experiment and cycle if they cannot be parsed from path!")
-                return
-        manifest_file = get_manifest_file_path(experiment, cycle)
-        manifest = get_experiment_manifest(
-            experiment_data_path=pathlib.Path(path),
-            manifest_file=manifest_file,
-        )
-
-        if flow_debug:
-            dataset_limit = 1
-            print("Flow debug enabled, limiting to 1 dataset.")
-
-        if dataset_limit_to_first > 0:
-            manifest["datasets"] = manifest["datasets"][:dataset_limit_to_first]
-            print(f"Limiting to first {dataset_limit_to_first} datasets.")
-        
-        if clear_manifest:
-            print("Clearing existing manifest run IDs...")
-            for d in manifest["datasets"]:
-                d.pop("run_id", None)
-                d.pop("run_status", None)
-            manifest_file.write_text(json.dumps(manifest, indent=2))
-        
-        for d in manifest["datasets"]:
-            if d.get("run_status") in ["SUCCEEDED", "ACTIVE"]:
-                d.pop("run_id", None)
-                d.pop("run_status", None)
-
-        datasets = [d for d in manifest["datasets"] if not d.get("run_id")]
-        print(f"Found {len(datasets)} unprocessed datasets in experiment {experiment} cycle {cycle}.")
-        if dataset_limit > 0:
-            datasets = datasets[:dataset_limit]
-            print(f"Limiting to {dataset_limit} datasets.")
-
-        work_queue = SimpleQueue()
-
-        staging_dir = staging_dir or f"{queue.value}-{cycle}-{experiment}-{len(datasets)}"
-
-        batches = get_flow_batch_input(
-            source_files=[d["path"] for d in datasets],
-            qmap=qmap,
-            staging_dir=staging_dir,
-            queue=queue.value,
-            walltime=walltime,
-            nodes_per_block=nodes_per_block,
-            max_blocks=max_blocks,
-            flow_debug=flow_debug,
-            run_batch_size=run_batch_size,
-            boost_corr_args=dict(
-                type=type.value,
-                gpu_id=gpu_id,
-                batch_size=batch_size,
-                verbose=verbose,
-                smooth=smooth,
-                save_g2=save_g2,
-                avg_frame=avg_frame,
-                begin_frame=begin_frame,
-                end_frame=end_frame,
-                stride_frame=stride_frame,
-                overwrite=overwrite,
-                dq_selection=dq_selection,
+    path: str,
+    qmap: Annotated[str, CORR_ARGS["qmap"]],
+    cycle: Annotated[str, CORR_ARGS["cycle"]] = None,
+    experiment: Annotated[str, PROCESSING_ARGS["experiment"]] = None,
+    deployment: Annotated[str, PROCESSING_ARGS["deployment"]] = "voyager-8idi-polaris",
+    staging_dir: Annotated[str, PROCESSING_ARGS["staging_dir"]] = None,
+    group: Annotated[
+        str, PROCESSING_ARGS["group"]
+    ] = "368beb47-c9c5-11e9-b455-0efb3ba9a670",
+    queue: Annotated[
+        PolarisQueues, PROCESSING_ARGS["queue"]
+    ] = PolarisQueues.preemptable,
+    walltime: Annotated[str, PROCESSING_ARGS["walltime"]] = "1:00:00",
+    nodes_per_block: Annotated[int, PROCESSING_ARGS["nodes_per_block"]] = 1,
+    max_blocks: Annotated[int, PROCESSING_ARGS["max_blocks"]] = 5,
+    run_batch_size: Annotated[int, PROCESSING_ARGS["run_batch_size"]] = 200,
+    flow_debug: Annotated[bool, PROCESSING_ARGS["flow_debug"]] = False,
+    active_runs_limit: Annotated[int, PROCESSING_ARGS["active_runs_limit"]] = 20,
+    dataset_limit: Annotated[int, PROCESSING_ARGS["dataset_limit"]] = 0,
+    dataset_limit_to_first: Annotated[
+        int, PROCESSING_ARGS["dataset_limit_to_first"]
+    ] = 0,
+    clear_manifest: Annotated[bool, PROCESSING_ARGS["clear_manifest"]] = False,
+    type: Annotated[CorrType, CORR_ARGS["type"]] = CorrType.Multitau,
+    gpu_id: Annotated[int, CORR_ARGS["gpu_id"]] = 0,
+    batch_size: Annotated[int, CORR_ARGS["batch_size"]] = 256,
+    verbose: Annotated[bool, CORR_ARGS["verbose"]] = True,
+    smooth: Annotated[str, CORR_ARGS["smooth"]] = "sqmap",
+    save_g2: Annotated[bool, CORR_ARGS["save_g2"]] = False,
+    avg_frame: Annotated[int, CORR_ARGS["avg_frame"]] = 1,
+    begin_frame: Annotated[int, CORR_ARGS["begin_frame"]] = 0,
+    end_frame: Annotated[int, CORR_ARGS["end_frame"]] = -1,
+    stride_frame: Annotated[int, CORR_ARGS["stride_frame"]] = 1,
+    overwrite: Annotated[bool, CORR_ARGS["overwrite"]] = True,
+    dq_selection: Annotated[str, CORR_ARGS["dq_selection"]] = "all",
+):
+    if not experiment or not cycle:
+        try:
+            experiment, cycle = get_experiment_and_cycle_from_path(path)
+        except ValueError as e:
+            print(str(e))
+            print(
+                "Must provide experiment and cycle if they cannot be parsed from path!"
             )
-        )
-        for idx, batch in enumerate(batches):
-            work_item = {
-                "batch_index": idx,
-                "flow_data": {
-                    "flow_input": batch["flow_input"],
-                    "label": f"exp-test-{run_batch_size}-{queue.value}-{idx + 1}-of-{len(batches)}",
-                    "tags": ['aps', 'xpcs', 'batch-test', 'test'],
-                }
-            }
-            work_queue.put(work_item)
+            return
+    manifest_file = get_manifest_file_path(experiment, cycle)
+    manifest = get_experiment_manifest(
+        experiment_data_path=pathlib.Path(path),
+        manifest_file=manifest_file,
+    )
 
-        flows_manager = FlowsManager(run_kwargs=run_kwargs)
-        batch_flow_client = XPCSBoostBatch(flows_manager=flows_manager)
-        active_runs = update_manifest(manifest, manifest_file)
-        initial_queue_size = work_queue.qsize()
-        print(f"Starting processing of {initial_queue_size} batches with max concurrency {active_runs_limit}...")
-        while not work_queue.empty():
-            num_runs_to_start = active_runs_limit - active_runs
-            dataset_updates = {}
-            for _ in range(num_runs_to_start):
-                work_item = work_queue.get()
-                run = batch_flow_client.run_flow(**work_item["flow_data"])
-                print(f"Started {work_item['flow_data']['label']} with run ID {run['run_id']}")
-                source_paths = [ti["source_path"] for ti in work_item["flow_data"]["flow_input"]["input"]["source_transfer"]["transfer_items"]]
-                dataset_updates.update({p: run["run_id"] for p in source_paths})
-            active_runs = update_manifest(manifest, manifest_file, dataset_updates)
-            print(f"Active runs: {active_runs}, Batches remaining: {work_queue.qsize()}/{initial_queue_size}")
+    if flow_debug:
+        dataset_limit = 1
+        print("Flow debug enabled, limiting to 1 dataset.")
+
+    if dataset_limit_to_first > 0:
+        manifest["datasets"] = manifest["datasets"][:dataset_limit_to_first]
+        print(f"Limiting to first {dataset_limit_to_first} datasets.")
+
+    if clear_manifest:
+        print("Clearing existing manifest run IDs...")
+        for d in manifest["datasets"]:
+            d.pop("run_id", None)
+            d.pop("run_status", None)
+        manifest_file.write_text(json.dumps(manifest, indent=2))
+
+    for d in manifest["datasets"]:
+        if d.get("run_status") in ["SUCCEEDED", "ACTIVE"]:
+            d.pop("run_id", None)
+            d.pop("run_status", None)
+
+    datasets = [d for d in manifest["datasets"] if not d.get("run_id")]
+    print(
+        f"Found {len(datasets)} unprocessed datasets in experiment {experiment} cycle {cycle}."
+    )
+    if dataset_limit > 0:
+        datasets = datasets[:dataset_limit]
+        print(f"Limiting to {dataset_limit} datasets.")
+
+    work_queue = SimpleQueue()
+
+    staging_dir = staging_dir or f"{queue.value}-{cycle}-{experiment}-{len(datasets)}"
+
+    batches = get_flow_batch_input(
+        source_files=[d["path"] for d in datasets],
+        qmap=qmap,
+        staging_dir=staging_dir,
+        queue=queue.value,
+        walltime=walltime,
+        nodes_per_block=nodes_per_block,
+        max_blocks=max_blocks,
+        flow_debug=flow_debug,
+        run_batch_size=run_batch_size,
+        boost_corr_args=dict(
+            type=type.value,
+            gpu_id=gpu_id,
+            batch_size=batch_size,
+            verbose=verbose,
+            smooth=smooth,
+            save_g2=save_g2,
+            avg_frame=avg_frame,
+            begin_frame=begin_frame,
+            end_frame=end_frame,
+            stride_frame=stride_frame,
+            overwrite=overwrite,
+            dq_selection=dq_selection,
+        ),
+    )
+    for idx, batch in enumerate(batches):
+        work_item = {
+            "batch_index": idx,
+            "flow_data": {
+                "flow_input": batch["flow_input"],
+                "label": f"exp-test-{run_batch_size}-{queue.value}-{idx + 1}-of-{len(batches)}",
+                "tags": ["aps", "xpcs", "batch-test", "test"],
+            },
+        }
+        work_queue.put(work_item)
+
+    flows_manager = FlowsManager(run_kwargs=run_kwargs)
+    batch_flow_client = XPCSBoostBatch(flows_manager=flows_manager)
+    active_runs = update_manifest(manifest, manifest_file)
+    initial_queue_size = work_queue.qsize()
+    print(
+        f"Starting processing of {initial_queue_size} batches with max concurrency {active_runs_limit}..."
+    )
+    while not work_queue.empty():
+        num_runs_to_start = active_runs_limit - active_runs
+        dataset_updates = {}
+        for _ in range(num_runs_to_start):
+            work_item = work_queue.get()
+            run = batch_flow_client.run_flow(**work_item["flow_data"])
+            print(
+                f"Started {work_item['flow_data']['label']} with run ID {run['run_id']}"
+            )
+            source_paths = [
+                ti["source_path"]
+                for ti in work_item["flow_data"]["flow_input"]["input"][
+                    "source_transfer"
+                ]["transfer_items"]
+            ]
+            dataset_updates.update({p: run["run_id"] for p in source_paths})
+        active_runs = update_manifest(manifest, manifest_file, dataset_updates)
+        print(
+            f"Active runs: {active_runs}, Batches remaining: {work_queue.qsize()}/{initial_queue_size}"
+        )
 
 
 if __name__ == "__main__":
