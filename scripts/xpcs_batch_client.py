@@ -1,4 +1,5 @@
 import globus_sdk
+import datetime
 from pprint import pprint
 import urllib
 import pathlib
@@ -384,8 +385,12 @@ def run_experiment_subdirectory(
     cycle: Annotated[str, CORR_ARGS["cycle"]] = None,
     experiment: Annotated[str, PROCESSING_ARGS["experiment"]] = None,
     deployment: Annotated[str, PROCESSING_ARGS["deployment"]] = "voyager-8idi-polaris",
+    staging_dir: Annotated[str, PROCESSING_ARGS["staging_dir"]] = None,
     group: Annotated[str, PROCESSING_ARGS["group"]] = "368beb47-c9c5-11e9-b455-0efb3ba9a670",
     queue: Annotated[PolarisQueues, PROCESSING_ARGS["queue"]] = PolarisQueues.preemptable,
+    walltime: Annotated[str, PROCESSING_ARGS["walltime"]] = "1:00:00",
+    nodes_per_block: Annotated[int, PROCESSING_ARGS["nodes_per_block"]] = 1,
+    max_blocks: Annotated[int, PROCESSING_ARGS["max_blocks"]] = 5,
     run_batch_size: Annotated[int, PROCESSING_ARGS["run_batch_size"]] = 200,
     flow_debug: Annotated[bool, PROCESSING_ARGS["flow_debug"]] = False,
     dataset_limit: Annotated[int, PROCESSING_ARGS["dataset_limit"]] = 0,
@@ -421,13 +426,18 @@ def run_experiment_subdirectory(
         queue = PolarisQueues.debug
         print("Flow debug enabled, limiting to 1 dataset on the debug queue.")
 
+    staging_dir = staging_dir or f"{queue.value}-{datetime.date.today().isoformat()}-{cycle}-{experiment}-{len(source_files)}"
+
     batches = get_flow_batch_input(
         source_files=source_files,
         qmap=qmap,
-        staging_dir=f"batch-test-2026-01-27-{cycle}-{experiment}",
+        staging_dir=staging_dir,
         queue=queue.value,
-        run_batch_size=run_batch_size,
+        walltime=walltime,
+        nodes_per_block=nodes_per_block,
+        max_blocks=max_blocks,
         flow_debug=flow_debug,
+        run_batch_size=run_batch_size,
         boost_corr_args=dict(
             type=type.value,
             gpu_id=gpu_id,
@@ -445,7 +455,7 @@ def run_experiment_subdirectory(
     )
 
     for idx, batch in enumerate(batches):
-        label = f"exp-test-{batch['batch_size']}-{queue.value}-{idx + 1}-of-{len(batches)}"
+        label = f"{batch['batch_size']}-{queue.value}-{idx + 1}-of-{len(batches)}-{pathlib.Path(path).name}"
         run = batch_flow_client.run_flow(flow_input=batch["flow_input"], label=label, tags=['aps', 'xpcs', 'batch-test', 'test'])
         batch["run_id"] = run["run_id"]
         print(f"Started run with {batch['batch_size']} datasets. https://app.globus.org/runs/{run['run_id']}/logs")
