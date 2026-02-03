@@ -380,7 +380,7 @@ def update_manifest_status(
 
 @app.command()
 def run_experiment_subdirectory(
-    path: str,
+    path: Annotated[str, typer.Argument(help="Path to the experiment subdirectory to process. Example: /8IDI/2025-2/tempus202507-merge/data/converted/Cb0164_D100_a0060_f2000000")],
     qmap: Annotated[str, CORR_ARGS["qmap"]],
     cycle: Annotated[str, CORR_ARGS["cycle"]] = None,
     experiment: Annotated[str, PROCESSING_ARGS["experiment"]] = None,
@@ -407,6 +407,20 @@ def run_experiment_subdirectory(
     overwrite: Annotated[bool, CORR_ARGS["overwrite"]] = True,
     dq_selection: Annotated[str, CORR_ARGS["dq_selection"]] = "all",
 ):
+    """
+    Run boost corr processing on all datasets in the given experiment subdirectory.
+
+    An example is this:
+
+    python xpcs_batch_client.py run-experiment-subdirectory \
+    --qmap /8IDI/2025-2/tempus202507-merge/data/timepix_Sq90_Dq9_log.hdf \
+    --queue debug \
+    /8IDI/2025-2/tempus202507-merge/data/converted/Cb0164_D100_a0060_f2000000
+
+    Which will run the experiment subdirectory above on the debug queue. All datasets within the subdirectory
+    will be batched and processed together.
+
+    """
     if not experiment or not cycle:
         try:
             experiment, cycle = get_experiment_and_cycle_from_path(path)
