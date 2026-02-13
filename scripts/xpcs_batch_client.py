@@ -452,12 +452,12 @@ def update_manifest_status(
     while True:
         active = update_manifest(manifest=manifest, manifest_file=manifest_file)
         failed = [
-            d for d in manifest.get("datasets", []) if d.get("run_status") == "FAILED"
+            d for d in manifest.get("datasets", []) if d.get("dataset_status") == "FAILED"
         ]
         succeeded = [
             d
             for d in manifest.get("datasets", [])
-            if d.get("run_status") == "SUCCEEDED"
+            if d.get("dataset_status") == "SUCCEEDED"
         ]
         print(
             f"Active runs: {active}, Failed datasets: {len(failed)}, Succeeded datasets: {len(succeeded)}, total: {len(manifest.get('datasets', []))}"
@@ -614,7 +614,7 @@ def get_experiment_manifest(
     return manifest
 
 
-def get_run_list(session, client):
+def get_run_map(session, client):
     flows_client = globus_sdk.FlowsClient(app=globus_app)
     query_params = dict(orderby="start_time DESC", per_page=50)
     runs = {}
@@ -630,30 +630,39 @@ def get_run_list(session, client):
     return runs
 
 
+def get_dataset_status(run_data, dataset):
+    if run_data["status"] == "SUCCEEDED":
+        for task in run_data["details"]["output"]["XpcsBoostCorr"]["details"]["results"]:
+            if dataset["path"].endswith(task["output"]["id"]):
+                return task["output"]["result"]
+    raise Exception("Failed to find dataset status in run output!")
+
+
 def update_manifest(manifest: dict, manifest_file: pathlib.Path, updates: dict = None):
-    run_list = get_run_list(globus_app, globus_sdk.FlowsClient)
+    run_map = get_run_map(globus_app, globus_sdk.FlowsClient)
 
     updates = updates or dict()
     active_runs = set()
-    for dataset in manifest["datasets"]:
-        # Update run ID if provided
+    for idx, dataset in enumerate(manifest["datasets"]):
         new_run = updates.get(dataset["path"])
         if new_run:
             dataset["run_id"] = new_run
             dataset["run_status"] = "ACTIVE"
 
-        # Update run status
         run_id = dataset.get("run_id")
-        if run_id and run_id not in run_list:
+        if run_id and run_id not in run_map:
             raise Exception(f"Run ID {run_id} not found in recent runs!")
         elif run_id:
-            dataset["run_status"] = run_list[run_id]["status"]
+            dataset["run_status"] = run_map[run_id]["status"]
+            if dataset["run_status"] == "SUCCEEDED":
+                dataset["dataset_status"] = get_dataset_status(run_map[run_id], dataset)
             (
                 active_runs.add(dataset["run_id"])
                 if dataset["run_status"] == "ACTIVE"
                 else None
             )
     manifest_file.write_text(json.dumps(manifest, indent=2))
+    print(f"Wrote to file {manifest_file}")
     return len(active_runs)
 
 
@@ -723,12 +732,9 @@ def run_experiment(
         for d in manifest["datasets"]:
             d.pop("run_id", None)
             d.pop("run_status", None)
+            if d.get("dataset_status"):
+                d.pop("dataset_status")
         manifest_file.write_text(json.dumps(manifest, indent=2))
-
-    for d in manifest["datasets"]:
-        if d.get("run_status") in ["SUCCEEDED", "ACTIVE"]:
-            d.pop("run_id", None)
-            d.pop("run_status", None)
 
     datasets = [d for d in manifest["datasets"] if not d.get("run_id")]
     print(
@@ -800,7 +806,11 @@ def run_experiment(
                     "source_transfer"
                 ]["transfer_items"]
             ]
-            dataset_updates.update({p: run["run_id"] for p in source_paths})
+            d_update = {p: run["run_id"] for p in source_paths}
+            print(f"Update: {d_update}")
+            dataset_updates.update(d_update)
+
+        print("Updating manifest")
         active_runs = update_manifest(manifest, manifest_file, dataset_updates)
         print(
             f"Active runs: {active_runs}, Batches remaining: {work_queue.qsize()}/{initial_queue_size}"
