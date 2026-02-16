@@ -459,8 +459,10 @@ def update_manifest_status(
             for d in manifest.get("datasets", [])
             if d.get("dataset_status") == "SUCCEEDED"
         ]
+        with_runs = len([d for d in manifest.get('datasets', []) if d.get("run_id")])
+        total = len(manifest.get('datasets', []))
         print(
-            f"Active runs: {active}, Failed datasets: {len(failed)}, Succeeded datasets: {len(succeeded)}, total: {len(manifest.get('datasets', []))}"
+            f"Active runs: {active}, Failed datasets: {len(failed)}, Succeeded datasets: {len(succeeded)}, total: {with_runs}/{total}"
         )
         if active == 0:
             break
@@ -639,30 +641,47 @@ def get_dataset_status(run_data, dataset):
 
 
 def update_manifest(manifest: dict, manifest_file: pathlib.Path, updates: dict = None):
+    """
+    Update a manifest by checking each dataset with a run id, and checking inside
+    each run id for the success or failure of a dataset.
+    
+    """
     run_map = get_run_map(globus_app, globus_sdk.FlowsClient)
-
     updates = updates or dict()
     active_runs = set()
     for idx, dataset in enumerate(manifest["datasets"]):
+        # Update any datasets with a run id
         new_run = updates.get(dataset["path"])
         if new_run:
             dataset["run_id"] = new_run
             dataset["run_status"] = "ACTIVE"
 
         run_id = dataset.get("run_id")
+        if not run_id:
+            # Disregard anything without a run_id
+            continue
+        elif run_id and dataset.get("dataset_status") in ["SUCCEEDED", "FAILED"]:
+            # Disregard old completed runs
+            continue
+
+        # Run id isn't in the recent map. Fetch it manually
         if run_id and run_id not in run_map:
-            raise Exception(f"Run ID {run_id} not found in recent runs!")
-        elif run_id:
-            dataset["run_status"] = run_map[run_id]["status"]
-            if dataset["run_status"] == "SUCCEEDED":
-                dataset["dataset_status"] = get_dataset_status(run_map[run_id], dataset)
-            (
-                active_runs.add(dataset["run_id"])
-                if dataset["run_status"] == "ACTIVE"
-                else None
-            )
+            print("Need to fetch run id manually")
+            flows_client = globus_sdk.FlowsClient(app=globus_app)
+            run_map[run_id] = flows_client.get_run(run_id)
+
+        # Update the dataset in the manifest
+        dataset["run_status"] = run_map[run_id]["status"]
+        if dataset["run_status"] == "SUCCEEDED":
+            dataset["dataset_status"] = get_dataset_status(run_map[run_id], dataset)
+        else:
+                dataset["dataset_status"] = dataset["run_status"]
+        (
+            active_runs.add(dataset["run_id"])
+            if dataset["run_status"] == "ACTIVE"
+            else None
+        )
     manifest_file.write_text(json.dumps(manifest, indent=2))
-    print(f"Wrote to file {manifest_file}")
     return len(active_runs)
 
 
@@ -794,7 +813,11 @@ def run_experiment(
     while not work_queue.empty():
         num_runs_to_start = active_runs_limit - active_runs
         dataset_updates = {}
-        for _ in range(num_runs_to_start):
+        print(f"Starting {num_runs_to_start}")
+        for num in range(num_runs_to_start):
+            if work_queue.empty():
+                break
+
             work_item = work_queue.get()
             run = batch_flow_client.run_flow(**work_item["flow_data"])
             print(
@@ -807,7 +830,6 @@ def run_experiment(
                 ]["transfer_items"]
             ]
             d_update = {p: run["run_id"] for p in source_paths}
-            print(f"Update: {d_update}")
             dataset_updates.update(d_update)
 
         print("Updating manifest")
