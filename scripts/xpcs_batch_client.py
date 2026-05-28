@@ -17,8 +17,7 @@ from gladier import FlowsManager
 from gladier_xpcs.tools.xpcs_boost_corr import xpcs_boost_corr
 from gladier_xpcs.flows.flow_boost_batch import XPCSBoostBatch
 from gladier_xpcs.deployments import BaseDeployment, deployment_map
-
-from scripts import xpcs_online_boost_client
+import xpcs_online_boost_client
 
 DEPLOYMENT = deployment_map["voyager-8idi-polaris"]
 SOURCE_ENDPOINT_BASE_PATH = pathlib.Path("/8IDI")
@@ -297,7 +296,7 @@ def get_flow_batch_input(
         flow_input = {
             "input": {
                 "compute_queue": queue,
-                "compute_endpoint": "d88919ea-026a-493e-9124-fe3c46defa54",
+                "compute_endpoint": DEPLOYMENT.compute_endpoints["compute_endpoint"],
                 "compute_walltime": walltime,
                 "compute_nodes_per_block": nodes_per_block,
                 "compute_max_blocks": max_blocks,
@@ -309,8 +308,8 @@ def get_flow_batch_input(
                 + qmap_transfer_item["destination_path"],
                 "xpcs_boost_corr_tasks": xpcs_boost_corr_tasks,
                 "source_transfer": {
-                    "destination_endpoint_id": "98d26f35-e5d5-4edd-becf-a75520656c64",
-                    "source_endpoint_id": "aa2b18e8-e248-4265-985c-7e2e59765539",
+                    "destination_endpoint_id": DEPLOYMENT.staging_collection.uuid,
+                    "source_endpoint_id": DEPLOYMENT.source_collection.uuid,
                     "transfer_items": transfer_items,
                 },
             },
@@ -397,7 +396,10 @@ def list_qmaps(
     if not path and (not experiment or not cycle):
         print("Must provide either path or experiment and cycle!")
         return
-    path = pathlib.Path(path) or SOURCE_ENDPOINT_BASE_PATH / cycle / experiment / "data"
+    if path:
+        path = pathlib.Path(path)
+    else:
+        path = SOURCE_ENDPOINT_BASE_PATH / cycle / experiment / "data"
     print(f"Listing Qmaps in {DEPLOYMENT.source_collection.uuid}{path}:")
     qmaps = fetch_source_directory_metadata(path=path, filter_type="file")
     qmaps = [q for q in qmaps if q["name"].endswith(".hdf")]
