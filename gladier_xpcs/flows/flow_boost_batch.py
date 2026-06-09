@@ -1,5 +1,4 @@
 from gladier import GladierBaseClient, generate_flow_definition
-import gladier.tests
 
 
 @generate_flow_definition(modifiers={
