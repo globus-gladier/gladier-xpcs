@@ -274,6 +274,9 @@ def get_flow_input(
 
             },
             'compute_endpoint': depl_input['input']['compute_endpoint'],
+            "compute_queue": "demand",
+            "compute_walltime": "1:00:00",
+            "compute_nodes_per_block": 1,
         }
     }
     if skip_transfer_back is False and not flow_input["input"]["result_transfer"]["transfer_items"][0]["destination_path"]:
