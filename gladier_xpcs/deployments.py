@@ -142,8 +142,8 @@ class VoyagerXPCS8Polaris(BaseDeployment):
     }
 
     compute_endpoints = {
-        'login_node_endpoint': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
-        'compute_endpoint': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
+        'login_node_endpoint': 'd88919ea-026a-493e-9124-fe3c46defa54',
+        'compute_endpoint': 'd88919ea-026a-493e-9124-fe3c46defa54',
     }
 
     flow_input = {
@@ -170,8 +170,8 @@ class Voyager8IDIPolaris(BaseDeployment):
     }
 
     compute_endpoints = {
-        'login_node_endpoint': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
-        'compute_endpoint': 'f8f4692a-0ab7-40d0-b256-ba5b82b5e2ec',
+        'login_node_endpoint': 'd88919ea-026a-493e-9124-fe3c46defa54',
+        'compute_endpoint': 'd88919ea-026a-493e-9124-fe3c46defa54',
     }
 
     flow_input = {
